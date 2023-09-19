@@ -76,3 +76,7 @@ add_subdirectory(ast)
 add_subdirectory(runtime)
 add_subdirectory(dsl)
 add_subdirectory(gui)
+
+if (USE_CUDA)
+    add_subdirectory(cuda)
+endif ()
