@@ -175,7 +175,7 @@ public:
             .enable_fast_math = enable_fast_math,
             .enable_debug_info = enable_debug_info,
             .compile_only = true,
-            .name = luisa::string{name}};
+            .name = std::string{name}};
         static_cast<void>(this->compile(std::forward<Kernel>(kernel), option));
     }
 
@@ -201,7 +201,7 @@ public:
             .enable_fast_math = enable_fast_math,
             .enable_debug_info = enable_debug_info,
             .compile_only = true,
-            .name = luisa::string{name}};
+            .name = std::string{name}};
         static_cast<void>(this->compile<N>(std::forward<Kernel>(kernel), option));
     }
 

@@ -14,6 +14,10 @@
 #include "cuda/cuda_device.h"
 #endif
 
+#if defined(LUISA_PLATFORM_APPLE)
+#include "metal/metal_device.h"
+#endif
+
 namespace luisa::compute {
 // Make context global, so dynamic modules cannot be redundantly loaded
 namespace detail {
@@ -48,15 +52,13 @@ Context::Context(string_view program_path) noexcept
     : _impl{luisa::make_shared<detail::ContextImpl>(program_path)} {}
 
 Device Context::create_device(const DeviceConfig *settings) noexcept {
-#ifdef LUISA_PLATFORM_CUDA
-    auto interface = create(settings);
+    auto interface = create(Context{_impl}, settings);
     auto handle = Device::Handle{
         interface,
         [impl = _impl](auto p) noexcept {
             destroy(p);
         }};
     return Device{std::move(handle)};
-#endif
 }
 
 Context::Context(luisa::shared_ptr<detail::ContextImpl> impl) noexcept

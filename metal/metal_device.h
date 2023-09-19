@@ -79,3 +79,10 @@ public:
 };
 
 }// namespace luisa::compute::metal
+
+LUISA_EXPORT_API luisa::compute::DeviceInterface *create(luisa::compute::Context &&ctx,
+                                                         const luisa::compute::DeviceConfig *config) noexcept;
+
+LUISA_EXPORT_API void destroy(luisa::compute::DeviceInterface *device) noexcept;
+
+LUISA_EXPORT_API void backend_device_names(luisa::vector<luisa::string> &names) noexcept;

@@ -62,6 +62,12 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         EASTL
 )
 
+if (APPLE)
+    target_link_libraries(${PROJECT_NAME} PUBLIC
+            metal-cpp
+    )
+endif ()
+
 if (${NEED_LINK_ATOMIC})
     target_link_libraries(${PROJECT_NAME} PUBLIC atomic)
 endif ()

@@ -145,7 +145,8 @@ public:
 
 }// namespace luisa::compute::cuda
 
-LUISA_EXPORT_API luisa::compute::DeviceInterface *create(const luisa::compute::DeviceConfig *config) noexcept;
+LUISA_EXPORT_API luisa::compute::DeviceInterface *create(luisa::compute::Context &&ctx,
+                                                         const luisa::compute::DeviceConfig *config) noexcept;
 
 LUISA_EXPORT_API void destroy(luisa::compute::DeviceInterface *device) noexcept;
 

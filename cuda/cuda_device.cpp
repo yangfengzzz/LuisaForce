@@ -449,7 +449,7 @@ ShaderCreationInfo CUDADevice::_create_shader(luisa::string name,
     // generate a default name if not specified
     auto uses_user_path = !name.empty();
     if (!uses_user_path) { name = fmt::format("kernel_{:016x}.ptx",
-                                                expected_metadata.checksum); }
+                                              expected_metadata.checksum); }
     if (!name.ends_with(".ptx") &&
         !name.ends_with(".PTX")) { name.append(".ptx"); }
     auto metadata_name = fmt::format("{}.metadata", name);
@@ -874,7 +874,8 @@ void CUDADevice::set_name(luisa::compute::Resource::Tag resource_tag,
 
 }// namespace luisa::compute::cuda
 
-LUISA_EXPORT_API luisa::compute::DeviceInterface *create(const luisa::compute::DeviceConfig *config) noexcept {
+LUISA_EXPORT_API luisa::compute::DeviceInterface *create(luisa::compute::Context &&ctx,
+                                                         const luisa::compute::DeviceConfig *config) noexcept {
     auto device_id = 0ull;
     auto binary_io = static_cast<const luisa::BinaryIO *>(nullptr);
     if (config != nullptr) {
@@ -883,7 +884,8 @@ LUISA_EXPORT_API luisa::compute::DeviceInterface *create(const luisa::compute::D
         LUISA_ASSERT(!config->headless,
                      "Headless mode is not implemented yet for CUDA backend.");
     }
-    return luisa::new_with_allocator<luisa::compute::cuda::CUDADevice>(device_id, binary_io);
+    return luisa::new_with_allocator<luisa::compute::cuda::CUDADevice>(
+        std::move(ctx), device_id, binary_io);
 }
 
 LUISA_EXPORT_API void destroy(luisa::compute::DeviceInterface *device) noexcept {
