@@ -1,9 +1,3 @@
-//  Copyright (c) 2023 Feng Yang
-//
-//  I am making my contributions/submissions to this project solely in my
-//  personal capacity and am not conveying any rights to any intellectual
-//  property of any third parties.
-
 #pragma once
 
 #include <cuda.h>
@@ -100,7 +94,7 @@ private:
                                                     luisa::vector<ShaderDispatchCommand::Argument> bound_arguments) noexcept;
 
 public:
-    CUDADevice(size_t device_id, const BinaryIO *io) noexcept;
+    CUDADevice(Context &&ctx, size_t device_id, const BinaryIO *io) noexcept;
     ~CUDADevice() noexcept override;
     [[nodiscard]] auto &handle() const noexcept { return _handle; }
     template<typename F>

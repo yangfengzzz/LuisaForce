@@ -18,6 +18,13 @@ class BinaryIO;
 }// namespace luisa
 
 namespace luisa::compute {
+
+class Context;
+
+namespace detail {
+class ContextImpl;
+}// namespace detail
+
 class Type;
 
 class DeviceConfigExt {
@@ -43,13 +50,15 @@ class LC_RUNTIME_API DeviceInterface : public luisa::enable_shared_from_this<Dev
 protected:
     friend class Context;
     luisa::string _backend_name;
+    luisa::shared_ptr<detail::ContextImpl> _ctx_impl;
 
 public:
-    explicit DeviceInterface() noexcept;
+    explicit DeviceInterface(Context &&ctx) noexcept;
     virtual ~DeviceInterface() noexcept;
     DeviceInterface(DeviceInterface &&) = delete;
     DeviceInterface(DeviceInterface const &) = delete;
 
+    [[nodiscard]] Context context() const noexcept;
     [[nodiscard]] auto backend_name() const noexcept { return luisa::string_view{_backend_name}; }
 
     // native handle

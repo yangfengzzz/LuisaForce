@@ -18,7 +18,6 @@ set(COMMON_FILES
         cuda_compiler.cpp
         cuda_device.cpp
         cuda_event.cpp
-        cuda_ext.cpp
         cuda_host_buffer_pool.cpp
         cuda_shader.cpp
         cuda_shader_metadata.cpp

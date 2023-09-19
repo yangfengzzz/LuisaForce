@@ -11,11 +11,13 @@
 #include "core/binary_io.h"
 #include "core/stl/filesystem.h"
 #include "core/stl/unordered_map.h"
+#include "runtime/context.h"
 
 namespace luisa::compute {
 
 class DefaultBinaryIO final : public BinaryIO {
 private:
+    Context _ctx;
     mutable std::mutex _global_mtx;
     std::filesystem::path _cache_dir;
     std::filesystem::path _data_dir;
@@ -25,7 +27,7 @@ private:
     void _write(luisa::string const &file_path, luisa::span<std::byte const> data) const noexcept;
 
 public:
-    explicit DefaultBinaryIO(void *ext = nullptr) noexcept;
+    explicit DefaultBinaryIO(Context &&ctx, void *ext = nullptr) noexcept;
     ~DefaultBinaryIO() noexcept override;
     luisa::unique_ptr<BinaryStream> read_shader_bytecode(luisa::string_view name) const noexcept override;
     luisa::unique_ptr<BinaryStream> read_shader_cache(luisa::string_view name) const noexcept override;

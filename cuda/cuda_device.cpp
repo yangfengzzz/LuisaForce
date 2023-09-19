@@ -91,12 +91,13 @@ namespace luisa::compute::cuda {
                               luisa::to_underlying(format));
 }
 
-CUDADevice::CUDADevice(size_t device_id,
+CUDADevice::CUDADevice(Context &&ctx,
+                       size_t device_id,
                        const BinaryIO *io) noexcept
-    : DeviceInterface{}, _handle{device_id}, _io{io} {
+    : DeviceInterface{std::move(ctx)}, _handle{device_id}, _io{io} {
     // provide a default binary IO
     if (_io == nullptr) {
-        _default_io = luisa::make_unique<DefaultBinaryIO>();
+        _default_io = luisa::make_unique<DefaultBinaryIO>(context());
         _io = _default_io.get();
     }
     _compiler = luisa::make_unique<CUDACompiler>(this);
@@ -199,6 +200,15 @@ BufferCreationInfo CUDADevice::create_buffer(const Type *element, size_t elem_co
         info.native_handle = reinterpret_cast<void *>(buffer->handle());
     }
     return info;
+}
+
+BufferCreationInfo CUDADevice::create_buffer(const ir::CArc<ir::Type> *element, size_t elem_count) noexcept {
+#ifdef LUISA_ENABLE_IR
+    auto type = IR2AST::get_type(element->get());
+    return create_buffer(type, elem_count);
+#else
+    LUISA_ERROR_WITH_LOCATION("CUDA device does not support creating shader from IR types.");
+#endif
 }
 
 void CUDADevice::destroy_buffer(uint64_t handle) noexcept {

@@ -21,6 +21,7 @@ set(COMMON_FILES
         stream.cpp
         swapchain.cpp
         volume.cpp
+        context.cpp
         rhi/command_encoder.cpp
         rhi/device_interface.cpp
         rhi/pixel.cpp

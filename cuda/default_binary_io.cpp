@@ -65,9 +65,10 @@ void DefaultBinaryIO::_write(const luisa::string &file_path, luisa::span<std::by
     }
 }
 
-DefaultBinaryIO::DefaultBinaryIO(void *ext) noexcept
-    _cache_dir{_ctx.create_runtime_subdir(".cache"sv)},
-    _data_dir{_ctx.create_runtime_subdir(".data"sv)} {
+DefaultBinaryIO::DefaultBinaryIO(Context &&ctx, void *ext) noexcept
+    : _ctx(std::move(ctx)),
+      _cache_dir{_ctx.create_runtime_subdir(".cache")},
+      _data_dir{_ctx.create_runtime_subdir(".data")} {
 }
 
 DefaultBinaryIO::~DefaultBinaryIO() noexcept = default;
