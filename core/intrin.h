@@ -43,4 +43,3 @@ using float32x4_t = ::float32x4_t;
 #define LUISA_INTRIN_PAUSE() std::this_thread::yield()
 
 #endif
-

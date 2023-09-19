@@ -37,6 +37,15 @@ include(check_atomic)
 include(pxrConfig)
 include_directories(${PXR_INCLUDE_DIRS})
 
+if (WIN32)
+    add_compile_definitions(LUISA_PLATFORM_WINDOWS=1)
+elseif (UNIX)
+    add_compile_definitions(LUISA_PLATFORM_UNIX=1)
+    if (APPLE)
+        add_compile_definitions(LUISA_PLATFORM_APPLE=1)
+    endif ()
+endif ()
+
 # CUDA
 option(USE_CUDA "Use CUDA features" ON)
 if (USE_CUDA)

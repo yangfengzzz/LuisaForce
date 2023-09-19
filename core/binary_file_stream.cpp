@@ -84,4 +84,3 @@ void BinaryFileStream::close() noexcept {
 #undef LUISA_FCLOSE
 
 }// namespace luisa
-

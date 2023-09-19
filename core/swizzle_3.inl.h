@@ -115,4 +115,3 @@
 [[nodiscard]] constexpr auto zzzx() const noexcept { return Vector<T, 4>{z, z, z, x}; }
 [[nodiscard]] constexpr auto zzzy() const noexcept { return Vector<T, 4>{z, z, z, y}; }
 [[nodiscard]] constexpr auto zzzz() const noexcept { return Vector<T, 4>{z, z, z, z}; }
-

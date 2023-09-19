@@ -334,4 +334,3 @@
 [[nodiscard]] constexpr auto wwwy() const noexcept { return Vector<T, 4>{w, w, w, y}; }
 [[nodiscard]] constexpr auto wwwz() const noexcept { return Vector<T, 4>{w, w, w, z}; }
 [[nodiscard]] constexpr auto wwww() const noexcept { return Vector<T, 4>{w, w, w, w}; }
-

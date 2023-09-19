@@ -76,4 +76,3 @@ template<typename C, typename CT>
 struct hash<std::basic_string_view<C, CT>> : basic_string_hash<C, CT> {};
 
 }// namespace luisa
-

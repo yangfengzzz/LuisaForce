@@ -41,4 +41,3 @@ template<bool thread_safe, typename Mutex = std::mutex>
 using conditional_mutex_t = typename conditional_mutex<thread_safe, Mutex>::type;
 
 }// namespace luisa
-

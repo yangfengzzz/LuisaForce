@@ -18,5 +18,4 @@ template<typename T,
          typename Compare = less<>>
 using priority_queue = eastl::priority_queue<T, Container, Compare>;
 
-}
-
+}// namespace luisa

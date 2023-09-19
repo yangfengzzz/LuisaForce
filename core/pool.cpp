@@ -19,4 +19,3 @@ void LC_CORE_API detail::memory_pool_check_memory_leak(size_t expected, size_t a
 }
 
 }// namespace luisa
-

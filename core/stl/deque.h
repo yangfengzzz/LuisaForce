@@ -11,5 +11,4 @@
 namespace luisa {
 template<typename T>
 using deque = eastl::deque<T>;
-}
-
+}// namespace luisa

@@ -15,7 +15,6 @@
 namespace luisa {
 
 using spdlog::logger;
-using log_level = spdlog::level::level_enum;
 
 namespace detail {
 [[nodiscard]] LC_CORE_API luisa::logger &default_logger() noexcept;
@@ -122,4 +121,3 @@ LC_CORE_API void log_flush() noexcept;
                 #x, msg);                        \
         }                                        \
     } while (false)
-

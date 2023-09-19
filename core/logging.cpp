@@ -57,13 +57,13 @@ LC_CORE_API void set_sink(spdlog::sink_ptr sink) noexcept {
 }
 
 LC_CORE_API spdlog::sink_ptr create_sink_with_callback(void (*callback)(LCLoggerMessage)) noexcept {
-    return std::make_shared<luisa::detail::SinkWithCallback<std::mutex>>([=](const char *level, const char* msg){
+    return std::make_shared<luisa::detail::SinkWithCallback<std::mutex>>([=](const char *level, const char *msg) {
         LCLoggerMessage m{};
         m.level = level;
         m.message = msg;
         callback(m);
     });
- }
+}
 }// namespace detail
 
 void log_level_verbose() noexcept { detail::default_logger().set_level(spdlog::level::debug); }
@@ -74,4 +74,3 @@ void log_level_error() noexcept { detail::default_logger().set_level(spdlog::lev
 void log_flush() noexcept { detail::default_logger().flush(); }
 
 }// namespace luisa
-

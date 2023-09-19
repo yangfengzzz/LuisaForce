@@ -26,4 +26,3 @@
 [[nodiscard]] constexpr auto yyxy() const noexcept { return Vector<T, 4>{y, y, x, y}; }
 [[nodiscard]] constexpr auto yyyx() const noexcept { return Vector<T, 4>{y, y, y, x}; }
 [[nodiscard]] constexpr auto yyyy() const noexcept { return Vector<T, 4>{y, y, y, y}; }
-

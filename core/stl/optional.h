@@ -15,4 +15,3 @@ using eastl::nullopt;
 using eastl::optional;
 
 }// namespace luisa
-

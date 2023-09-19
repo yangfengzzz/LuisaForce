@@ -346,4 +346,3 @@
 #define LUISA_AT_IMPL62(x, ...) LUISA_AT_IMPL61(__VA_ARGS__)
 #define LUISA_AT_IMPL63(x, ...) LUISA_AT_IMPL62(__VA_ARGS__)
 #define LUISA_AT(index, ...) LUISA_AT_IMPL##index __VA_ARGS__
-

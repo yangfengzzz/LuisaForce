@@ -175,11 +175,11 @@ concept function = std::is_function_v<T>;
 
 namespace detail {
 
-    template<typename... T>
-    struct all_same_impl : std::true_type {};
+template<typename... T>
+struct all_same_impl : std::true_type {};
 
-    template<typename First, typename... Other>
-    struct all_same_impl<First, Other...> : std::conjunction<std::is_same<First, Other>...> {};
+template<typename First, typename... Other>
+struct all_same_impl<First, Other...> : std::conjunction<std::is_same<First, Other>...> {};
 
 }// namespace detail
 
@@ -199,4 +199,3 @@ template<typename... T>
 concept vector_same_dimension = is_vector_same_dimension_v<T...>;
 
 }// namespace luisa::concepts
-

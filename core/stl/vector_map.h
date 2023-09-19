@@ -32,4 +32,3 @@ template<typename Key,
 using vector_multiset = eastl::vector_multiset<Key, Compare>;
 
 }// namespace luisa
-

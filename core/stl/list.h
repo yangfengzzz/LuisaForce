@@ -26,4 +26,3 @@ template<typename T, size_t node_count, bool allow_overflow = true>
 using fixed_list = eastl::fixed_list<T, node_count, allow_overflow>;
 
 }// namespace luisa
-

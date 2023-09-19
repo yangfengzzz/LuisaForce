@@ -527,4 +527,3 @@ template<size_t N>
 }
 
 }// namespace luisa
-

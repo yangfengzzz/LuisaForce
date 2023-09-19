@@ -21,4 +21,3 @@ using fixed_vector = eastl::fixed_vector<T, node_count, allow_overflow>;
 using bitvector = eastl::bitvector<>;
 
 }// namespace luisa
-

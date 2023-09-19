@@ -19,4 +19,3 @@ void BinaryBuffer::_write_bytes(const void *data, size_t size, size_t alignment)
 }
 
 }// namespace luisa
-

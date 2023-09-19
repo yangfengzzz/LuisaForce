@@ -14,5 +14,4 @@ namespace luisa {
 template<typename T, typename Container = luisa::vector<T>>
 using stack = eastl::stack<T, Container>;
 
-}
-
+}// namespace luisa

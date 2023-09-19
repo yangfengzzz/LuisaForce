@@ -50,4 +50,3 @@ Hash128::Hash128(luisa::string_view s) noexcept {
 }
 
 }// namespace luisa
-
