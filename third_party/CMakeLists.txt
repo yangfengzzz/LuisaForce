@@ -77,6 +77,6 @@ add_subdirectory(magic_enum)
 add_subdirectory(EASTL)
 
 # xxhash
-add_library(xxhash INTERFACE)
-target_include_directories(xxhash INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xxHash>)
-target_compile_definitions(xxhash INTERFACE XXH_INLINE_ALL)
+add_library(xxHash INTERFACE)
+target_include_directories(xxHash INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/xxHash")
+target_compile_definitions(xxHash INTERFACE XXH_INLINE_ALL)
