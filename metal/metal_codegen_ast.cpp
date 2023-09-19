@@ -11,6 +11,8 @@
 #include "runtime/dispatch_buffer.h"
 #include "metal_builtin_embedded.h"
 #include "metal_codegen_ast.h"
+#include "ast/external_function.h"
+#include "ast/function_builder.h"
 
 namespace luisa::compute::metal {
 

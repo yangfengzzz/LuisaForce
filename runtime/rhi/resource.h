@@ -93,12 +93,12 @@ struct ShaderOption {
     ///   The `enable_cache` field will be ignored if this field is not empty.
     /// \sa DeviceConfig
     /// \sa BinaryIO
-    luisa::string name;
+    std::string name;
     /// \brief Include code written in the native shading language.
     /// \details If provided, backend will include this string into the generated
     ///   shader code. This field is useful for interoperation with external callables.
     /// \sa ExternalCallable
-    luisa::string native_include;
+    std::string native_include;
 };
 
 class LC_RUNTIME_API Resource {
