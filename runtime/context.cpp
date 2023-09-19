@@ -1,9 +1,13 @@
+//  Copyright (c) 2023 Feng Yang
+//
+//  I am making my contributions/submissions to this project solely in my
+//  personal capacity and am not conveying any rights to any intellectual
+//  property of any third parties.
+
 #include "core/logging.h"
-#include "core/platform.h"
 #include "runtime/context.h"
 #include "runtime/device.h"
 #include "core/binary_io.h"
-#include "core/stl/filesystem.h"
 #include "core/stl/unordered_map.h"
 
 #if defined(LUISA_PLATFORM_CUDA)
@@ -45,15 +49,14 @@ Context::Context(string_view program_path) noexcept
 
 Device Context::create_device(const DeviceConfig *settings) noexcept {
 #ifdef LUISA_PLATFORM_CUDA
-    auto handle = cuda::CUDADevice()
-#endif
-
+    auto interface = create(settings);
     auto handle = Device::Handle{
         interface,
-        [impl = _impl, deleter = m.deleter](auto p) noexcept {
-            deleter(p);
+        [impl = _impl](auto p) noexcept {
+            destroy(p);
         }};
     return Device{std::move(handle)};
+#endif
 }
 
 Context::Context(luisa::shared_ptr<detail::ContextImpl> impl) noexcept
