@@ -15,8 +15,7 @@ struct Argument {
         BUFFER,
         TEXTURE,
         UNIFORM,
-        BINDLESS_ARRAY,
-        ACCEL
+        BINDLESS_ARRAY
     };
 
     struct Buffer {
@@ -36,10 +35,6 @@ struct Argument {
     };
 
     struct BindlessArray {
-        uint64_t handle;
-    };
-
-    struct Accel {
         uint64_t handle;
     };
 

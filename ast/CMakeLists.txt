@@ -9,9 +9,7 @@ cmake_minimum_required(VERSION 3.16)
 project(ast LANGUAGES C CXX)
 
 set(COMMON_FILES
-        ast2json.cpp
         atomic_ref_node.cpp
-        callable_library.cpp
         constant_data.cpp
         expression.cpp
         external_function.cpp

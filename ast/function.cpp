@@ -89,10 +89,6 @@ bool Function::requires_atomic_float() const noexcept {
     return _builder->requires_atomic_float();
 }
 
-bool Function::requires_raytracing() const noexcept {
-    return _builder->requires_raytracing();
-}
-
 luisa::shared_ptr<const detail::FunctionBuilder> Function::shared_builder() const noexcept {
     return _builder->shared_from_this();
 }

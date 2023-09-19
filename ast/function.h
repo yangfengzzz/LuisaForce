@@ -34,8 +34,7 @@ public:
     /// Function types
     enum struct Tag : uint {
         KERNEL,
-        CALLABLE,
-        RASTER_STAGE
+        CALLABLE
     };
 
     using Constant = ConstantData;
@@ -139,8 +138,6 @@ public:
     [[nodiscard]] const ScopeStmt *body() const noexcept;
     /// Return hash
     [[nodiscard]] uint64_t hash() const noexcept;
-    /// Return if is ray tracing function
-    [[nodiscard]] bool requires_raytracing() const noexcept;
     /// Return whether the function requires atomic operations
     [[nodiscard]] bool requires_atomic() const noexcept;
     /// Return whether the function requires atomic float operations

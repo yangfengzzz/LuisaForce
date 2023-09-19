@@ -12,6 +12,12 @@
 #include "core/basic_types.h"
 #include "core/stl/string.h"
 
+namespace luisa {
+[[nodiscard]] inline auto hash_to_string(uint64_t hash) noexcept {
+    return fmt::format(FMT_STRING("{:016X}"), hash);
+}
+};// namespace luisa
+
 namespace fmt {
 
 template<typename T, size_t N>

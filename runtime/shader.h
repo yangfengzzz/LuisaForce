@@ -16,7 +16,6 @@
 
 namespace luisa::compute {
 
-class Accel;
 class BindlessArray;
 class IndirectDispatchBuffer;
 

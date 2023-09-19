@@ -27,9 +27,6 @@ LC_RUNTIME_API void volume_size_zero_error() noexcept;
 template<typename T>
 class VolumeView;
 
-template<typename T>
-class SparseVolume;
-
 // Volumes are 3D textures without sampling, i.e., 3D surfaces.
 template<typename T>
 class Volume final : public Resource {
@@ -144,7 +141,6 @@ private:
 
 private:
     friend class Volume<T>;
-    friend class SparseVolume<T>;
     friend class detail::MipmapView;
 
     [[nodiscard]] auto _as_mipmap() const noexcept {

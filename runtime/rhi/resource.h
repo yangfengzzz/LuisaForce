@@ -67,39 +67,6 @@ struct ShaderCreationInfo : public ResourceCreationInfo {
     }
 };
 
-struct SparseTextureCreationInfo : public ResourceCreationInfo {
-    size_t tile_size_bytes;
-    uint3 tile_size;
-
-    [[nodiscard]] static auto make_invalid() noexcept {
-        SparseTextureCreationInfo info{};
-        info.invalidate();
-        return info;
-    }
-};
-
-struct SparseBufferCreationInfo : public BufferCreationInfo {
-    size_t tile_size_bytes;
-
-    [[nodiscard]] static auto make_invalid() noexcept {
-        SparseBufferCreationInfo info{};
-        info.invalidate();
-        return info;
-    }
-};
-
-struct AccelOption {
-
-    enum struct UsageHint : uint32_t {
-        FAST_TRACE,// build with best quality
-        FAST_BUILD // optimize for frequent rebuild
-    };
-
-    UsageHint hint{UsageHint::FAST_TRACE};
-    bool allow_compaction{true};
-    bool allow_update{false};
-};
-
 /// \brief Options for shader creation.
 struct ShaderOption {
     /// \brief Whether to enable shader cache.
@@ -144,21 +111,10 @@ public:
         BUFFER,
         TEXTURE,
         BINDLESS_ARRAY,
-        MESH,
-        PROCEDURAL_PRIMITIVE,
-        ACCEL,
         STREAM,
         EVENT,
         SHADER,
-        RASTER_SHADER,
-        SWAP_CHAIN,
-        DEPTH_BUFFER,
-        DSTORAGE_FILE,
-        DSTORAGE_PINNED_MEMORY,
-        SPARSE_BUFFER,
-        SPARSE_TEXTURE,
-        SPARSE_BUFFER_HEAP,
-        SPARSE_TEXTURE_HEAP,
+        SWAP_CHAIN
     };
 
 private:
@@ -237,21 +193,6 @@ struct hash<compute::ShaderOption> {
                                    seed);
         auto name_hash = hash_value(option.name, seed);
         return hash_combine({opt_hash, name_hash}, seed);
-    }
-};
-
-template<>
-struct hash<compute::AccelOption> {
-    using is_avalanching = void;
-    [[nodiscard]] auto operator()(const compute::AccelOption &option,
-                                  uint64_t seed = hash64_default_seed) const noexcept {
-        constexpr auto hint_shift = 0u;
-        constexpr auto allow_compaction_shift = 8u;
-        constexpr auto allow_update_shift = 9u;
-        return hash_value((static_cast<uint>(option.hint) << hint_shift) |
-                              (static_cast<uint>(option.allow_compaction) << allow_compaction_shift) |
-                              (static_cast<uint>(option.allow_update) << allow_update_shift),
-                          seed);
     }
 };
 

@@ -35,7 +35,7 @@ public:
     void reserve(size_t command_size, size_t callback_size) noexcept;
     CommandList &operator<<(luisa::unique_ptr<Command> &&cmd) noexcept;
     CommandList &append(luisa::unique_ptr<Command> &&cmd) noexcept;
-    CommandList &add_callback(luisa::move_only_function<void()> &&callback) noexcept;
+    CommandList &add_callback(luisa::function<void()> &&callback) noexcept;
     void clear() noexcept;
     [[nodiscard]] auto commands() const noexcept { return luisa::span{_commands}; }
     [[nodiscard]] auto callbacks() const noexcept { return luisa::span{_callbacks}; }
@@ -46,7 +46,6 @@ public:
 };
 
 class CommandList::Commit {
-
 private:
     CommandList _list;
 

@@ -18,22 +18,7 @@ class BinaryIO;
 }// namespace luisa
 
 namespace luisa::compute {
-
-class Context;
-
-namespace detail {
-class ContextImpl;
-}// namespace detail
-
-namespace ir {
-struct KernelModule;
-struct Type;
-template<class T>
-struct CArc;
-}// namespace ir
-
 class Type;
-struct AccelOption;
 
 class DeviceConfigExt {
 public:
@@ -58,15 +43,13 @@ class LC_RUNTIME_API DeviceInterface : public luisa::enable_shared_from_this<Dev
 protected:
     friend class Context;
     luisa::string _backend_name;
-    luisa::shared_ptr<detail::ContextImpl> _ctx_impl;
 
 public:
-    explicit DeviceInterface(Context &&ctx) noexcept;
+    explicit DeviceInterface() noexcept;
     virtual ~DeviceInterface() noexcept;
     DeviceInterface(DeviceInterface &&) = delete;
     DeviceInterface(DeviceInterface const &) = delete;
 
-    [[nodiscard]] Context context() const noexcept;
     [[nodiscard]] auto backend_name() const noexcept { return luisa::string_view{_backend_name}; }
 
     // native handle
@@ -75,7 +58,6 @@ public:
 
 public:
     [[nodiscard]] virtual BufferCreationInfo create_buffer(const Type *element, size_t elem_count) noexcept = 0;
-    [[nodiscard]] virtual BufferCreationInfo create_buffer(const ir::CArc<ir::Type> *element, size_t elem_count) noexcept = 0;
     virtual void destroy_buffer(uint64_t handle) noexcept = 0;
 
     // texture
@@ -105,7 +87,6 @@ public:
 
     // kernel
     [[nodiscard]] virtual ShaderCreationInfo create_shader(const ShaderOption &option, Function kernel) noexcept = 0;
-    [[nodiscard]] virtual ShaderCreationInfo create_shader(const ShaderOption &option, const ir::KernelModule *kernel) noexcept = 0;
     [[nodiscard]] virtual ShaderCreationInfo load_shader(luisa::string_view name, luisa::span<const Type *const> arg_types) noexcept = 0;
     virtual Usage shader_argument_usage(uint64_t handle, size_t index) noexcept = 0;
     virtual void destroy_shader(uint64_t handle) noexcept = 0;

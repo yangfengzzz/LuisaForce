@@ -9,6 +9,8 @@
 #include "core/stl/unordered_map.h"
 #include "runtime/rhi/sampler.h"
 #include "runtime/mipmap.h"
+#include "runtime/image.h"
+#include "runtime/volume.h"
 #include "runtime/rhi/resource.h"
 #include "runtime/buffer.h"
 
@@ -108,16 +110,6 @@ public:
 
     auto &emplace_on_update(size_t index, const Volume<float> &volume, Sampler sampler) noexcept {
         _emplace_tex3d_on_update(index, volume.handle(), sampler);
-        return *this;
-    }
-
-    auto &emplace_on_update(size_t index, const SparseImage<float> &texture, Sampler sampler) noexcept {
-        _emplace_tex2d_on_update(index, texture.handle(), sampler);
-        return *this;
-    }
-
-    auto &emplace_on_update(size_t index, const SparseVolume<float> &texture, Sampler sampler) noexcept {
-        _emplace_tex3d_on_update(index, texture.handle(), sampler);
         return *this;
     }
 

@@ -11,8 +11,16 @@
 #include "core/stl/functional.h"
 #include "core/stl/hash.h"
 
+#ifndef LUISA_COMPUTE_USE_DENSE_MAP
+#define LUISA_COMPUTE_USE_DENSE_MAP 1
+#endif
+
+#if LUISA_COMPUTE_USE_DENSE_MAP
+#include "core/stl/unordered_dense.h"
+#else
 #include <unordered_map>
 #include <unordered_set>
+#endif
 
 namespace luisa {
 

@@ -24,7 +24,7 @@ ShaderDispatchCmdEncoder::ShaderDispatchCmdEncoder(
     : _handle{handle}, _argument_count{arg_count} {
     if (auto arg_size_bytes = arg_count * sizeof(Argument)) {
         _argument_buffer.reserve(arg_size_bytes + uniform_size);
-        _argument_buffer.resize_uninitialized(arg_size_bytes);
+        _argument_buffer.resize(arg_size_bytes);
     }
 }
 
@@ -48,7 +48,9 @@ void ShaderDispatchCmdEncoder::_encode_texture(uint64_t handle, uint32_t level) 
 
 void ShaderDispatchCmdEncoder::_encode_uniform(const void *data, size_t size) noexcept {
     auto offset = _argument_buffer.size();
-    _argument_buffer.push_back_uninitialized(size);
+    for (int i = 0; i < size; ++i) {
+        _argument_buffer.push_back();
+    }
     std::memcpy(_argument_buffer.data() + offset, data, size);
     auto &&arg = _create_argument();
     arg.tag = Argument::Tag::UNIFORM;
@@ -118,40 +120,6 @@ luisa::unique_ptr<ShaderDispatchCommand> ComputeDispatchCmdEncoder::build() && n
     return luisa::make_unique<ShaderDispatchCommand>(
         _handle, std::move(_argument_buffer),
         _argument_count, _dispatch_size);
-}
-
-void RasterDispatchCmdEncoder::set_raster_state(const RasterState &raster_state) {
-    _raster_state = raster_state;
-}
-
-luisa::unique_ptr<DrawRasterSceneCommand> RasterDispatchCmdEncoder::build() && noexcept {
-    if (_argument_idx != _argument_count) [[unlikely]] {
-        LUISA_ERROR("Required argument count {}. "
-                    "Actual argument count {}.",
-                    _argument_count, _argument_idx);
-    }
-    return luisa::make_unique<DrawRasterSceneCommand>(
-        _handle, std::move(_argument_buffer),
-        _argument_count, _rtv_texs, _rtv_count,
-        _dsv_tex, std::move(_scene), _viewport, _raster_state);
-}
-
-void RasterDispatchCmdEncoder::set_rtv_texs(luisa::span<const ShaderDispatchCommandBase::Argument::Texture> tex) noexcept {
-    LUISA_ASSERT(tex.size() <= 8, "Too many render targets: {}.", tex.size());
-    _rtv_count = tex.size();
-    memcpy(_rtv_texs.data(), tex.data(), tex.size_bytes());
-}
-
-void RasterDispatchCmdEncoder::set_dsv_tex(ShaderDispatchCommandBase::Argument::Texture tex) noexcept {
-    _dsv_tex = tex;
-}
-
-void RasterDispatchCmdEncoder::set_scene(luisa::vector<RasterMesh> &&scene) noexcept {
-    _scene = std::move(scene);
-}
-
-void RasterDispatchCmdEncoder::set_viewport(Viewport viewport) noexcept {
-    _viewport = viewport;
 }
 
 }// namespace luisa::compute

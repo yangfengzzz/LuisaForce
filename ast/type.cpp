@@ -21,18 +21,18 @@ namespace luisa::compute {
 
 namespace detail {
 
-LC_AST_API luisa::string make_array_description(luisa::string_view elem, size_t dim) noexcept {
+LC_AST_API std::string make_array_description(luisa::string_view elem, size_t dim) noexcept {
     return fmt::format("array<{},{}>", elem, dim);
 }
 
-LC_AST_API luisa::string make_struct_description(size_t alignment, std::initializer_list<luisa::string_view> members) noexcept {
+LC_AST_API std::string make_struct_description(size_t alignment, std::initializer_list<luisa::string_view> members) noexcept {
     auto desc = fmt::format("struct<{}", alignment);
     for (auto m : members) { desc.append(",").append(m); }
     desc.append(">");
     return desc;
 }
 
-LC_AST_API luisa::string make_buffer_description(luisa::string_view elem) noexcept {
+LC_AST_API std::string make_buffer_description(luisa::string_view elem) noexcept {
     return fmt::format("buffer<{}>", elem);
 }
 

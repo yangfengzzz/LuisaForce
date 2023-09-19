@@ -32,7 +32,7 @@ CommandList &CommandList::append(luisa::unique_ptr<Command> &&cmd) noexcept {
     return *this;
 }
 
-CommandList &CommandList::add_callback(luisa::move_only_function<void()> &&callback) noexcept {
+CommandList &CommandList::add_callback(luisa::function<void()> &&callback) noexcept {
     if (callback) {
         if (_callbacks.empty()) [[likely]] { _callbacks.reserve(2); }
         _callbacks.emplace_back(std::move(callback));

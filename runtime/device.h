@@ -19,15 +19,9 @@ class Context;
 class Event;
 class TimelineEvent;
 class Stream;
-class Mesh;
-class MeshFormat;
-class ProceduralPrimitive;
-class Accel;
 class Swapchain;
 class BindlessArray;
 class IndirectDispatchBuffer;
-class SparseBufferHeap;
-class SparseTextureHeap;
 class ByteBuffer;
 
 template<typename T>
@@ -35,9 +29,6 @@ class SOA;
 
 template<typename T>
 class Buffer;
-
-template<typename T>
-class SparseBuffer;
 
 template<typename T>
 class Image;
@@ -55,12 +46,6 @@ template<size_t N, typename... Args>
 class Kernel;
 
 template<typename... Args>
-class RasterShader;
-
-template<typename VertCallable, typename PixelCallable>
-class RasterKernel;
-
-template<typename... Args>
 struct Kernel1D;
 
 template<typename... Args>
@@ -68,14 +53,6 @@ struct Kernel2D;
 
 template<typename... Args>
 struct Kernel3D;
-
-template<typename T>
-class SparseImage;
-
-template<typename T>
-class SparseVolume;
-
-class DepthBuffer;
 
 namespace detail {
 
@@ -227,23 +204,6 @@ public:
             .name = luisa::string{name}};
         static_cast<void>(this->compile<N>(std::forward<Kernel>(kernel), option));
     }
-
-    template<typename V, typename P>
-    [[nodiscard]] typename RasterKernel<V, P>::RasterShaderType compile(
-        const RasterKernel<V, P> &kernel,
-        const MeshFormat &mesh_format,
-        const ShaderOption &option = {}) noexcept;
-
-    template<typename V, typename P>
-    void compile_to(
-        const RasterKernel<V, P> &kernel,
-        const MeshFormat &mesh_format,
-        luisa::string_view serialization_path,
-        const ShaderOption &option = {}) noexcept;
-
-    template<typename... Args>
-    RasterShader<Args...> load_raster_shader(
-        luisa::string_view shader_name) noexcept;
 
     template<size_t N, typename... Args>
     [[nodiscard]] auto load_shader(luisa::string_view shader_name) noexcept {

@@ -28,9 +28,6 @@ template<typename T>
 class ImageView;
 
 template<typename T>
-class SparseImage;
-
-template<typename T>
 class BufferView;
 
 class BindlessArray;
@@ -151,7 +148,6 @@ private:
 
 private:
     friend class Image<T>;
-    friend class SparseImage<T>;
     friend class detail::MipmapView;
     friend class DepthBuffer;
 

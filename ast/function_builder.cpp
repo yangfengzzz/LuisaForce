@@ -165,7 +165,6 @@ const RefExpr *FunctionBuilder::block_id() noexcept { return _builtin(Type::of<u
 const RefExpr *FunctionBuilder::dispatch_id() noexcept { return _builtin(Type::of<uint3>(), Variable::Tag::DISPATCH_ID); }
 const RefExpr *FunctionBuilder::dispatch_size() noexcept { return _builtin(Type::of<uint3>(), Variable::Tag::DISPATCH_SIZE); }
 const RefExpr *FunctionBuilder::kernel_id() noexcept { return _builtin(Type::of<uint3>(), Variable::Tag::KERNEL_ID); }
-const RefExpr *FunctionBuilder::object_id() noexcept { return _builtin(Type::of<uint>(), Variable::Tag::OBJECT_ID); }
 const RefExpr *FunctionBuilder::warp_lane_count() noexcept { return _builtin(Type::of<uint>(), Variable::Tag::WARP_LANE_COUNT); }
 const RefExpr *FunctionBuilder::warp_lane_id() noexcept { return _builtin(Type::of<uint>(), Variable::Tag::WARP_LANE_ID); }
 
@@ -308,10 +307,6 @@ const ConstantExpr *FunctionBuilder::constant(const ConstantData &c) noexcept {
         _captured_constants.emplace_back(c);
     }
     return _create_expression<ConstantExpr>(c);
-}
-
-const Statement *FunctionBuilder::pop_stmt() noexcept {
-    return _scope_stack.back()->pop();
 }
 
 void FunctionBuilder::push_scope(ScopeStmt *s) noexcept {
@@ -604,10 +599,6 @@ void FunctionBuilder::set_block_size(uint3 size) noexcept {
             "Ignoring the `set_block_size({}, {}, {})` call.",
             size.x, size.y, size.z);
     }
-}
-
-bool FunctionBuilder::requires_raytracing() const noexcept {
-    return _propagated_builtin_callables.uses_raytracing();
 }
 
 bool FunctionBuilder::requires_atomic() const noexcept {

@@ -80,7 +80,7 @@ Stream &Stream::Delegate::operator<<(CommandList::Commit &&commit) && noexcept {
     return *_stream << std::move(commit);
 }
 
-Stream::Delegate Stream::Delegate::operator<<(luisa::move_only_function<void()> &&f) && noexcept {
+Stream::Delegate Stream::Delegate::operator<<(luisa::function<void()> &&f) && noexcept {
     _command_list.add_callback(std::move(f));
     return std::move(*this);
 }
@@ -95,7 +95,7 @@ Stream &Stream::Delegate::operator<<(Stream::Commit &&) && noexcept {
     return *_stream;
 }
 
-Stream::Delegate Stream::operator<<(luisa::move_only_function<void()> &&f) noexcept {
+Stream::Delegate Stream::operator<<(luisa::function<void()> &&f) noexcept {
     // No Delegate{this}<< here, may boom GCC
     Delegate delegate{this};
     return std::move(delegate) << std::move(f);

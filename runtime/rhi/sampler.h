@@ -12,7 +12,6 @@
 namespace luisa::compute {
 
 class Sampler {
-
 public:
     enum struct Filter : uint8_t {
         POINT,

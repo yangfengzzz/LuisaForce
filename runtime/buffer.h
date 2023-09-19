@@ -63,9 +63,6 @@ template<typename T>
 using buffer_element_t = typename buffer_element<T>::type;
 
 template<typename T>
-class SparseBuffer;
-
-template<typename T>
 class BufferView;
 
 // check if this data type is legitimate
@@ -169,7 +166,6 @@ private:
 
 private:
     friend class Buffer<T>;
-    friend class SparseBuffer<T>;
 
     template<typename U>
     friend class BufferView;

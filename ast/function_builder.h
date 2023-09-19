@@ -207,8 +207,6 @@ public:
     [[nodiscard]] auto block_size() const noexcept { return _block_size; }
     /// Return hash.
     [[nodiscard]] uint64_t hash() const noexcept;
-    /// Return if is raytracing.
-    [[nodiscard]] bool requires_raytracing() const noexcept;
     /// Return if uses atomic operations
     [[nodiscard]] bool requires_atomic() const noexcept;
     /// Return if uses atomic floats.
@@ -227,12 +225,6 @@ public:
         return _define(Function::Tag::CALLABLE, std::forward<Def>(def));
     }
 
-    /// Define a callable function with given definition
-    template<typename Def>
-    static auto define_raster_stage(Def &&def) {
-        return _define(Function::Tag::RASTER_STAGE, std::forward<Def>(def));
-    }
-
     // config
     /// Set block size
     void set_block_size(uint3 size) noexcept;
@@ -248,8 +240,6 @@ public:
     [[nodiscard]] const RefExpr *dispatch_size() noexcept;
     /// Return kernel id (for indirect kernels only).
     [[nodiscard]] const RefExpr *kernel_id() noexcept;
-    /// Return object id (for rasterization only).
-    [[nodiscard]] const RefExpr *object_id() noexcept;
     /// Return warp lane count
     [[nodiscard]] const RefExpr *warp_lane_count() noexcept;
     /// Return warp lane count
