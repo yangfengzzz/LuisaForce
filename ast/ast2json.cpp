@@ -778,11 +778,6 @@ private:
                                     {"tag", "BINDLESS_ARRAY"},
                                     {"handle", fmt::format("{}", b.handle)},
                                 };
-                            } else if constexpr (std::is_same_v<T, Function::AccelBinding>) {
-                                return JSON::Object{
-                                    {"tag", "ACCEL"},
-                                    {"handle", fmt::format("{}", b.handle)},
-                                };
                             } else {
                                 LUISA_ERROR_WITH_LOCATION("Invalid bound argument type.");
                             }
@@ -912,8 +907,6 @@ private:
             case Statement::Tag::ASSIGN: _convert_assign_stmt(j, static_cast<const AssignStmt *>(stmt)); break;
             case Statement::Tag::FOR: _convert_for_stmt(j, static_cast<const ForStmt *>(stmt)); break;
             case Statement::Tag::COMMENT: _convert_comment_stmt(j, static_cast<const CommentStmt *>(stmt)); break;
-            case Statement::Tag::RAY_QUERY: _convert_ray_query_stmt(j, static_cast<const RayQueryStmt *>(stmt)); break;
-            case Statement::Tag::AUTO_DIFF: _convert_autodiff_stmt(j, static_cast<const AutoDiffStmt *>(stmt)); break;
         }
         return j;
     }
@@ -981,14 +974,6 @@ private:
     }
     void _convert_comment_stmt(JSON &j, const CommentStmt *stmt) noexcept {
         j["comment"] = stmt->comment();
-    }
-    void _convert_ray_query_stmt(JSON &j, const RayQueryStmt *stmt) noexcept {
-        j["query"] = _convert_expr(stmt->query());
-        j["on_triangle_candidate"] = _convert_stmt(stmt->on_triangle_candidate());
-        j["on_procedural_candidate"] = _convert_stmt(stmt->on_procedural_candidate());
-    }
-    void _convert_autodiff_stmt(JSON &j, const AutoDiffStmt *stmt) noexcept {
-        j["body"] = _convert_stmt(stmt->body());
     }
 
 public:

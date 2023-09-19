@@ -28,7 +28,6 @@ protected:
     void _encode_texture(uint64_t handle, uint32_t level) noexcept;
     void _encode_uniform(const void *data, size_t size) noexcept;
     void _encode_bindless_array(uint64_t handle) noexcept;
-    void _encode_accel(uint64_t handle) noexcept;
     [[nodiscard]] std::byte *_make_space(size_t size) noexcept;
     [[nodiscard]] Argument &_create_argument() noexcept;
 
@@ -54,7 +53,6 @@ public:
     void encode_texture(uint64_t handle, uint32_t level) noexcept;
     void encode_uniform(const void *data, size_t size) noexcept;
     void encode_bindless_array(uint64_t handle) noexcept;
-    void encode_accel(uint64_t handle) noexcept;
     luisa::unique_ptr<ShaderDispatchCommand> build() && noexcept;
 };
 

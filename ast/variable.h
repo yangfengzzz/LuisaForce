@@ -36,7 +36,6 @@ public:
         BUFFER,
         TEXTURE,
         BINDLESS_ARRAY,
-        ACCEL,
 
         // builtins
         THREAD_ID,
@@ -74,8 +73,7 @@ public:
     [[nodiscard]] auto is_resource() const noexcept {
         return _tag == Tag::BUFFER ||
                _tag == Tag::TEXTURE ||
-               _tag == Tag::BINDLESS_ARRAY ||
-               _tag == Tag::ACCEL;
+               _tag == Tag::BINDLESS_ARRAY;
     }
     [[nodiscard]] auto is_builtin() const noexcept {
         return _tag == Tag::THREAD_ID ||

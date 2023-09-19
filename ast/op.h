@@ -262,39 +262,6 @@ enum struct CallOp : uint32_t {
     PACK,  // (T) -> array<uint, ceil(sizeof(T)/4))
     UNPACK,// (array<uint, ceil(sizeof(T)/4)) -> T
 
-    // autodiff ops
-    REQUIRES_GRADIENT,  // (expr) -> void
-    GRADIENT,           // (expr) -> expr
-    GRADIENT_MARKER,    // (ref, expr) -> void
-    ACCUMULATE_GRADIENT,// (ref, expr) -> void
-    BACKWARD,           // (expr) -> void
-    DETACH,             // (expr) -> expr
-
-    // ray tracing
-    RAY_TRACING_INSTANCE_TRANSFORM,     // (Accel, uint)
-    RAY_TRACING_INSTANCE_USER_ID,       // (Accel, uint)
-    RAY_TRACING_SET_INSTANCE_TRANSFORM, // (Accel, uint, float4x4)
-    RAY_TRACING_SET_INSTANCE_VISIBILITY,// (Accel, uint, uint)
-    RAY_TRACING_SET_INSTANCE_OPACITY,   // (Accel, uint, bool)
-    RAY_TRACING_SET_INSTANCE_USER_ID,   // (Accel, uint, uint)
-
-    RAY_TRACING_TRACE_CLOSEST,// (Accel, ray, mask: uint): TriangleHit
-    RAY_TRACING_TRACE_ANY,    // (Accel, ray, mask: uint): bool
-    RAY_TRACING_QUERY_ALL,    // (Accel, ray, mask: uint): RayQuery
-    RAY_TRACING_QUERY_ANY,    // (Accel, ray, mask: uint): RayQuery
-
-    // ray query
-    RAY_QUERY_WORLD_SPACE_RAY,         // (RayQuery): Ray
-    RAY_QUERY_PROCEDURAL_CANDIDATE_HIT,// (RayQuery): ProceduralHit
-    RAY_QUERY_TRIANGLE_CANDIDATE_HIT,  // (RayQuery): TriangleHit
-    RAY_QUERY_COMMITTED_HIT,           // (RayQuery): CommittedHit
-    RAY_QUERY_COMMIT_TRIANGLE,         // (RayQuery): void
-    RAY_QUERY_COMMIT_PROCEDURAL,       // (RayQuery, float): void
-    RAY_QUERY_TERMINATE,               // (RayQuery): void
-
-    // rasterization
-    RASTER_DISCARD,// (): void
-
     // Derivative Operations for 2x2 quad
     // partial derivative
     DDX,// (arg: float vector): float vector
@@ -334,11 +301,6 @@ static constexpr size_t call_op_count = to_underlying(CallOp::SHADER_EXECUTION_R
 [[nodiscard]] constexpr auto is_atomic_operation(CallOp op) noexcept {
     auto op_value = luisa::to_underlying(op);
     return op_value >= luisa::to_underlying(CallOp::ATOMIC_EXCHANGE) && op_value <= luisa::to_underlying(CallOp::ATOMIC_FETCH_MAX);
-}
-
-[[nodiscard]] constexpr auto is_autodiff_operation(CallOp op) noexcept {
-    auto op_value = luisa::to_underlying(op);
-    return op_value >= luisa::to_underlying(CallOp::REQUIRES_GRADIENT) && op_value <= luisa::to_underlying(CallOp::DETACH);
 }
 
 [[nodiscard]] constexpr auto is_vector_maker(CallOp op) noexcept {
@@ -392,16 +354,6 @@ public:
     void propagate(CallOpSet other) noexcept { _bits |= other._bits; }
     [[nodiscard]] auto begin() const noexcept { return Iterator{*this}; }
     [[nodiscard]] auto end() const noexcept { return luisa::default_sentinel; }
-    [[nodiscard]] auto uses_raytracing() const noexcept {
-        return test(CallOp::RAY_TRACING_TRACE_CLOSEST) ||
-               test(CallOp::RAY_TRACING_TRACE_ANY) ||
-               test(CallOp::RAY_TRACING_QUERY_ALL) ||
-               test(CallOp::RAY_TRACING_QUERY_ANY);
-    }
-    [[nodiscard]] auto uses_ray_query() const noexcept {
-        return test(CallOp::RAY_TRACING_QUERY_ALL) ||
-               test(CallOp::RAY_TRACING_QUERY_ANY);
-    }
     [[nodiscard]] auto uses_atomic() const noexcept {
         return test(CallOp::ATOMIC_FETCH_ADD) ||
                test(CallOp::ATOMIC_FETCH_SUB) ||
@@ -412,14 +364,6 @@ public:
                test(CallOp::ATOMIC_EXCHANGE) ||
                test(CallOp::ATOMIC_EXCHANGE) ||
                test(CallOp::ATOMIC_COMPARE_EXCHANGE);
-    }
-    [[nodiscard]] auto uses_autodiff() const noexcept {
-        return test(CallOp::REQUIRES_GRADIENT) ||
-               test(CallOp::GRADIENT) ||
-               test(CallOp::GRADIENT_MARKER) ||
-               test(CallOp::ACCUMULATE_GRADIENT) ||
-               test(CallOp::BACKWARD) ||
-               test(CallOp::DETACH);
     }
 };
 

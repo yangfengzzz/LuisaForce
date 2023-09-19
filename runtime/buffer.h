@@ -12,10 +12,6 @@
 #include "runtime/rhi/resource.h"
 #include "runtime/rhi/device_interface.h"
 
-namespace lc::validation {
-class Stream;
-}// namespace lc::validation
-
 namespace luisa::compute {
 
 namespace detail {
@@ -161,7 +157,6 @@ public:
 // BufferView represents a reference to a Buffer. Use a BufferView that referenced to a destructed Buffer is an undefined behavior.
 template<typename T>
 class BufferView {
-    friend class lc::validation::Stream;
     static_assert(is_valid_buffer_element_v<T>);
 
 private:

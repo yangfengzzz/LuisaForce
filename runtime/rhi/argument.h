@@ -11,7 +11,6 @@
 namespace luisa::compute {
 
 struct Argument {
-
     enum struct Tag {
         BUFFER,
         TEXTURE,
@@ -50,7 +49,6 @@ struct Argument {
         Texture texture;
         Uniform uniform;
         BindlessArray bindless_array;
-        Accel accel;
     };
 };
 

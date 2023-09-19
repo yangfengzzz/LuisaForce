@@ -145,23 +145,7 @@ public:
         bool allow_hdr = true, bool vsync = true, uint back_buffer_count = 1) noexcept;
     // see definition in runtime/dispatch_buffer.cpp
     [[nodiscard]] IndirectDispatchBuffer create_indirect_dispatch_buffer(size_t capacity) noexcept;
-    // see definition in rtx/mesh.h
-    template<typename VBuffer, typename TBuffer>
-    [[nodiscard]] Mesh create_mesh(VBuffer &&vertices,
-                                   TBuffer &&triangles,
-                                   const AccelOption &option = {}) noexcept;
 
-    template<typename VBuffer, typename TBuffer>
-    [[nodiscard]] Mesh create_mesh(VBuffer &&vertices,
-                                   size_t vertex_stride,
-                                   TBuffer &&triangles,
-                                   const AccelOption &option = {}) noexcept;
-    // see definition in rtx/procedural_primitive.h
-    template<typename AABBBuffer>
-    [[nodiscard]] ProceduralPrimitive create_procedural_primitive(AABBBuffer &&aabb_buffer,
-                                                                  const AccelOption &option = {}) noexcept;
-    // see definition in rtx/accel.cpp
-    [[nodiscard]] Accel create_accel(const AccelOption &option = {}) noexcept;
     // see definition in runtime/bindless_array.cpp
     [[nodiscard]] BindlessArray create_bindless_array(size_t slots = 65536u) noexcept;
 
@@ -176,18 +160,6 @@ public:
     }
 
     template<typename T>
-    [[nodiscard]] auto create_sparse_image(PixelStorage pixel, uint width, uint height, uint mip_levels = 1u, bool simultaneous_access = true) noexcept {
-        return _create<SparseImage<T>>(pixel, make_uint2(width, height), mip_levels, simultaneous_access);
-    }
-
-    template<typename T>
-    [[nodiscard]] auto create_sparse_image(PixelStorage pixel, uint2 size, uint mip_levels = 1u, bool simultaneous_access = true) noexcept {
-        return _create<SparseImage<T>>(pixel, size, mip_levels, simultaneous_access);
-    }
-
-    [[nodiscard]] DepthBuffer create_depth_buffer(DepthFormat depth_format, uint2 size) noexcept;
-
-    template<typename T>
     [[nodiscard]] auto create_volume(PixelStorage pixel, uint width, uint height, uint depth, uint mip_levels = 1u, bool simultaneous_access = false) noexcept {
         return _create<Volume<T>>(pixel, make_uint3(width, height, depth), mip_levels, simultaneous_access);
     }
@@ -196,20 +168,6 @@ public:
     [[nodiscard]] auto create_volume(PixelStorage pixel, uint3 size, uint mip_levels = 1u, bool simultaneous_access = false) noexcept {
         return _create<Volume<T>>(pixel, size, mip_levels, simultaneous_access);
     }
-
-    template<typename T>
-    [[nodiscard]] auto create_sparse_volume(PixelStorage pixel, uint width, uint height, uint depth, uint mip_levels = 1u, bool simultaneous_access = true) noexcept {
-        return _create<SparseVolume<T>>(pixel, make_uint3(width, height, depth), mip_levels, simultaneous_access);
-    }
-
-    template<typename T>
-    [[nodiscard]] auto create_sparse_volume(PixelStorage pixel, uint3 size, uint mip_levels = 1u, bool simultaneous_access = true) noexcept {
-        return _create<SparseVolume<T>>(pixel, size, mip_levels, simultaneous_access);
-    }
-
-    [[nodiscard]] SparseBufferHeap allocate_sparse_buffer_heap(size_t byte_size) noexcept;
-
-    [[nodiscard]] SparseTextureHeap allocate_sparse_texture_heap(size_t byte_size, bool is_compressed_type) noexcept;
 
     [[nodiscard]] ByteBuffer create_byte_buffer(size_t byte_size) noexcept;
 
@@ -222,12 +180,6 @@ public:
     template<typename T>
     [[nodiscard]] auto create_soa(size_t size) noexcept {
         return SOA<T>{*this, size};
-    }
-
-    template<typename T>
-        requires(!is_custom_struct_v<T>)//backend-specific type not allowed
-    [[nodiscard]] auto create_sparse_buffer(size_t size) noexcept {
-        return _create<SparseBuffer<T>>(size);
     }
 
     template<size_t N, typename... Args>

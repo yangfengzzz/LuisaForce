@@ -19,10 +19,6 @@
 #include "core/stl/unordered_map.h"
 #include "core/stl/optional.h"
 
-namespace lc::validation {
-class Device;
-}// namespace lc::validation
-
 namespace luisa::compute {
 class Statement;
 class Expression;
@@ -37,9 +33,7 @@ namespace luisa::compute::detail {
  * Build kernel or callable function
  */
 class LC_AST_API FunctionBuilder : public luisa::enable_shared_from_this<FunctionBuilder> {
-
     friend class luisa::compute::CallableLibrary;
-    friend class lc::validation::Device;
 
 public:
     /**
@@ -219,8 +213,6 @@ public:
     [[nodiscard]] bool requires_atomic() const noexcept;
     /// Return if uses atomic floats.
     [[nodiscard]] bool requires_atomic_float() const noexcept;
-    /// Return if uses automatic differentiation.
-    [[nodiscard]] bool requires_autodiff() const noexcept;
 
     // build primitives
     /// Define a kernel function with given definition
@@ -277,8 +269,6 @@ public:
     [[nodiscard]] const RefExpr *texture_binding(const Type *type, uint64_t handle, uint32_t level) noexcept;
     /// Add binding of bidnless array. Will check for already bound arguments.
     [[nodiscard]] const RefExpr *bindless_array_binding(uint64_t handle) noexcept;
-    /// Add binding of acceleration structure. Will check for already bound arguments.
-    [[nodiscard]] const RefExpr *accel_binding(uint64_t handle) noexcept;
 
     // explicit arguments
     /// Add argument of type
@@ -291,8 +281,6 @@ public:
     [[nodiscard]] const RefExpr *texture(const Type *type) noexcept;
     /// Add bindless array argument
     [[nodiscard]] const RefExpr *bindless_array() noexcept;
-    /// Add accleration structure argument
-    [[nodiscard]] const RefExpr *accel() noexcept;
 
     // expressions
     /// Create literal expression
@@ -361,13 +349,6 @@ public:
     [[nodiscard]] SwitchDefaultStmt *default_() noexcept;
     /// Add for statement
     [[nodiscard]] ForStmt *for_(const Expression *var, const Expression *condition, const Expression *update) noexcept;
-    /// Add ray query statement
-    [[nodiscard]] RayQueryStmt *ray_query_(const RefExpr *query) noexcept;
-    /// Add auto diff statement
-    [[nodiscard]] AutoDiffStmt *autodiff_() noexcept;
-
-    // For autodiff use only
-    [[nodiscard]] const Statement *pop_stmt() noexcept;
 
     /// Run body function in given scope s
     template<typename Body>

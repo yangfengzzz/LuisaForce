@@ -141,7 +141,6 @@ const Type *TypeRegistry::custom_type(luisa::string_view name) noexcept {
                      !name.starts_with("struct<") &&
                      !name.starts_with("buffer<") &&
                      !name.starts_with("texture<") &&
-                     name != "accel" &&
                      name != "bindless_array" &&
                      !isdigit(name.front() /* already checked not empty */),
                  "Invalid custom type name: {}", name);
@@ -382,10 +381,6 @@ const TypeImpl *TypeRegistry::_decode(luisa::string_view desc) noexcept {
         info->tag = Type::Tag::BINDLESS_ARRAY;
         info->size = 8u;
         info->alignment = 8u;
-    } else if (type_identifier == "accel"sv) {
-        info->tag = Type::Tag::ACCEL;
-        info->size = 8u;
-        info->alignment = 8u;
     } else [[unlikely]] {
         LUISA_ERROR_WITH_LOCATION(
             "Unknown type identifier: {}.",
@@ -530,7 +525,6 @@ bool Type::is_structure() const noexcept { return tag() == Tag::STRUCTURE; }
 bool Type::is_buffer() const noexcept { return tag() == Tag::BUFFER; }
 bool Type::is_texture() const noexcept { return tag() == Tag::TEXTURE; }
 bool Type::is_bindless_array() const noexcept { return tag() == Tag::BINDLESS_ARRAY; }
-bool Type::is_accel() const noexcept { return tag() == Tag::ACCEL; }
 bool Type::is_custom() const noexcept { return tag() == Tag::CUSTOM; }
 
 const Type *Type::array(const Type *elem, size_t n) noexcept {
@@ -623,7 +617,7 @@ bool Type::is_int64_vector() const noexcept { return is_vector() && element()->i
 bool Type::is_uint64_vector() const noexcept { return is_vector() && element()->is_uint64(); }
 
 bool Type::is_resource() const noexcept {
-    return is_buffer() || is_texture() || is_bindless_array() || is_accel();
+    return is_buffer() || is_texture() || is_bindless_array();
 }
 
 }// namespace luisa::compute

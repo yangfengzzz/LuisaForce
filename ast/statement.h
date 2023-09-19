@@ -36,9 +36,7 @@ public:
         SWITCH_DEFAULT,
         ASSIGN,
         FOR,
-        COMMENT,
-        RAY_QUERY,
-        AUTO_DIFF
+        COMMENT
     };
 
 private:
@@ -75,8 +73,6 @@ class SwitchDefaultStmt;
 class AssignStmt;
 class ForStmt;
 class CommentStmt;
-class RayQueryStmt;
-class AutoDiffStmt;
 
 struct LC_AST_API StmtVisitor {
     virtual void visit(const BreakStmt *) = 0;
@@ -92,8 +88,6 @@ struct LC_AST_API StmtVisitor {
     virtual void visit(const AssignStmt *) = 0;
     virtual void visit(const ForStmt *) = 0;
     virtual void visit(const CommentStmt *) = 0;
-    virtual void visit(const RayQueryStmt *) = 0;
-    virtual void visit(const AutoDiffStmt *stmt);
     virtual ~StmtVisitor() noexcept = default;
 };
 
@@ -405,95 +399,6 @@ public:
     LUISA_STATEMENT_COMMON()
 };
 
-// Example:
-// auto q = accel->trace_all(ray, mask)
-//   .on_triangle_candidate([](auto &candidate) {
-//     << triangle candidate handling >>
-//   })
-//   .on_procedural_candidate([](auto &candidate) {
-//     << procedural candidate handling >>
-//   })
-//   .query();
-// auto hit = q.committed_hit();
-//
-// On inline RT, translates to
-// auto q = lc_accel_trace_all(accel, ray, mask);
-// while (lc_ray_query_next(q)) {
-//   if (lc_ray_query_is_triangle(q)) {
-//     auto candidate = lc_ray_query_triangle_candidate(q);
-//     << triangle candidate handling >>
-//   } else {
-//     auto candidate = lc_ray_query_procedural_candidate(q);
-//     << procedural candidate handling >>
-//   }
-// }
-// auto hit = lc_ray_query_committed_hit(q);
-//
-// On RT-pipelines, translates to
-// in caller:
-// auto q = lc_accel_trace_all(accel, ray, mask);
-// auto hit = lc_ray_query_committed_hit(q);
-//
-// anyhit shader for triangle:
-// __global__ void__ __anyhit__ray_query() {
-//   auto committed = false;
-//   auto candidate = lc_ray_query_triangle_candidate();
-//   << triangle candidate handling >>
-//   if (!committed) { lc_ignore_intersection(); }
-// }
-//
-// intersection shader for procedural geometry:
-// __global__ void __intersection__ray_query() {
-//   auto candidate = lc_ray_query_procedural_candidate();
-//   << procedural candidate handling >>
-// }
-//
-// closest hit shader
-// __global__ void __closesthit__ray_query() {
-//   ...
-// }
-
-class RayQueryStmt : public Statement {
-    friend class CallableLibrary;
-
-private:
-    const RefExpr *_query;
-    ScopeStmt _on_triangle_candidate;
-    ScopeStmt _on_procedural_candidate;
-
-private:
-    [[nodiscard]] uint64_t _compute_hash() const noexcept override;
-    RayQueryStmt() noexcept = default;
-
-public:
-    explicit RayQueryStmt(const RefExpr *query) noexcept
-        : Statement{Tag::RAY_QUERY}, _query{query} {
-        _query->mark(Usage::READ_WRITE);
-    }
-    [[nodiscard]] auto query() const noexcept { return _query; }
-    [[nodiscard]] auto on_triangle_candidate() noexcept { return &_on_triangle_candidate; }
-    [[nodiscard]] auto on_triangle_candidate() const noexcept { return &_on_triangle_candidate; }
-    [[nodiscard]] auto on_procedural_candidate() noexcept { return &_on_procedural_candidate; }
-    [[nodiscard]] auto on_procedural_candidate() const noexcept { return &_on_procedural_candidate; }
-    LUISA_STATEMENT_COMMON()
-};
-
-class AutoDiffStmt : public Statement {
-    friend class CallableLibrary;
-
-private:
-    ScopeStmt _body;
-
-private:
-    [[nodiscard]] uint64_t _compute_hash() const noexcept override;
-
-public:
-    explicit AutoDiffStmt() noexcept : Statement{Tag::AUTO_DIFF} {}
-    [[nodiscard]] auto body() noexcept { return &_body; }
-    [[nodiscard]] auto body() const noexcept { return &_body; }
-    LUISA_STATEMENT_COMMON()
-};
-
 #undef LUISA_STATEMENT_COMMON
 
 // helper function for easy traversal over the ASTs
@@ -586,21 +491,6 @@ void traverse_expressions(
             break;
         }
         case Statement::Tag::COMMENT: break;
-        case Statement::Tag::RAY_QUERY: {
-            auto rq_stmt = static_cast<const RayQueryStmt *>(stmt);
-            do_visit(rq_stmt->query());
-            traverse_expressions<recurse_subexpr>(
-                rq_stmt->on_triangle_candidate(), visit, enter_stmt, exit_stmt);
-            traverse_expressions<recurse_subexpr>(
-                rq_stmt->on_procedural_candidate(), visit, enter_stmt, exit_stmt);
-            break;
-        }
-        case Statement::Tag::AUTO_DIFF: {
-            auto ad_stmt = static_cast<const AutoDiffStmt *>(stmt);
-            traverse_expressions<recurse_subexpr>(
-                ad_stmt->body(), visit, enter_stmt, exit_stmt);
-            break;
-        }
     }
     exit_stmt(stmt);
 }

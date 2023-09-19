@@ -470,26 +470,7 @@ template<>
 void CallableLibrary::deser_ptr(CommentStmt *obj, std::byte const *&ptr, DeserPackage &pack) noexcept {
     obj->_comment = deser_value<luisa::string>(ptr, pack);
 }
-template<>
-void CallableLibrary::ser_value(AutoDiffStmt const &t, luisa::vector<std::byte> &vec) noexcept {
-    ser_value<Statement>(t._body, vec);
-}
-template<>
-void CallableLibrary::deser_ptr(AutoDiffStmt *obj, std::byte const *&ptr, DeserPackage &pack) noexcept {
-    deser_ptr<Statement *>(&obj->_body, ptr, pack);
-}
-template<>
-void CallableLibrary::ser_value(RayQueryStmt const &t, luisa::vector<std::byte> &vec) noexcept {
-    ser_value(*static_cast<Expression const *>(t._query), vec);
-    ser_value<Statement>(t._on_triangle_candidate, vec);
-    ser_value<Statement>(t._on_procedural_candidate, vec);
-}
-template<>
-void CallableLibrary::deser_ptr(RayQueryStmt *obj, std::byte const *&ptr, DeserPackage &pack) noexcept {
-    obj->_query = static_cast<RefExpr const *>(deser_value<Expression const *>(ptr, pack));
-    deser_ptr<Statement *>(&obj->_on_triangle_candidate, ptr, pack);
-    deser_ptr<Statement *>(&obj->_on_procedural_candidate, ptr, pack);
-}
+
 template<>
 void CallableLibrary::ser_value(AssignStmt const &t, luisa::vector<std::byte> &vec) noexcept {
     ser_value(*t._lhs, vec);
@@ -540,12 +521,6 @@ void CallableLibrary::ser_value(Statement const &t, luisa::vector<std::byte> &ve
         case Statement::Tag::COMMENT:
             ser_value(*static_cast<CommentStmt const *>(&t), vec);
             break;
-        case Statement::Tag::RAY_QUERY:
-            ser_value(*static_cast<RayQueryStmt const *>(&t), vec);
-            break;
-        case Statement::Tag::AUTO_DIFF:
-            ser_value(*static_cast<AutoDiffStmt const *>(&t), vec);
-            break;
         default:
             break;
     }
@@ -594,10 +569,6 @@ Statement *CallableLibrary::deser_value(std::byte const *&ptr, DeserPackage &pac
             return create_stmt.template operator()<ForStmt>();
         case Statement::Tag::COMMENT:
             return create_stmt.template operator()<CommentStmt>();
-        case Statement::Tag::RAY_QUERY:
-            return create_stmt.template operator()<RayQueryStmt>();
-        case Statement::Tag::AUTO_DIFF:
-            return create_stmt.template operator()<AutoDiffStmt>();
         default:
             return nullptr;
     }
@@ -653,12 +624,6 @@ void CallableLibrary::deser_ptr(Statement *obj, std::byte const *&ptr, DeserPack
             break;
         case Statement::Tag::COMMENT:
             create_stmt.template operator()<CommentStmt>();
-            break;
-        case Statement::Tag::RAY_QUERY:
-            create_stmt.template operator()<RayQueryStmt>();
-            break;
-        case Statement::Tag::AUTO_DIFF:
-            create_stmt.template operator()<AutoDiffStmt>();
             break;
     }
 }

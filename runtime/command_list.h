@@ -11,21 +11,13 @@
 #include "core/stl/functional.h"
 #include "runtime/rhi/command.h"
 
-#ifdef LUISA_ENABLE_API
-#include "api/common.h>
-#endif
-namespace lc::validation {
-class Device;
-}// namespace lc::validation
 namespace luisa::compute {
 
 class LC_RUNTIME_API CommandList : concepts::Noncopyable {
-    friend class lc::validation::Device;
-
 public:
     class Commit;
     using CommandContainer = luisa::vector<luisa::unique_ptr<Command>>;
-    using CallbackContainer = luisa::vector<luisa::move_only_function<void()>>;
+    using CallbackContainer = luisa::vector<luisa::function<void()>>;
 
 private:
     CommandContainer _commands;

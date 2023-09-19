@@ -118,44 +118,10 @@ public:
     virtual bool is_event_completed(uint64_t handle, uint64_t fence_value) const noexcept = 0;
     virtual void synchronize_event(uint64_t handle, uint64_t fence_value) noexcept = 0;
 
-    // accel
-    [[nodiscard]] virtual ResourceCreationInfo create_mesh(
-        const AccelOption &option) noexcept = 0;
-    virtual void destroy_mesh(uint64_t handle) noexcept = 0;
-
-    [[nodiscard]] virtual ResourceCreationInfo create_procedural_primitive(
-        const AccelOption &option) noexcept = 0;
-    virtual void destroy_procedural_primitive(uint64_t handle) noexcept = 0;
-
-    [[nodiscard]] virtual ResourceCreationInfo create_accel(const AccelOption &option) noexcept = 0;
-    virtual void destroy_accel(uint64_t handle) noexcept = 0;
-
     // query
     [[nodiscard]] virtual luisa::string query(luisa::string_view property) noexcept { return {}; }
     [[nodiscard]] virtual DeviceExtension *extension(luisa::string_view name) noexcept { return nullptr; }
     virtual void set_name(luisa::compute::Resource::Tag resource_tag, uint64_t resource_handle, luisa::string_view name) noexcept = 0;
-
-    // sparse buffer
-    [[nodiscard]] virtual SparseBufferCreationInfo create_sparse_buffer(const Type *element, size_t elem_count) noexcept {
-        return SparseBufferCreationInfo::make_invalid();
-    }
-    [[nodiscard]] virtual ResourceCreationInfo allocate_sparse_buffer_heap(size_t byte_size) noexcept { return ResourceCreationInfo::make_invalid(); }
-    virtual void deallocate_sparse_buffer_heap(uint64_t handle) noexcept {}
-    virtual void update_sparse_resources(
-        uint64_t stream_handle,
-        luisa::vector<SparseUpdateTile> &&textures_update) noexcept {}
-    virtual void destroy_sparse_buffer(uint64_t handle) noexcept {}
-
-    // sparse texture
-    [[nodiscard]] virtual ResourceCreationInfo allocate_sparse_texture_heap(size_t byte_size, bool is_compressed_type) noexcept { return ResourceCreationInfo::make_invalid(); }
-    virtual void deallocate_sparse_texture_heap(uint64_t handle) noexcept {}
-    [[nodiscard]] virtual SparseTextureCreationInfo create_sparse_texture(
-        PixelFormat format, uint dimension,
-        uint width, uint height, uint depth,
-        uint mipmap_levels, bool simultaneous_access) noexcept {
-        return SparseTextureCreationInfo::make_invalid();
-    }
-    virtual void destroy_sparse_texture(uint64_t handle) noexcept {}
 };
 
 }// namespace luisa::compute

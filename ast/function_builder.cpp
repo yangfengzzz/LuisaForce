@@ -102,14 +102,6 @@ void FunctionBuilder::return_(const Expression *expr) noexcept {
     }
 }
 
-RayQueryStmt *FunctionBuilder::ray_query_(const RefExpr *query) noexcept {
-    return _create_and_append_statement<RayQueryStmt>(query);
-}
-
-AutoDiffStmt *FunctionBuilder::autodiff_() noexcept {
-    return _create_and_append_statement<AutoDiffStmt>();
-}
-
 IfStmt *FunctionBuilder::if_(const Expression *cond) noexcept {
     return _create_and_append_statement<IfStmt>(cond);
 }
@@ -454,33 +446,6 @@ const RefExpr *FunctionBuilder::bindless_array() noexcept {
     return _ref(v);
 }
 
-const RefExpr *FunctionBuilder::accel_binding(uint64_t handle) noexcept {
-    for (auto i = 0u; i < _arguments.size(); i++) {
-        if (luisa::visit(
-                [&]<typename T>(T binding) noexcept {
-                    if constexpr (std::is_same_v<T, Function::AccelBinding>) {
-                        return binding.handle == handle;
-                    } else {
-                        return false;
-                    }
-                },
-                _bound_arguments[i])) {
-            return _ref(_arguments[i]);
-        }
-    }
-    Variable v{Type::of<Accel>(), Variable::Tag::ACCEL, _next_variable_uid()};
-    _arguments.emplace_back(v);
-    _bound_arguments.emplace_back(Function::AccelBinding{handle});
-    return _ref(v);
-}
-
-const RefExpr *FunctionBuilder::accel() noexcept {
-    Variable v{Type::of<Accel>(), Variable::Tag::ACCEL, _next_variable_uid()};
-    _arguments.emplace_back(v);
-    _bound_arguments.emplace_back();
-    return _ref(v);
-}
-
 // call builtin functions
 const CallExpr *FunctionBuilder::call(const Type *type, CallOp call_op, luisa::span<const Expression *const> args) noexcept {
     if (call_op == CallOp::CUSTOM) [[unlikely]] {
@@ -549,8 +514,6 @@ const CallExpr *FunctionBuilder::call(const Type *type, Function custom, luisa::
                         return texture_binding(f->_arguments[i].type(), binding.handle, binding.level);
                     } else if constexpr (std::is_same_v<T, Function::BindlessArrayBinding>) {
                         return bindless_array_binding(binding.handle);
-                    } else if constexpr (std::is_same_v<T, Function::AccelBinding>) {
-                        return accel_binding(binding.handle);
                     } else {
                         return *(in_iter++);
                     }
@@ -653,10 +616,6 @@ bool FunctionBuilder::requires_atomic() const noexcept {
 
 bool FunctionBuilder::requires_atomic_float() const noexcept {
     return _requires_atomic_float;
-}
-
-bool FunctionBuilder::requires_autodiff() const noexcept {
-    return _propagated_builtin_callables.uses_autodiff();
 }
 
 void FunctionBuilder::sort_bindings() noexcept {

@@ -130,9 +130,6 @@ public:
         return *this;
     }
 
-    // see definition in rtx/accel.cpp
-    ShaderInvokeBase &operator<<(const Accel &accel) noexcept;
-
     // see definition in runtime/bindless_array.cpp
     ShaderInvokeBase &operator<<(const BindlessArray &array) noexcept;
 

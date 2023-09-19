@@ -21,12 +21,6 @@ uint64_t Function::TextureBinding::hash() const noexcept {
     return hash_combine({handle, static_cast<uint64_t>(level)}, seed);
 }
 
-uint64_t Function::AccelBinding::hash() const noexcept {
-    using namespace std::string_view_literals;
-    static auto seed = hash_value("__hash_accel_binding"sv);
-    return hash_value(handle, seed);
-}
-
 uint64_t Function::BindlessArrayBinding::hash() const noexcept {
     using namespace std::string_view_literals;
     static auto seed = hash_value("__hash_bindless_array_binding"sv);
@@ -117,10 +111,6 @@ luisa::span<const Function::Binding> Function::bound_arguments() const noexcept 
 
 luisa::span<const Variable> Function::unbound_arguments() const noexcept {
     return _builder->unbound_arguments();
-}
-
-bool Function::requires_autodiff() const noexcept {
-    return _builder->requires_autodiff();
 }
 
 }// namespace luisa::compute

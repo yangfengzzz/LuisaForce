@@ -80,18 +80,6 @@ public:
     };
 
     /**
-     * @brief Acceleration structure binding.
-     *
-     * Bind accel handle.
-     */
-    struct AccelBinding : public Argument::Accel {
-        AccelBinding() noexcept = default;
-        explicit AccelBinding(uint64_t handle) noexcept
-            : Argument::Accel{.handle = handle} {}
-        [[nodiscard]] uint64_t hash() const noexcept;
-    };
-
-    /**
      * @brief CPU extension callback.
      *
      * Extension callback for CPU backends.
@@ -105,8 +93,7 @@ public:
         luisa::monostate,// not bound
         BufferBinding,
         TextureBinding,
-        BindlessArrayBinding,
-        AccelBinding>;
+        BindlessArrayBinding>;
 
 private:
     const detail::FunctionBuilder *_builder{nullptr};
@@ -158,8 +145,6 @@ public:
     [[nodiscard]] bool requires_atomic() const noexcept;
     /// Return whether the function requires atomic float operations
     [[nodiscard]] bool requires_atomic_float() const noexcept;
-    /// Return whether the function requires automatic differentiation
-    [[nodiscard]] bool requires_autodiff() const noexcept;
     /// Return function builder
     [[nodiscard]] auto builder() const noexcept { return _builder; }
     /// Return shared pointer to function builder

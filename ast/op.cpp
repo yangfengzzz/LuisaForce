@@ -66,7 +66,7 @@ LC_AST_API TypePromotion promote_types(BinaryOp op, const Type *lhs, const Type 
     // scalar op scalar
     if (lhs->is_scalar() && rhs->is_scalar()) {
         auto lhs_and_rhs = [&] {
-            static luisa::unordered_map<Type::Tag, uint> scalar_to_score{
+            static std::unordered_map<Type::Tag, uint> scalar_to_score{
                 {Type::Tag::BOOL, 0u},
                 {Type::Tag::INT16, 1u},
                 {Type::Tag::UINT16, 2u},

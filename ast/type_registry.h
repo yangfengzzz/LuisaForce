@@ -32,7 +32,6 @@ template<typename T>
 class VolumeView;
 
 class BindlessArray;
-class Accel;
 class ByteBuffer;
 
 namespace detail {
@@ -45,7 +44,7 @@ namespace detail {
 template<typename T>
 struct TypeDesc;
 
-#include "ast/member_reflect.inl.h>
+#include "ast/member_reflect.inl.h"
 
 template<typename T>
 struct TypeDesc {
@@ -194,13 +193,6 @@ template<>
 struct TypeDesc<BindlessArray> {
     static constexpr luisa::string_view description() noexcept {
         return "bindless_array";
-    }
-};
-
-template<>
-struct TypeDesc<Accel> {
-    static constexpr luisa::string_view description() noexcept {
-        return "accel";
     }
 };
 

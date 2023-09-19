@@ -22,11 +22,6 @@
 #include "runtime/rhi/sampler.h"
 #include "runtime/rhi/argument.h"
 
-// for validation
-namespace lc::validation {
-class Stream;
-}// namespace lc::validation
-
 namespace luisa::compute {
 
 struct IndirectDispatchArg {

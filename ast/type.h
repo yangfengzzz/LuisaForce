@@ -301,7 +301,6 @@ public:
         BUFFER,
         TEXTURE,
         BINDLESS_ARRAY,
-        ACCEL,
 
         CUSTOM
     };
@@ -375,13 +374,12 @@ public:
     ///   VEC_MAT_DIM := 2 | 3 | 4 \n
     ///   STRUCT := struct\<STRUCT_ALIGNMENT,DATA+\> \n
     ///   STRUCT_ALIGNMENT := 4 | 8 | 16 \n
-    ///   RESOURCE := BUFFER | TEXTURE | BINDLESS_ARRAY | ACCEL \n
+    ///   RESOURCE := BUFFER | TEXTURE | BINDLESS_ARRAY \n
     ///   BUFFER := buffer\<DATA | CUSTOM\> \n
     ///   TEXTURE := texture\<TEXTURE_DIM,TEXTURE_ELEM\> \n
     ///   TEXTURE_DIM := 2 | 3 \n
     ///   TEXTURE_ELEM := float | int | uint \n
     ///   BINDLESS_ARRAY := bindless_array \n
-    ///   ACCEL := accel \n
     ///   CUSTOM := [a-zA-Z_][a-zA-Z0-9_]* \n
     /// @example Type::from("array\<struct\<16,float,int,int,uint\>,233\>")
     /// @note Spaces are not allowed between tokens.
@@ -441,7 +439,6 @@ public:
     [[nodiscard]] bool is_buffer() const noexcept;
     [[nodiscard]] bool is_texture() const noexcept;
     [[nodiscard]] bool is_bindless_array() const noexcept;
-    [[nodiscard]] bool is_accel() const noexcept;
     [[nodiscard]] bool is_custom() const noexcept;
     [[nodiscard]] bool is_resource() const noexcept;
 };
