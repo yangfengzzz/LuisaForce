@@ -45,6 +45,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         magic_enum
         xxHash
         EASTL
+        glfw
 )
 
 if (${NEED_LINK_ATOMIC})
