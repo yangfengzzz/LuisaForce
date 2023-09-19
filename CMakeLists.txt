@@ -23,7 +23,7 @@ cmake_minimum_required(VERSION 3.16)
 # globally add VKB_DEBUG for the debug build
 add_compile_definitions($<$<CONFIG:DEBUG>:METAL_DEBUG>)
 
-project(arche-cpp)
+project(luisa-force)
 
 # Add path for local cmake scripts
 list(APPEND CMAKE_MODULE_PATH
@@ -61,20 +61,3 @@ endif ()
 
 # Add third party libraries
 add_subdirectory(third_party)
-
-add_subdirectory(math)
-add_subdirectory(test.math)
-
-add_subdirectory(common)
-add_subdirectory(usd)
-add_subdirectory(runtime)
-
-if (APPLE)
-    add_subdirectory(metal)
-    add_subdirectory(apps)
-    add_subdirectory(benchmark)
-endif ()
-
-if (CUDA_FOUND)
-    add_subdirectory(cuda)
-endif ()

@@ -24,7 +24,7 @@ target_link_libraries(metal-cpp
 # googletest
 add_subdirectory(googletest)
 
-# google bechmark
+# google benchmark
 set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(benchmark EXCLUDE_FROM_ALL)
@@ -70,12 +70,13 @@ option(GLFW_INSTALL OFF)
 option(BUILD_SHARED_LIBS ON)
 add_subdirectory(glfw)
 
-# cgltf
-add_library(cgltf INTERFACE)
-target_include_directories(cgltf INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/cgltf")
-
-# mikktspace
-add_library(mikktspace STATIC ${CMAKE_CURRENT_SOURCE_DIR}/MikkTSpace/mikktspace.c)
-target_include_directories(mikktspace PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/MikkTSpace")
-
+# magic enum
 add_subdirectory(magic_enum)
+
+# eastl
+add_subdirectory(EASTL)
+
+# xxhash
+add_library(xxhash INTERFACE)
+target_include_directories(xxhash INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xxHash>)
+target_compile_definitions(xxhash INTERFACE XXH_INLINE_ALL)
