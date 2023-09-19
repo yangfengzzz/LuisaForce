@@ -22,23 +22,23 @@ LC_CORE_API void set_sink(spdlog::sink_ptr sink) noexcept;
 }// namespace detail
 
 template<typename... Args>
-inline void log_verbose(Args &&...args) noexcept {
-    detail::default_logger().debug(std::forward<Args>(args)...);
+inline void log_verbose(spdlog::format_string_t<Args...> fmt, Args &&...args) noexcept {
+    detail::default_logger().debug(fmt, std::forward<Args>(args)...);
 }
 
 template<typename... Args>
-inline void log_info(Args &&...args) noexcept {
-    detail::default_logger().info(std::forward<Args>(args)...);
+inline void log_info(spdlog::format_string_t<Args...> fmt, Args &&...args) noexcept {
+    detail::default_logger().info(fmt, std::forward<Args>(args)...);
 }
 
 template<typename... Args>
-inline void log_warning(Args &&...args) noexcept {
-    detail::default_logger().warn(std::forward<Args>(args)...);
+inline void log_warning(spdlog::format_string_t<Args...> fmt, Args &&...args) noexcept {
+    detail::default_logger().warn(fmt, std::forward<Args>(args)...);
 }
 
 template<typename... Args>
-[[noreturn]] LUISA_FORCE_INLINE void log_error(Args &&...args) noexcept {
-    auto error_message = fmt::format(std::forward<Args>(args)...);
+[[noreturn]] LUISA_FORCE_INLINE void log_error(spdlog::format_string_t<Args...> fmt, Args &&...args) noexcept {
+    auto error_message = fmt::format(fmt, std::forward<Args>(args)...);
     auto trace = luisa::backtrace();
     for (auto i = 0u; i < trace.size(); i++) {
         auto &&t = trace[i];
@@ -111,13 +111,13 @@ LC_CORE_API void log_flush() noexcept;
 #define LUISA_NOT_IMPLEMENTED() \
     LUISA_ERROR_WITH_LOCATION("Not implemented.")
 
-#define LUISA_ASSERT(x, fmt, ...)                \
-    do {                                         \
-        if (!(x)) [[unlikely]] {                 \
-            auto msg = luisa::format(            \
-                fmt __VA_OPT__(, ) __VA_ARGS__); \
-            LUISA_ERROR_WITH_LOCATION(           \
-                "Assertion '{}' failed: {}",     \
-                #x, msg);                        \
-        }                                        \
+#define LUISA_ASSERT(x, fmtVal, ...)                \
+    do {                                            \
+        if (!(x)) [[unlikely]] {                    \
+            auto msg = fmt::format(                 \
+                fmtVal __VA_OPT__(, ) __VA_ARGS__); \
+            LUISA_ERROR_WITH_LOCATION(              \
+                "Assertion '{}' failed: {}",        \
+                #x, msg);                           \
+        }                                           \
     } while (false)
