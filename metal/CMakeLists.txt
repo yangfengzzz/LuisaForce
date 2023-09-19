@@ -6,25 +6,27 @@
 
 cmake_minimum_required(VERSION 3.16)
 
-project(cuda-backend LANGUAGES C CXX)
+project(metal-backend LANGUAGES C CXX)
 
 set(COMMON_FILES
-        cuda_builtin/cuda_builtin_kernels.cu
-        cuda_bindless_array.cpp
-        cuda_buffer.cpp
-        cuda_builtin_embedded.cpp
-        cuda_codegen_ast.cpp
-        cuda_command_encoder.cpp
-        cuda_compiler.cpp
-        cuda_device.cpp
-        cuda_event.cpp
-        cuda_host_buffer_pool.cpp
-        cuda_shader.cpp
-        cuda_shader_metadata.cpp
-        cuda_shader_native.cpp
-        cuda_stream.cpp
-        cuda_swapchain.cpp
-        cuda_texture.cpp
+        metal_bindless_array.cpp
+        metal_buffer.cpp
+        metal_builtin_embedded.cpp
+        metal_callback_context.cpp
+        metal_codegen_ast.cpp
+        metal_command_encoder.cpp
+        metal_compiler.cpp
+        metal_debug_capture.cpp
+        metal_device.cpp
+        metal_event.cpp
+        metal_shader.cpp
+        metal_shader_metadata.cpp
+        metal_stage_buffer_pool.cpp
+        metal_stream.mm
+        metal_stream.cpp
+        metal_swapchain.mm
+        metal_swapchain.cpp
+        metal_texture.cpp
 )
 
 source_group("common\\" FILES ${COMMON_FILES})
@@ -46,6 +48,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         magic_enum
         xxHash
         EASTL
+        metal-cpp
 )
 
 if (${NEED_LINK_ATOMIC})

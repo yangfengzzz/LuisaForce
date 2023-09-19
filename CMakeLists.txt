@@ -81,3 +81,7 @@ add_subdirectory(gui)
 if (USE_CUDA)
     add_subdirectory(cuda)
 endif ()
+
+if (APPLE)
+    add_subdirectory(metal)
+endif ()

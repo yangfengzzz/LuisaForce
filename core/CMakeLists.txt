@@ -20,6 +20,8 @@ set(COMMON_FILES
         platform.cpp
         pool.cpp
         thread_pool.cpp
+        default_binary_io.cpp
+        string_scratch.cpp
 )
 
 source_group("common\\" FILES ${COMMON_FILES})
