@@ -9,6 +9,7 @@
 #include "core/logging.h"
 #include "ast/type_registry.h"
 #include "ast/constant_data.h"
+#include "ast/function_builder.h"
 #include "runtime/dispatch_buffer.h"
 
 #include "cuda_texture.h"

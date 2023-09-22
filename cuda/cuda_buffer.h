@@ -26,7 +26,7 @@ public:
     [[nodiscard]] auto handle() const noexcept { return _handle; }
     [[nodiscard]] auto size_bytes() const noexcept { return _size_bytes; }
     [[nodiscard]] virtual bool is_indirect() const noexcept { return false; }
-    virtual void set_name(luisa::string &&name) noexcept {
+    virtual void set_name(std::string &&name) noexcept {
         /* currently do nothing */
     }
 };

@@ -19,30 +19,30 @@
 #endif
 
 #include "cuda_error.h"
-#include "cuda_event.h"
+#include "cuda_semaphore.h"
 
 namespace luisa::compute::cuda {
 
-CUDAEvent::CUDAEvent(VkDevice device,
+CUDASemaphore::CUDASemaphore(VkDevice device,
                      VkSemaphore vk_semaphore,
                      CUexternalSemaphore cuda_semaphore) noexcept
     : _device{device},
       _vk_semaphore{vk_semaphore},
       _cuda_semaphore{cuda_semaphore} {}
 
-void CUDAEvent::signal(CUstream stream, uint64_t value) noexcept {
+void CUDASemaphore::signal(CUstream stream, uint64_t value) noexcept {
     CUDA_EXTERNAL_SEMAPHORE_SIGNAL_PARAMS params{};
     params.params.fence.value = value;
     LUISA_CHECK_CUDA(cuSignalExternalSemaphoresAsync(&_cuda_semaphore, &params, 1, stream));
 }
 
-void CUDAEvent::wait(CUstream stream, uint64_t value) noexcept {
+void CUDASemaphore::wait(CUstream stream, uint64_t value) noexcept {
     CUDA_EXTERNAL_SEMAPHORE_WAIT_PARAMS params{};
     params.params.fence.value = value;
     LUISA_CHECK_CUDA(cuWaitExternalSemaphoresAsync(&_cuda_semaphore, &params, 1, stream));
 }
 
-void CUDAEvent::notify(uint64_t value) noexcept {
+void CUDASemaphore::notify(uint64_t value) noexcept {
     VkSemaphoreSignalInfo info{};
     info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO;
     info.pNext = nullptr;
@@ -51,7 +51,7 @@ void CUDAEvent::notify(uint64_t value) noexcept {
     LUISA_CHECK_VULKAN(vkSignalSemaphore(_device, &info));
 }
 
-void CUDAEvent::synchronize(uint64_t value) noexcept {
+void CUDASemaphore::synchronize(uint64_t value) noexcept {
     VkSemaphoreWaitInfo info{};
     info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
     info.pNext = nullptr;
@@ -63,18 +63,18 @@ void CUDAEvent::synchronize(uint64_t value) noexcept {
     LUISA_CHECK_VULKAN(vkWaitSemaphores(_device, &info, uint64_max));
 }
 
-uint64_t CUDAEvent::signaled_value() noexcept {
+uint64_t CUDASemaphore::signaled_value() noexcept {
     auto signaled_value = static_cast<uint64_t>(0u);
     LUISA_CHECK_VULKAN(vkGetSemaphoreCounterValue(
         _device, _vk_semaphore, &signaled_value));
     return signaled_value;
 }
 
-bool CUDAEvent::is_completed(uint64_t value) noexcept {
+bool CUDASemaphore::is_completed(uint64_t value) noexcept {
     return signaled_value() >= value;
 }
 
-CUDAEventManager::CUDAEventManager(const CUuuid &uuid) noexcept
+CUDASemaphoreManager::CUDASemaphoreManager(const CUuuid &uuid) noexcept
     : _instance{VulkanInstance::retain()} {
 
     auto check_uuid = [uuid = luisa::bit_cast<VulkanDeviceUUID>(uuid)](auto device) noexcept {
@@ -169,16 +169,16 @@ CUDAEventManager::CUDAEventManager(const CUuuid &uuid) noexcept
 #endif
 }
 
-CUDAEventManager::~CUDAEventManager() noexcept {
+CUDASemaphoreManager::~CUDASemaphoreManager() noexcept {
     if (auto count = _count.load()) {
         LUISA_WARNING_WITH_LOCATION(
-            "CUDAEventManager destroyed with {} events remaining.",
+            "CUDASemaphoreManager destroyed with {} events remaining.",
             count);
     }
     vkDestroyDevice(_device, nullptr);
 }
 
-CUDAEvent *CUDAEventManager::create() noexcept {
+CUDASemaphore *CUDASemaphoreManager::create() noexcept {
 
     Clock clock;
 
@@ -251,12 +251,12 @@ CUDAEvent *CUDAEventManager::create() noexcept {
     LUISA_CHECK_CUDA(cuImportExternalSemaphore(&cuda_semaphore, &cuda_ext_semaphore_handle_desc));
 
     _count++;
-    auto event = luisa::new_with_allocator<CUDAEvent>(_device, vk_semaphore, cuda_semaphore);
+    auto event = luisa::new_with_allocator<CUDASemaphore>(_device, vk_semaphore, cuda_semaphore);
     LUISA_VERBOSE("Created CUDA event in {} ms.", clock.toc());
     return event;
 }
 
-void CUDAEventManager::destroy(CUDAEvent *event) noexcept {
+void CUDASemaphoreManager::destroy(CUDASemaphore *event) noexcept {
     _count--;
     LUISA_CHECK_CUDA(cuDestroyExternalSemaphore(event->_cuda_semaphore));
     vkDestroySemaphore(_device, event->_vk_semaphore, nullptr);

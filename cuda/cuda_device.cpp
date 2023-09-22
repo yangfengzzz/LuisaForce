@@ -23,7 +23,7 @@
 #include "cuda_device.h"
 #include "cuda_buffer.h"
 #include "cuda_stream.h"
-#include "cuda_event.h"
+#include "cuda_semaphore.h"
 #include "cuda_codegen_ast.h"
 #include "cuda_compiler.h"
 #include "cuda_bindless_array.h"
@@ -161,7 +161,7 @@ CUDADevice::CUDADevice(Context &&ctx,
     }
 
     // event pool
-    _event_manager = luisa::make_unique<CUDAEventManager>(handle().uuid());
+    _semaphore_manager = luisa::make_unique<CUDASemaphoreManager>(handle().uuid());
 }
 
 CUDADevice::~CUDADevice() noexcept {
@@ -440,7 +440,7 @@ template<bool allow_update_expected_metadata>
     return ptx_data;
 }
 
-ShaderCreationInfo CUDADevice::_create_shader(luisa::string name,
+ShaderCreationInfo CUDADevice::_create_shader(std::string name,
                                               const string &source, const ShaderOption &option,
                                               luisa::span<const char *const> nvrtc_options,
                                               const CUDAShaderMetadata &expected_metadata,
@@ -614,7 +614,7 @@ ShaderCreationInfo CUDADevice::create_shader(const ShaderOption &option, Functio
 ShaderCreationInfo CUDADevice::load_shader(luisa::string_view name_in,
                                            luisa::span<const Type *const> arg_types) noexcept {
 
-    luisa::string name{name_in};
+    std::string name{name_in};
     if (!name.ends_with(".ptx") &&
         !name.ends_with(".PTX")) { name.append(".ptx"); }
     auto metadata_name = fmt::format("{}.metadata", name);
@@ -677,7 +677,7 @@ void CUDADevice::destroy_shader(uint64_t handle) noexcept {
 
 ResourceCreationInfo CUDADevice::create_event() noexcept {
     auto event_handle = with_handle([this] {
-        return _event_manager->create();
+        return _semaphore_manager->create();
     });
     return {.handle = reinterpret_cast<uint64_t>(event_handle),
             .native_handle = event_handle->handle()};
@@ -685,14 +685,14 @@ ResourceCreationInfo CUDADevice::create_event() noexcept {
 
 void CUDADevice::destroy_event(uint64_t handle) noexcept {
     with_handle([this, handle] {
-        auto event = reinterpret_cast<CUDAEvent *>(handle);
-        _event_manager->destroy(event);
+        auto event = reinterpret_cast<CUDASemaphore *>(handle);
+        _semaphore_manager->destroy(event);
     });
 }
 
 void CUDADevice::signal_event(uint64_t handle, uint64_t stream_handle, uint64_t value) noexcept {
     with_handle([=] {
-        auto event = reinterpret_cast<CUDAEvent *>(handle);
+        auto event = reinterpret_cast<CUDASemaphore *>(handle);
         auto stream = reinterpret_cast<CUDAStream *>(stream_handle);
         stream->signal(event, value);
     });
@@ -700,19 +700,19 @@ void CUDADevice::signal_event(uint64_t handle, uint64_t stream_handle, uint64_t 
 
 void CUDADevice::wait_event(uint64_t handle, uint64_t stream_handle, uint64_t value) noexcept {
     with_handle([=] {
-        auto event = reinterpret_cast<CUDAEvent *>(handle);
+        auto event = reinterpret_cast<CUDASemaphore *>(handle);
         auto stream = reinterpret_cast<CUDAStream *>(stream_handle);
         stream->wait(event, value);
     });
 }
 
 bool CUDADevice::is_event_completed(uint64_t handle, uint64_t value) const noexcept {
-    auto event = reinterpret_cast<CUDAEvent *>(handle);
+    auto event = reinterpret_cast<CUDASemaphore *>(handle);
     return event->is_completed(value);
 }
 
 void CUDADevice::synchronize_event(uint64_t handle, uint64_t value) noexcept {
-    auto event = reinterpret_cast<CUDAEvent *>(handle);
+    auto event = reinterpret_cast<CUDASemaphore *>(handle);
     event->synchronize(value);
 }
 
@@ -843,7 +843,7 @@ void CUDADevice::set_name(luisa::compute::Resource::Tag resource_tag,
                           luisa::string_view name) noexcept {
     with_handle([tag = resource_tag,
                  handle = resource_handle,
-                 name = luisa::string{name}]() mutable noexcept {
+                 name = std::string{name}]() mutable noexcept {
         switch (tag) {
             case Resource::Tag::BUFFER:
                 reinterpret_cast<CUDABufferBase *>(handle)->set_name(std::move(name));

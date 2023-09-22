@@ -8,9 +8,9 @@
 
 #ifdef LUISA_BACKEND_ENABLE_VULKAN_SWAPCHAIN
 
-#include "core/basic_types.h>
-#include "core/stl/memory.h>
-#include "runtime/rhi/pixel.h>
+#include "core/basic_types.h"
+#include "core/stl/memory.h"
+#include "runtime/rhi/pixel.h"
 
 namespace luisa::compute::cuda {
 
@@ -33,7 +33,7 @@ public:
     ~CUDASwapchain() noexcept;
     [[nodiscard]] PixelStorage pixel_storage() const noexcept;
     void present(CUDAStream *stream, CUDATexture *image) noexcept;
-    void set_name(luisa::string &&name) noexcept;
+    void set_name(std::string &&name) noexcept;
 };
 
 }// namespace luisa::compute::cuda

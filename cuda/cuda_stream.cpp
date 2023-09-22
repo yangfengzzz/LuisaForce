@@ -16,14 +16,14 @@
 #include "cuda_command_encoder.h"
 #include "cuda_device.h"
 #include "cuda_stream.h"
-#include "cuda_event.h"
+#include "cuda_semaphore.h"
 
 namespace luisa::compute::cuda {
 
 CUDAStream::CUDAStream(CUDADevice *device) noexcept
     : _device{device},
       _upload_pool{64_M, true}, _download_pool{32_M, false},
-      _callback_event{device->event_manager()->create()} {
+      _callback_event{device->semaphore_manager()->create()} {
     LUISA_CHECK_CUDA(cuStreamCreate(&_stream, CU_STREAM_NON_BLOCKING));
     _callback_thread = std::thread{[this] {
         for (;;) {
@@ -62,7 +62,7 @@ CUDAStream::~CUDAStream() noexcept {
     // wait for the callback thread to stop
     _callback_thread.join();
     // destroy the events and the stream
-    _device->event_manager()->destroy(_callback_event);
+    _device->semaphore_manager()->destroy(_callback_event);
     LUISA_CHECK_CUDA(cuStreamDestroy(_stream));
 }
 
@@ -98,15 +98,15 @@ void CUDAStream::callback(CUDAStream::CallbackContainer &&callbacks) noexcept {
     }
 }
 
-void CUDAStream::signal(CUDAEvent *event, uint64_t value) noexcept {
+void CUDAStream::signal(CUDASemaphore *event, uint64_t value) noexcept {
     event->signal(_stream, value);
 }
 
-void CUDAStream::wait(CUDAEvent *event, uint64_t value) noexcept {
+void CUDAStream::wait(CUDASemaphore *event, uint64_t value) noexcept {
     event->wait(_stream, value);
 }
 
-void CUDAStream::set_name(luisa::string &&name) noexcept {
+void CUDAStream::set_name(std::string &&name) noexcept {
     nvtxNameCuStreamA(_stream, name.c_str());
 }
 

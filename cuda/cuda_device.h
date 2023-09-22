@@ -3,7 +3,7 @@
 #include <cuda.h>
 
 #include "runtime/rhi/device_interface.h"
-#include "default_binary_io.h"
+#include "core/default_binary_io.h"
 #include "cuda_error.h"
 #include "cuda_texture.h"
 #include "cuda_stream.h"
@@ -13,7 +13,7 @@
 namespace luisa::compute::cuda {
 
 class CUDATimelineEventPool;
-class CUDAEventManager;
+class CUDASemaphoreManager;
 
 /**
  * @brief CUDA device
@@ -82,12 +82,12 @@ private:
     CUfunction _bindless_array_update_function{nullptr};
     luisa::unique_ptr<CUDACompiler> _compiler;
     luisa::unique_ptr<DefaultBinaryIO> _default_io;
-    luisa::unique_ptr<CUDAEventManager> _event_manager;
+    luisa::unique_ptr<CUDASemaphoreManager> _semaphore_manager;
     const BinaryIO *_io{nullptr};
     luisa::string _cudadevrt_library;
 
 private:
-    [[nodiscard]] ShaderCreationInfo _create_shader(luisa::string name,
+    [[nodiscard]] ShaderCreationInfo _create_shader(std::string name,
                                                     const string &source, const ShaderOption &option,
                                                     luisa::span<const char *const> nvrtc_options,
                                                     const CUDAShaderMetadata &expected_metadata,
@@ -112,7 +112,7 @@ public:
     [[nodiscard]] auto cudadevrt_library() const noexcept { return luisa::string_view{_cudadevrt_library}; }
     [[nodiscard]] auto compiler() const noexcept { return _compiler.get(); }
     [[nodiscard]] auto io() const noexcept { return _io; }
-    [[nodiscard]] auto event_manager() const noexcept { return _event_manager.get(); }
+    [[nodiscard]] auto semaphore_manager() const noexcept { return _semaphore_manager.get(); }
 
 public:
     BufferCreationInfo create_buffer(const Type *element, size_t elem_count) noexcept override;

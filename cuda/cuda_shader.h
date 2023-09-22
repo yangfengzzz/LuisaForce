@@ -43,7 +43,7 @@ public:
     [[nodiscard]] virtual void *handle() const noexcept = 0;
     void launch(CUDACommandEncoder &encoder,
                 ShaderDispatchCommand *command) const noexcept;
-    void set_name(luisa::string &&name) noexcept;
+    void set_name(std::string &&name) noexcept;
 };
 
 }// namespace luisa::compute::cuda

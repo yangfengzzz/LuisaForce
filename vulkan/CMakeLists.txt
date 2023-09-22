@@ -6,29 +6,16 @@
 
 cmake_minimum_required(VERSION 3.16)
 
-project(cuda-backend LANGUAGES C CXX)
+project(vulkan-backend LANGUAGES C CXX)
 
 set(COMMON_FILES
-        cuda_builtin/cuda_builtin_kernels.cu
-        cuda_bindless_array.cpp
-        cuda_buffer.cpp
-        cuda_builtin_embedded.cpp
-        cuda_codegen_ast.cpp
-        cuda_command_encoder.cpp
-        cuda_compiler.cpp
-        cuda_device.cpp
-        cuda_host_buffer_pool.cpp
-        cuda_shader.cpp
-        cuda_shader_metadata.cpp
-        cuda_shader_native.cpp
-        cuda_stream.cpp
-        cuda_swapchain.cpp
-        cuda_texture.cpp
+        vulkan_instance.cpp
+        vulkan_swapchain.cpp
 )
 
-if (VULKAN_FOUND)
-    set(VULKAN_CUDA_FILES
-            cuda_semaphore.cpp
+if (APPLE)
+    set(MOTENVK_FILES
+            moltenvk_surface.mm
     )
 endif ()
 
@@ -36,7 +23,7 @@ source_group("common\\" FILES ${COMMON_FILES})
 
 set(PROJECT_FILES
         ${COMMON_FILES}
-        ${VULKAN_CUDA_FILES}
+        ${MOTENVK_FILES}
 )
 
 #NB: switch this to shared library and things stop working. (there is likely two copies of volk somewhere.
@@ -47,12 +34,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ..
 
 # Link third party libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC
-    core
+        core
 )
 
-if (VULKAN_FOUND)
+if (APPLE)
     target_link_libraries(${PROJECT_NAME} PUBLIC
-            vulkan-backend
+            metal-cpp
     )
 endif ()
 

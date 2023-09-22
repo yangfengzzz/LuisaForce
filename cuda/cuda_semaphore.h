@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cuda.h>
+#include <atomic>
 #include "core/stl/vector.h"
 
 #ifdef LUISA_BACKEND_ENABLE_VULKAN_SWAPCHAIN
@@ -15,11 +16,11 @@
 
 namespace luisa::compute::cuda {
 
-class CUDAEventManager;
+class CUDASemaphoreManager;
 
-class CUDAEvent {
+class CUDASemaphore {
 
-    friend class CUDAEventManager;
+    friend class CUDASemaphoreManager;
 
 private:
     VkDevice _device;
@@ -27,7 +28,7 @@ private:
     CUexternalSemaphore _cuda_semaphore;
 
 public:
-    CUDAEvent(VkDevice device,
+    CUDASemaphore(VkDevice device,
               VkSemaphore vk_semaphore,
               CUexternalSemaphore cuda_semaphore) noexcept;
     [[nodiscard]] auto handle() const noexcept { return _cuda_semaphore; }
@@ -39,7 +40,7 @@ public:
     [[nodiscard]] bool is_completed(uint64_t value) noexcept;
 };
 
-class CUDAEventManager {
+class CUDASemaphoreManager {
 
 private:
     luisa::shared_ptr<VulkanInstance> _instance;
@@ -49,14 +50,14 @@ private:
     std::atomic<size_t> _count{0u};
 
 public:
-    explicit CUDAEventManager(const CUuuid &uuid) noexcept;
-    ~CUDAEventManager() noexcept;
-    CUDAEventManager(CUDAEventManager &&) noexcept = delete;
-    CUDAEventManager(const CUDAEventManager &) noexcept = delete;
-    CUDAEventManager &operator=(CUDAEventManager &&) noexcept = delete;
-    CUDAEventManager &operator=(const CUDAEventManager &) noexcept = delete;
-    [[nodiscard]] CUDAEvent *create() noexcept;
-    void destroy(CUDAEvent *event) noexcept;
+    explicit CUDASemaphoreManager(const CUuuid &uuid) noexcept;
+    ~CUDASemaphoreManager() noexcept;
+    CUDASemaphoreManager(CUDASemaphoreManager &&) noexcept = delete;
+    CUDASemaphoreManager(const CUDASemaphoreManager &) noexcept = delete;
+    CUDASemaphoreManager &operator=(CUDASemaphoreManager &&) noexcept = delete;
+    CUDASemaphoreManager &operator=(const CUDASemaphoreManager &) noexcept = delete;
+    [[nodiscard]] CUDASemaphore *create() noexcept;
+    void destroy(CUDASemaphore *event) noexcept;
 };
 
 }// namespace luisa::compute::cuda

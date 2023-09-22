@@ -11,7 +11,7 @@
 #include <cstdlib>
 #include <nvtx3/nvToolsExtCuda.h>
 
-#include "core/platform.h>
+#include "core/platform.h"
 
 #if defined(LUISA_PLATFORM_WINDOWS)
 #include <windows.h>
@@ -526,7 +526,7 @@ public:
         if (!name.empty()) { nvtxRangePop(); }
     }
 
-    void set_name(luisa::string &&name) noexcept {
+    void set_name(std::string &&name) noexcept {
         std::scoped_lock lock{_name_mutex};
         _name = std::move(name);
     }
@@ -553,7 +553,7 @@ void CUDASwapchain::present(CUDAStream *stream, CUDATexture *image) noexcept {
     _impl->present(stream->handle(), image->level(0u));
 }
 
-void CUDASwapchain::set_name(luisa::string &&name) noexcept {
+void CUDASwapchain::set_name(std::string &&name) noexcept {
     _impl->set_name(std::move(name));
 }
 

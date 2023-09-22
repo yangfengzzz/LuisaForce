@@ -76,7 +76,7 @@ CUDATexture::CUDATexture(uint64_t array, uint3 size,
     }
 }
 
-void CUDATexture::set_name(luisa::string &&name) noexcept {
+void CUDATexture::set_name(std::string &&name) noexcept {
     // currently do nothing
 }
 

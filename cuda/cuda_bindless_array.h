@@ -52,7 +52,7 @@ public:
     [[nodiscard]] auto handle() const noexcept { return _handle; }
     void update(CUDACommandEncoder &encoder, BindlessArrayUpdateCommand *cmd) noexcept;
     [[nodiscard]] auto binding() const noexcept { return _handle; }
-    void set_name(luisa::string &&name) noexcept;
+    void set_name(std::string &&name) noexcept;
 };
 
 }// namespace luisa::compute::cuda

@@ -54,7 +54,7 @@ public:
     [[nodiscard]] CUDASurface surface(uint32_t level) const noexcept;
     [[nodiscard]] uint3 size() const noexcept { return make_uint3(_size[0], _size[1], _size[2]); }
     [[nodiscard]] auto binding(uint32_t level) const noexcept { return surface(level); }
-    void set_name(luisa::string &&name) noexcept;
+    void set_name(std::string &&name) noexcept;
 };
 
 static_assert(sizeof(CUDATexture) == 256u);

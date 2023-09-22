@@ -171,9 +171,9 @@ void CUDABindlessArray::update(CUDACommandEncoder &encoder,
     if (!_name.empty()) { nvtxRangePop(); }
 }
 
-void CUDABindlessArray::set_name(luisa::string &&name) noexcept {
+void CUDABindlessArray::set_name(std::string &&name) noexcept {
     std::scoped_lock lock{_mutex};
-    _name = std::move(name);
+    _name = name;
 }
 
 }// namespace luisa::compute::cuda

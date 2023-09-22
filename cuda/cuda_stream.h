@@ -24,7 +24,7 @@ class CUDADevice;
 struct CUDACallbackContext;
 
 class CUDAStream;
-class CUDAEvent;
+class CUDASemaphore;
 
 /**
  * @brief Stream on CUDA
@@ -49,7 +49,7 @@ private:
     std::thread _callback_thread;
     std::mutex _callback_mutex;
     std::condition_variable _callback_cv;
-    CUDAEvent *_callback_event;
+    CUDASemaphore *_callback_event;
     std::atomic_uint64_t _current_ticket{0u};
     std::atomic_uint64_t _finished_ticket{0u};
     luisa::queue<CallbackPackage> _callback_lists;
@@ -65,10 +65,10 @@ public:
     [[nodiscard]] auto download_pool() noexcept { return &_download_pool; }
     void dispatch(CommandList &&command_list) noexcept;
     void synchronize() noexcept;
-    void signal(CUDAEvent *event, uint64_t value) noexcept;
-    void wait(CUDAEvent *event, uint64_t value) noexcept;
+    void signal(CUDASemaphore *event, uint64_t value) noexcept;
+    void wait(CUDASemaphore *event, uint64_t value) noexcept;
     void callback(CallbackContainer &&callbacks) noexcept;
-    void set_name(luisa::string &&name) noexcept;
+    void set_name(std::string &&name) noexcept;
 };
 
 }// namespace luisa::compute::cuda

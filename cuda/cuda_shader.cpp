@@ -22,9 +22,9 @@ Usage CUDAShader::argument_usage(size_t i) const noexcept {
     return _argument_usages[i];
 }
 
-void CUDAShader::set_name(luisa::string &&name) noexcept {
+void CUDAShader::set_name(std::string &&name) noexcept {
     std::scoped_lock lock{_name_mutex};
-    _name = std::move(name);
+    _name = name;
 }
 
 void CUDAShader::launch(CUDACommandEncoder &encoder,

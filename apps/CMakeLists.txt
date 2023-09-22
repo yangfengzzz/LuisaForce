@@ -32,3 +32,9 @@ if (APPLE)
             metal-backend
     )
 endif ()
+
+if (CUDA_FOUND)
+    target_link_libraries(${PROJECT_NAME}
+            cuda-backend
+    )
+endif ()
