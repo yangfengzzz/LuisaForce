@@ -20,7 +20,10 @@ int main(int argc, char *argv[]) {
     auto sqr = [](auto x) noexcept { return x * x; };
 
     Context context{argv[0]};
-    Device device = context.create_device();
+    DeviceConfig config {
+        .device_index = 1
+    };
+    Device device = context.create_device(&config);
 
     static constexpr uint n_grid = 128u;
     static constexpr uint n_steps = 50u;
