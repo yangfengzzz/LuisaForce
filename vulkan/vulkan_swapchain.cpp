@@ -17,8 +17,6 @@
 #if defined(LUISA_PLATFORM_WINDOWS)
 #include <windows.h>
 #include <vulkan/vulkan_win32.h>
-#elif defined(LUISA_PLATFORM_APPLE)
-#include <vulkan/vulkan_macos.h>
 #elif defined(LUISA_PLATFORM_UNIX)
 #include <X11/Xlib.h>
 #include <vulkan/vulkan_xlib.h>
@@ -178,11 +176,6 @@ private:
         create_info.hwnd = reinterpret_cast<HWND>(window_handle);
         create_info.hinstance = GetModuleHandle(nullptr);
         LUISA_CHECK_VULKAN(vkCreateWin32SurfaceKHR(_instance->handle(), &create_info, nullptr, &_surface));
-#elif defined(LUISA_PLATFORM_APPLE)
-        VkMacOSSurfaceCreateInfoMVK create_info{};
-        create_info.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
-        create_info.pView = cocoa_window_content_view(window_handle);
-        LUISA_CHECK_VULKAN(vkCreateMacOSSurfaceMVK(_instance->handle(), &create_info, nullptr, &_surface));
 #else
         VkXlibSurfaceCreateInfoKHR create_info{};
         create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
@@ -248,20 +241,10 @@ private:
 #define VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME "VK_KHR_portability_subset"
 #endif
 
-#ifdef LUISA_PLATFORM_APPLE
-        device_extensions.emplace_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
-#endif
         for (auto ext : required_device_extensions) {
-#ifdef LUISA_PLATFORM_APPLE
-            if (luisa::string_view{ext} != VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME &&
-                luisa::string_view{ext} != VK_KHR_SWAPCHAIN_EXTENSION_NAME) {
-                device_extensions.emplace_back(ext);
-            }
-#else
             if (luisa::string_view{ext} != VK_KHR_SWAPCHAIN_EXTENSION_NAME) {
                 device_extensions.emplace_back(ext);
             }
-#endif
         }
 
         auto check_properties = [&device_uuid](auto device) noexcept {

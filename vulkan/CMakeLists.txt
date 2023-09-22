@@ -13,17 +13,10 @@ set(COMMON_FILES
         vulkan_swapchain.cpp
 )
 
-if (APPLE)
-    set(MOTENVK_FILES
-            moltenvk_surface.mm
-    )
-endif ()
-
 source_group("common\\" FILES ${COMMON_FILES})
 
 set(PROJECT_FILES
         ${COMMON_FILES}
-        ${MOTENVK_FILES}
 )
 
 #NB: switch this to shared library and things stop working. (there is likely two copies of volk somewhere.
@@ -35,6 +28,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ..
 # Link third party libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC
         core
+        Vulkan::Vulkan
 )
 
 if (APPLE)

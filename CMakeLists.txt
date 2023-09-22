@@ -79,12 +79,12 @@ add_subdirectory(runtime)
 add_subdirectory(dsl)
 add_subdirectory(gui)
 
-if (CUDA_FOUND)
-    add_subdirectory(cuda)
-endif ()
-
 if (VULKAN_FOUND)
     add_subdirectory(vulkan)
+endif ()
+
+if (CUDA_FOUND)
+    add_subdirectory(cuda)
 endif ()
 
 if (APPLE)
