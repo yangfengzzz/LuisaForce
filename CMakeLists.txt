@@ -23,7 +23,7 @@ cmake_minimum_required(VERSION 3.16)
 # globally add VKB_DEBUG for the debug build
 add_compile_definitions($<$<CONFIG:DEBUG>:METAL_DEBUG>)
 
-project(luisa-force)
+project(LuisaForce)
 
 # Add path for local cmake scripts
 list(APPEND CMAKE_MODULE_PATH
@@ -57,16 +57,15 @@ if (CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
     list(APPEND CUDA_NVCC_FLAGS --std=c++20)
     add_compile_definitions(LUISA_PLATFORM_CUDA=1)
-endif ()
 
-find_package(Vulkan)
-if (VULKAN_FOUND)
-    message("Found Vulkan")
-    add_compile_definitions(LUISA_BACKEND_ENABLE_VULKAN_SWAPCHAIN=1)
+    find_package(Vulkan)
+    if (VULKAN_FOUND)
+        message("Found Vulkan")
+        add_compile_definitions(LUISA_BACKEND_ENABLE_VULKAN_SWAPCHAIN=1)
+    endif ()
 endif ()
 
 if (APPLE)
-    add_definitions(-DMACOS)
     add_definitions(-DPXR_METAL_SUPPORT_ENABLED)
 endif ()
 
@@ -79,11 +78,10 @@ add_subdirectory(runtime)
 add_subdirectory(dsl)
 add_subdirectory(gui)
 
-if (VULKAN_FOUND)
-    add_subdirectory(vulkan)
-endif ()
-
 if (CUDA_FOUND)
+    if (VULKAN_FOUND)
+        add_subdirectory(vulkan)
+    endif ()
     add_subdirectory(cuda)
 endif ()
 

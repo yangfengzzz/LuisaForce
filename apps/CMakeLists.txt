@@ -4,43 +4,45 @@
 #  personal capacity and am not conveying any rights to any intellectual
 #  property of any third parties.
 
-cmake_minimum_required(VERSION 3.10)
-project(apps)
+# Get all project dir
+FILE(GLOB sample_projects ${CMAKE_CURRENT_SOURCE_DIR}/*)
 
-add_executable(${PROJECT_NAME}
-        mpm88_app.cpp
-)
+# For each project dir, build a target
+FOREACH (project ${sample_projects})
+    IF (IS_DIRECTORY ${project})
+        # Get project name and all sources
+        get_filename_component(project-name ${project} NAME)
+        FILE(GLOB ${project}-src ${project}/*.cpp)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ../)
+        # Create executable and link target
+        add_executable(${project-name} ${${project}-src})
 
-set(PXR_LIBRARY_NAMES)
-foreach (_item ${PXR_LIBRARIES}) # Iterate over list of absolute paths
-    get_filename_component(_t ${_item} NAME)
-    list(APPEND PXR_LIBRARY_NAMES ${_t})
-endforeach ()
-
-target_link_libraries(${PROJECT_NAME}
-        core
-        ast
-        dsl
-        gui
-        runtime
-)
-
-if (APPLE)
-    target_link_libraries(${PROJECT_NAME}
-            metal-backend
-    )
-endif ()
-
-if (CUDA_FOUND)
-    if (VULKAN_FOUND)
-        target_link_libraries(${PROJECT_NAME}
-                vulkan-backend
+        target_link_libraries(${project-name}
+                core
+                ast
+                dsl
+                gui
+                runtime
         )
-    endif ()
 
-    target_link_libraries(${PROJECT_NAME}
-            cuda-backend
-    )
-endif ()
+        if (APPLE)
+            target_link_libraries(${project-name}
+                    metal-backend
+            )
+        endif ()
+
+        if (CUDA_FOUND)
+            if (VULKAN_FOUND)
+                target_link_libraries(${project-name}
+                        vulkan-backend
+                )
+            endif ()
+
+            target_link_libraries(${project-name}
+                    cuda-backend
+            )
+        endif ()
+
+        message(STATUS "Adding ${project-name}")
+    ENDIF ()
+ENDFOREACH ()
