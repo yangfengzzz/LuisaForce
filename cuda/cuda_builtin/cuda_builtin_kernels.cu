@@ -128,7 +128,6 @@ static_assert(sizeof(SlotModification) == 64u, "");
 extern "C" __global__ void update_bindless_array(BindlessSlot *__restrict__ array,
                                                  const SlotModification *__restrict__ mods,
                                                  unsigned int n) {
-    constexpr auto op_none = 0u;
     constexpr auto op_update = 1u;
     constexpr auto op_remove = 2u;
     auto tid = blockIdx.x * blockDim.x + threadIdx.x;
