@@ -33,13 +33,13 @@ if (APPLE)
     )
 endif ()
 
-if (VULKAN_FOUND)
-    target_link_libraries(${PROJECT_NAME}
-            vulkan-backend
-    )
-endif ()
-
 if (CUDA_FOUND)
+    if (VULKAN_FOUND)
+        target_link_libraries(${PROJECT_NAME}
+                vulkan-backend
+        )
+    endif ()
+
     target_link_libraries(${PROJECT_NAME}
             cuda-backend
     )
