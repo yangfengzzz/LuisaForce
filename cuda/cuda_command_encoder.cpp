@@ -16,6 +16,8 @@
 #include "cuda_texture.h"
 #include "cuda_bindless_array.h"
 #include "cuda_command_encoder.h"
+#include "runtime/ext/registry.h"
+#include "runtime/ext/cuda/lcub/cuda_lcub_command.h"
 
 namespace luisa::compute::cuda {
 
@@ -236,6 +238,18 @@ void CUDACommandEncoder::visit(BindlessArrayUpdateCommand *command) noexcept {
 }
 
 void CUDACommandEncoder::visit(CustomCommand *command) noexcept {
+    switch (command->uuid()) {
+        case to_underlying(CustomCommandUUID::CUDA_LCUB_COMMAND): {
+            auto lcub_command = dynamic_cast<CudaLCubCommand *>(command);
+            LUISA_ASSERT(lcub_command != nullptr, "Invalid CudaLCuBCommand.");
+            lcub_command->func(_stream->handle());
+            break;
+        }
+        default:
+            LUISA_ERROR_WITH_LOCATION("Custom command (UUID = 0x{:04x}) "
+                                      "is not supported on CUDA.",
+                                      command->uuid());
+    }
 }
 
 }// namespace luisa::compute::cuda
