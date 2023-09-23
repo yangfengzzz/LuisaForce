@@ -1,0 +1,16 @@
+//  Copyright (c) 2023 Feng Yang
+//
+//  I am making my contributions/submissions to this project solely in my
+//  personal capacity and am not conveying any rights to any intellectual
+//  property of any third parties.
+
+#pragma once
+
+#include <cstdint>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include "dcub_utils.h"
+
+// c++17 workaround
+namespace luisa { namespace compute { namespace cuda { namespace dcub {}}}}
