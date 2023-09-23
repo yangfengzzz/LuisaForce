@@ -20,9 +20,8 @@ int main(int argc, char *argv[]) {
     auto sqr = [](auto x) noexcept { return x * x; };
 
     Context context{argv[0]};
-    DeviceConfig config {
-        .device_index = 1
-    };
+    DeviceConfig config{
+        .device_index = 1};
     Device device = context.create_device(&config);
 
     static constexpr uint n_grid = 128u;
@@ -127,7 +126,7 @@ int main(int argc, char *argv[]) {
             Float weight = w[i].x * w[j].y;
             UInt idx = index(base + offset);
             Float2 g_v = make_float2(grid_v->read(idx * 2u),
-                                   grid_v->read(idx * 2u + 1u));
+                                     grid_v->read(idx * 2u + 1u));
             new_v += weight * g_v;
             new_C = new_C + 4.f * weight * outer_product(g_v, dpos) / sqr(dx);
         }
@@ -172,7 +171,7 @@ int main(int argc, char *argv[]) {
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
                 Int2 pos = make_int2(x->read(p) * static_cast<float>(resolution)) + make_int2(i, j);
-                $if(pos.x >= 0 & pos.x < resolution & pos.y >= 0 & pos.y < resolution) {
+                $if (pos.x >= 0 & pos.x < resolution & pos.y >= 0 & pos.y < resolution) {
                     display->write(make_uint2(cast<uint>(pos.x), resolution - 1u - pos.y),
                                    make_float4(.4f, .6f, .6f, 1.f));
                 };
@@ -180,9 +179,8 @@ int main(int argc, char *argv[]) {
         }
     });
 
-
     init(stream);
-    
+
     while (!window.should_close()) {
         CommandList cmd_list;
         for (uint i = 0u; i < n_steps; i++) { substep(cmd_list); }
@@ -193,4 +191,3 @@ int main(int argc, char *argv[]) {
     }
     stream << synchronize();
 }
-

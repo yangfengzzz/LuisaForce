@@ -23,6 +23,7 @@ FOREACH (project ${sample_projects})
                 dsl
                 gui
                 runtime
+                stb
         )
 
         if (APPLE)
