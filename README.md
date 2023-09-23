@@ -13,4 +13,4 @@ The different design goal make me use a separate project instead use extension i
 ## Feature
 1. Use hardware-related API like CUDA, Metal, ROCm and SYCL
 2. Data Structure used by physics simulation like hash-grid, vdb and bvh.
-3Use USD as main exchangeable format and render by hydra-storm
+3. Use USD as main exchangeable format and render by hydra-storm
