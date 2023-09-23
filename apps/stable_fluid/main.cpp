@@ -18,7 +18,9 @@ using namespace luisa::compute;
 
 int main(int argc, char *argv[]) {
     Context context{argv[0]};
-    Device device = context.create_device();
+    DeviceConfig config{
+        .device_index = 1};
+    Device device = context.create_device(&config);
     Stream stream = device.create_stream(StreamTag::GRAPHICS);
 
     static constexpr int n_grid = 1024;// care type

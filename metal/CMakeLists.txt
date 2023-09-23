@@ -22,9 +22,9 @@ set(COMMON_FILES
         metal_shader.cpp
         metal_shader_metadata.cpp
         metal_stage_buffer_pool.cpp
-        metal_stream.mm
+        metal_stream_objc.mm
         metal_stream.cpp
-        metal_swapchain.mm
+        metal_swapchain_objc.mm
         metal_swapchain.cpp
         metal_texture.cpp
 )
