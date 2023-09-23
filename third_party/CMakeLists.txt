@@ -6,7 +6,7 @@
 
 # Metal cpp
 add_library(metal-cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/definition.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/impl_metal.cpp
         )
 
 target_include_directories(metal-cpp PUBLIC
@@ -51,8 +51,13 @@ target_compile_definitions(imgui PUBLIC IMGUI_USER_CONFIG="${CMAKE_CURRENT_SOURC
 set_target_properties(imgui PROPERTIES FOLDER "ThirdParty" POSITION_INDEPENDENT_CODE ON)
 
 # stb
-add_library(stb INTERFACE)
-target_include_directories(stb INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/stb")
+add_library(stb
+        ${CMAKE_CURRENT_SOURCE_DIR}/impl_stb.cpp
+)
+
+target_include_directories(stb PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/stb"
+)
 
 # half
 add_library(half INTERFACE)
