@@ -26,6 +26,25 @@ set(COMMON_FILES
         cuda_texture.cpp
 )
 
+set(CUB_FILES
+        lcub/device_merge_sort.cpp
+        lcub/device_partition.cpp
+        lcub/device_radix_sort.cpp
+        lcub/device_reduce.cpp
+        lcub/device_run_length_encode.cpp
+        lcub/device_scan.cpp
+        lcub/device_select.cpp
+        lcub/device_spmv.cpp
+        lcub/private/dcub/device_merge_sort.cu
+        lcub/private/dcub/device_partition.cu
+        lcub/private/dcub/device_radix_sort.cu
+        lcub/private/dcub/device_reduce.cu
+        lcub/private/dcub/device_run_length_encode.cu
+        lcub/private/dcub/device_scan.cu
+        lcub/private/dcub/device_select.cu
+        lcub/private/dcub/device_spmv.cu
+)
+
 if (VULKAN_FOUND)
     set(VULKAN_CUDA_FILES
             cuda_semaphore.cpp
@@ -37,6 +56,7 @@ source_group("common\\" FILES ${COMMON_FILES})
 set(PROJECT_FILES
         ${COMMON_FILES}
         ${VULKAN_CUDA_FILES}
+        ${CUB_FILES}
 )
 
 #NB: switch this to shared library and things stop working. (there is likely two copies of volk somewhere.
