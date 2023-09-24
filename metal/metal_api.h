@@ -35,4 +35,11 @@ decltype(auto) with_autorelease_pool(F &&f) noexcept {
     return std::forward<F>(f)();
 }
 
+template<typename T>
+inline std::shared_ptr<T> make_shared(T *ptr) {
+    return std::shared_ptr<T>(ptr, [](T *obj) {
+        obj->release();
+    });
+}
+
 }// namespace luisa::compute::metal

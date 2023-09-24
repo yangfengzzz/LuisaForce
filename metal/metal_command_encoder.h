@@ -13,19 +13,22 @@
 
 namespace luisa::compute::metal {
 
-class MetalCommandEncoder : public MutableCommandVisitor {
-
+class MetalCommandEncoder final: public MutableCommandVisitor {
 private:
     MetalStream *_stream;
     MTL::CommandBuffer *_command_buffer{nullptr};
     luisa::vector<MetalCallbackContext *> _callbacks;
+    std::unordered_map<std::size_t, MTL::ComputePipelineState *> pipeline_cache_states{};
 
-protected:
+private:
     void _prepare_command_buffer() noexcept;
+
+    MTL::ComputePipelineState * find_pipeline_cache(const std::string& source,
+                                                   const std::unordered_map<std::string, std::string>& macros);
 
 public:
     explicit MetalCommandEncoder(MetalStream *stream) noexcept;
-    ~MetalCommandEncoder() noexcept override = default;
+    ~MetalCommandEncoder() noexcept override;
     [[nodiscard]] auto stream() const noexcept { return _stream; }
     [[nodiscard]] auto device() const noexcept { return _stream->device(); }
     [[nodiscard]] MTL::CommandBuffer *command_buffer() noexcept;

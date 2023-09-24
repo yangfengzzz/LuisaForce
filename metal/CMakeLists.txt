@@ -29,10 +29,15 @@ set(COMMON_FILES
         metal_texture.cpp
 )
 
+set(COMMANDS_FILES
+        metal_commands/mad_throughput.cpp
+)
+
 source_group("common\\" FILES ${COMMON_FILES})
 
 set(PROJECT_FILES
         ${COMMON_FILES}
+        ${COMMANDS_FILES}
 )
 
 #NB: switch this to shared library and things stop working. (there is likely two copies of volk somewhere.

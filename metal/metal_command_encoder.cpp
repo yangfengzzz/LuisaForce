@@ -12,6 +12,8 @@
 #include "metal_shader.h"
 #include "metal_bindless_array.h"
 #include "metal_command_encoder.h"
+#include "runtime/ext/registry.h"
+#include "runtime/ext/metal/metal_command.h"
 
 namespace luisa::compute::metal {
 
@@ -58,6 +60,13 @@ void MetalCommandEncoder::_prepare_command_buffer() noexcept {
         _command_buffer = _stream->queue()->commandBuffer(desc);
         desc->release();
     }
+}
+
+MetalCommandEncoder::~MetalCommandEncoder() noexcept {
+    for (auto &item : pipeline_cache_states) {
+        item.second->release();
+    }
+    pipeline_cache_states.clear();
 }
 
 void MetalCommandEncoder::add_callback(MetalCallbackContext *cb) noexcept {
@@ -248,10 +257,72 @@ void MetalCommandEncoder::visit(BindlessArrayUpdateCommand *command) noexcept {
 
 void MetalCommandEncoder::visit(CustomCommand *command) noexcept {
     _prepare_command_buffer();
-    LUISA_ERROR_WITH_LOCATION(
-        "Custom command (uuid = 0x{:04x}) is not "
-        "supported in Metal backend.",
-        command->uuid());
+
+    switch (command->uuid()) {
+        case to_underlying(CustomCommandUUID::CUSTOM_DISPATCH): {
+            auto metal_command = dynamic_cast<MetalCommand *>(command);
+            LUISA_ASSERT(metal_command != nullptr, "Invalid CudaLCuBCommand.");
+
+            auto pso = find_pipeline_cache(metal_command->shader_source, metal_command->macros);
+            auto encoder = _command_buffer->computeCommandEncoder();
+            encoder->setComputePipelineState(pso);
+            metal_command->func(encoder, pso->threadExecutionWidth());
+            encoder->endEncoding();
+
+            break;
+        }
+        default:
+            LUISA_ERROR_WITH_LOCATION(
+                "Custom command (uuid = 0x{:04x}) is not "
+                "supported in Metal backend.",
+                command->uuid());
+    }
+}
+
+MTL::ComputePipelineState *MetalCommandEncoder::find_pipeline_cache(const std::string &raw_source,
+                                                                    const std::unordered_map<std::string, std::string> &macros) {
+    luisa::vector<NS::Object *> property_keys;
+    luisa::vector<NS::Object *> property_values;
+
+    auto hash = luisa::hash_value(raw_source);
+    for (auto &item : macros) {
+        property_keys.push_back(NS::String::string(item.first.c_str(), NS::UTF8StringEncoding));
+        property_values.push_back(NS::String::string(item.second.c_str(), NS::UTF8StringEncoding));
+
+        hash = luisa::hash_combine({hash, luisa::hash_value(item.first)});
+        hash = luisa::hash_combine({hash, luisa::hash_value(item.second)});
+    }
+    auto iter = pipeline_cache_states.find(hash);
+    if (iter == pipeline_cache_states.end()) {
+        auto source = NS::String::string(raw_source.c_str(), NS::UTF8StringEncoding);
+
+        NS::Error *error{nullptr};
+        auto option = make_shared(MTL::CompileOptions::alloc()->init());
+
+        NS::Dictionary *dict = NS::Dictionary::alloc()->init(property_keys.data(),
+                                                             property_values.data(), macros.size())
+                                   ->autorelease();
+        option->setPreprocessorMacros(dict);
+        auto library = make_shared(device()->newLibrary(source, option.get(), &error));
+        if (error != nullptr) {
+            LUISA_ERROR_WITH_LOCATION("Could not load Metal shader library: {}",
+                                      error->description()->cString(NS::StringEncoding::UTF8StringEncoding));
+        }
+
+        auto functionName = NS::String::string("main", NS::UTF8StringEncoding);
+        auto function = make_shared(library->newFunction(functionName));
+
+        auto pso = device()->newComputePipelineState(function.get(), &error);
+        if (error != nullptr) {
+            LUISA_ERROR_WITH_LOCATION("could not create pso: {}",
+                                      error->description()->cString(NS::StringEncoding::UTF8StringEncoding));
+        }
+
+        pipeline_cache_states[hash] = pso;
+        return pipeline_cache_states[hash];
+    } else {
+        return iter->second;
+    }
 }
 
 }// namespace luisa::compute::metal
