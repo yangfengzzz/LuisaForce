@@ -28,15 +28,19 @@ public:
 
     luisa::function<void(MTL::ComputeCommandEncoder *encoder, uint32_t width)> func;
 
+    std::string entry;
+
     std::string shader_source;
 
     std::unordered_map<std::string, std::string> macros;
 
 public:
     explicit MetalCommand(luisa::function<void(MTL::ComputeCommandEncoder *encoder, uint32_t thread_execution_width)> f,
+                          std::string entry,
                           std::string shader_source,
                           std::unordered_map<std::string, std::string> macros) noexcept
         : CustomCommand{}, func{std::move(f)},
+          entry{std::move(entry)},
           shader_source{std::move(shader_source)},
           macros{std::move(macros)} {}
 

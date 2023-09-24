@@ -23,7 +23,7 @@ private:
 private:
     void _prepare_command_buffer() noexcept;
 
-    MTL::ComputePipelineState * find_pipeline_cache(const std::string& source,
+    MTL::ComputePipelineState * find_pipeline_cache(const std::string& source, const std::string& entry,
                                                    const std::unordered_map<std::string, std::string>& macros);
 
 public:

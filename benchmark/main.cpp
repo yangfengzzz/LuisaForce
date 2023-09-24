@@ -16,7 +16,9 @@ using namespace luisa::compute;
 int main(int argc, char **argv) {
     ::benchmark::Initialize(&argc, argv);
     Context context{argv[0]};
-    Device device = context.create_device();
+    DeviceConfig config{
+        .device_index = 1};
+    Device device = context.create_device(&config);
 
     vox::LatencyMeasureMode mode = vox::LatencyMeasureMode::kSystemSubmit;
     auto app = std::make_unique<vox::benchmark::MADThroughPut>();

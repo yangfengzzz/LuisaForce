@@ -11,6 +11,7 @@ namespace luisa::compute::metal {
 MetalCommand::UCommand MetalCommand::mad_throughput(BufferView<float> src0_buffer,
                                                     BufferView<float> src1_buffer,
                                                     BufferView<float> dst_buffer) noexcept {
+    static std::string entry = "mad_throughput";
     static std::string shader_source = "#include <metal_stdlib>\n"
                                        "using namespace metal;\n"
                                        "\n"
@@ -46,7 +47,7 @@ MetalCommand::UCommand MetalCommand::mad_throughput(BufferView<float> src0_buffe
             encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(dst_buffer.handle())->handle(), 0, 2);
             encoder->dispatchThreads({(uint32_t)src0_buffer.size() / 4, 1, 1}, {width, 1, 1});
         },
-        shader_source, macros);
+        entry, shader_source, macros);
 }
 
 }// namespace luisa::compute::metal

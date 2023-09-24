@@ -263,7 +263,7 @@ void MetalCommandEncoder::visit(CustomCommand *command) noexcept {
             auto metal_command = dynamic_cast<MetalCommand *>(command);
             LUISA_ASSERT(metal_command != nullptr, "Invalid CudaLCuBCommand.");
 
-            auto pso = find_pipeline_cache(metal_command->shader_source, metal_command->macros);
+            auto pso = find_pipeline_cache(metal_command->shader_source, metal_command->entry, metal_command->macros);
             auto encoder = _command_buffer->computeCommandEncoder();
             encoder->setComputePipelineState(pso);
             metal_command->func(encoder, pso->threadExecutionWidth());
@@ -279,7 +279,7 @@ void MetalCommandEncoder::visit(CustomCommand *command) noexcept {
     }
 }
 
-MTL::ComputePipelineState *MetalCommandEncoder::find_pipeline_cache(const std::string &raw_source,
+MTL::ComputePipelineState *MetalCommandEncoder::find_pipeline_cache(const std::string &raw_source, const std::string& entry,
                                                                     const std::unordered_map<std::string, std::string> &macros) {
     luisa::vector<NS::Object *> property_keys;
     luisa::vector<NS::Object *> property_values;
@@ -299,8 +299,8 @@ MTL::ComputePipelineState *MetalCommandEncoder::find_pipeline_cache(const std::s
         NS::Error *error{nullptr};
         auto option = make_shared(MTL::CompileOptions::alloc()->init());
 
-        NS::Dictionary *dict = NS::Dictionary::alloc()->init(property_keys.data(),
-                                                             property_values.data(), macros.size())
+        NS::Dictionary *dict = NS::Dictionary::alloc()->init(property_values.data(),
+                                                             property_keys.data(), macros.size())
                                    ->autorelease();
         option->setPreprocessorMacros(dict);
         auto library = make_shared(device()->newLibrary(source, option.get(), &error));
@@ -309,7 +309,7 @@ MTL::ComputePipelineState *MetalCommandEncoder::find_pipeline_cache(const std::s
                                       error->description()->cString(NS::StringEncoding::UTF8StringEncoding));
         }
 
-        auto functionName = NS::String::string("main", NS::UTF8StringEncoding);
+        auto functionName = NS::String::string(entry.c_str(), NS::UTF8StringEncoding);
         auto function = make_shared(library->newFunction(functionName));
 
         auto pso = device()->newComputePipelineState(function.get(), &error);
