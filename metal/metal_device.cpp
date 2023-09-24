@@ -37,6 +37,8 @@ MetalDevice::MetalDevice(Context &&ctx, const DeviceConfig *config) noexcept
     _handle = all_devices->object<MTL::Device>(device_index)->retain();
     all_devices->release();
 
+    _backend_name = _handle->name()->cString(NS::UTF8StringEncoding);
+
     LUISA_ASSERT(_handle->supportsFamily(MTL::GPUFamilyMetal3),
                  "Metal device '{}' at index {} does not support Metal 3.",
                  _handle->name()->utf8String(), device_index);
