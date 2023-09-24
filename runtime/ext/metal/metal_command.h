@@ -19,14 +19,18 @@ namespace luisa::compute::metal {
 
 class MetalCommand final : public luisa::compute::CustomCommand {
 public:
-    luisa::function<void(MTL::CommandEncoder *encoder, uint32_t width)> func;
+    template<typename T>
+    using BufferView = luisa::compute::BufferView<T>;
+    using UCommand = luisa::unique_ptr<luisa::compute::metal::MetalCommand>;
+
+    luisa::function<void(MTL::ComputeCommandEncoder *encoder, uint32_t width)> func;
 
     std::string shader_source;
 
     std::unordered_map<std::string, std::string> macros;
 
 public:
-    explicit MetalCommand(luisa::function<void(MTL::CommandEncoder *encoder, uint32_t thread_execution_width)> f,
+    explicit MetalCommand(luisa::function<void(MTL::ComputeCommandEncoder *encoder, uint32_t thread_execution_width)> f,
                           std::string shader_source,
                           std::unordered_map<std::string, std::string> macros) noexcept
         : CustomCommand{}, func{std::move(f)},
@@ -38,6 +42,10 @@ public:
     [[nodiscard]] uint64_t uuid() const noexcept override {
         return static_cast<uint64_t>(CustomCommandUUID::CUSTOM_DISPATCH);
     }
+
+public:
+    static UCommand mad_throughput(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer) noexcept;
+
 };
 
 }// namespace luisa::compute::metal
