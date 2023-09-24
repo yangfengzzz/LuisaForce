@@ -90,3 +90,4 @@ if (APPLE)
 endif ()
 
 add_subdirectory(apps)
+add_subdirectory(benchmark)

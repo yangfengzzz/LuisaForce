@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <Metal/Metal.hpp>
 #include "core/stl/functional.h"
 #include "runtime/buffer.h"
 #include "runtime/device.h"
@@ -14,6 +13,10 @@
 #include "runtime/context.h"
 #include "runtime/rhi/command.h"
 #include "runtime/ext/registry.h"
+
+namespace MTL {
+class ComputeCommandEncoder;
+}
 
 namespace luisa::compute::metal {
 
