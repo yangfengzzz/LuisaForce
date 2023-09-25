@@ -23,12 +23,9 @@ private:
 private:
     void _prepare_command_buffer() noexcept;
 
-    MTL::ComputePipelineState * find_pipeline_cache(const std::string& source, const std::string& entry,
-                                                   const std::unordered_map<std::string, std::string>& macros);
-
 public:
     explicit MetalCommandEncoder(MetalStream *stream) noexcept;
-    ~MetalCommandEncoder() noexcept override;
+    ~MetalCommandEncoder() noexcept override = default;
     [[nodiscard]] auto stream() const noexcept { return _stream; }
     [[nodiscard]] auto device() const noexcept { return _stream->device(); }
     [[nodiscard]] MTL::CommandBuffer *command_buffer() noexcept;

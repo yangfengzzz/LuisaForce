@@ -10,6 +10,7 @@
 #include "runtime/buffer.h"
 #include "runtime/stream.h"
 #include "runtime/ext/metal/metal_command.h"
+#include "runtime/ext/debug_capture_ext.h"
 #include <spdlog/fmt/fmt.h>
 
 namespace vox::benchmark {
@@ -18,6 +19,7 @@ static void throughput(::benchmark::State &state,
                        Device *device,
                        size_t num_element, int loop_count, compute::DataType data_type) {
     auto stream = device->create_stream();
+    auto capture = device->extension<DebugCaptureExt>();
     //===-------------------------------------------------------------------===/
     // Create buffers
     //===-------------------------------------------------------------------===/
@@ -65,8 +67,17 @@ static void throughput(::benchmark::State &state,
     // Dispatch
     //===-------------------------------------------------------------------===/
     {
-        stream << metal::MetalCommand::mad_throughput(src0_buffer.view(), src1_buffer.view(), dst_buffer.view())
+        auto command = metal::MetalCommand::mad_throughput(src0_buffer.view(), src1_buffer.view(), dst_buffer.view());
+
+        auto scope = capture->create_scope("test");
+        capture->start_capture(scope);
+        scope.mark_begin();
+
+        stream << std::move(command)
                << synchronize();
+
+        scope.mark_end();
+        capture->stop_capture();
     }
 
     //===-------------------------------------------------------------------===/
@@ -100,11 +111,10 @@ static void throughput(::benchmark::State &state,
     //===-------------------------------------------------------------------===/
     {
         for ([[maybe_unused]] auto _ : state) {
-            // auto scope = compute::create_capture_scope("test", *device);
-            // scope->beginScope();
+            auto command = metal::MetalCommand::mad_throughput(src0_buffer.view(), src1_buffer.view(), dst_buffer.view());
 
             auto start_time = std::chrono::high_resolution_clock::now();
-            stream << metal::MetalCommand::mad_throughput(src0_buffer.view(), src1_buffer.view(), dst_buffer.view())
+            stream << std::move(command)
                    << synchronize();
             auto end_time = std::chrono::high_resolution_clock::now();
 
@@ -114,8 +124,6 @@ static void throughput(::benchmark::State &state,
                     state.SetIterationTime(elapsed_seconds.count());
                     break;
             }
-
-            // scope->endScope();
         }
         double numOperation = double(num_element) * 2. /*fma*/ *
                               10. /*10 elements per loop iteration*/ *

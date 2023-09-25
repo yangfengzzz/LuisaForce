@@ -30,6 +30,7 @@ set(COMMON_FILES
 )
 
 set(COMMANDS_FILES
+        metal_commands/metal_command.cpp
         metal_commands/mad_throughput.cpp
 )
 

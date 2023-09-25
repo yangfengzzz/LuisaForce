@@ -16,7 +16,9 @@
 
 namespace MTL {
 class ComputeCommandEncoder;
-}
+class ComputePipelineState;
+class Device;
+}// namespace MTL
 
 namespace luisa::compute::metal {
 
@@ -26,23 +28,19 @@ public:
     using BufferView = luisa::compute::BufferView<T>;
     using UCommand = luisa::unique_ptr<luisa::compute::metal::MetalCommand>;
 
-    luisa::function<void(MTL::ComputeCommandEncoder *encoder, uint32_t width)> func;
+    luisa::function<void(MTL::ComputeCommandEncoder *encoder, MTL::ComputePipelineState *pso)> func;
+    luisa::function<MTL::ComputePipelineState *(MTL::Device *device)> pso_func;
 
-    std::string entry;
+    MTL::ComputePipelineState *pso{nullptr};
 
-    std::string shader_source;
-
-    std::unordered_map<std::string, std::string> macros;
+    static MTL::ComputePipelineState *create_pipeline_cache(MTL::Device *device,
+                                                            const std::string &raw_source, const std::string &entry,
+                                                            const std::unordered_map<std::string, std::string> &macros);
 
 public:
-    explicit MetalCommand(luisa::function<void(MTL::ComputeCommandEncoder *encoder, uint32_t thread_execution_width)> f,
-                          std::string entry,
-                          std::string shader_source,
-                          std::unordered_map<std::string, std::string> macros) noexcept
-        : CustomCommand{}, func{std::move(f)},
-          entry{std::move(entry)},
-          shader_source{std::move(shader_source)},
-          macros{std::move(macros)} {}
+    explicit MetalCommand(luisa::function<void(MTL::ComputeCommandEncoder *encoder, MTL::ComputePipelineState *pso)> f,
+                          luisa::function<MTL::ComputePipelineState *(MTL::Device *device)> pso_f) noexcept
+        : CustomCommand{}, func{std::move(f)}, pso_func{std::move(pso_f)} {}
 
     [[nodiscard]] StreamTag stream_tag() const noexcept override { return StreamTag::COMPUTE; }
 
@@ -52,7 +50,6 @@ public:
 
 public:
     static UCommand mad_throughput(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer) noexcept;
-
 };
 
 }// namespace luisa::compute::metal
