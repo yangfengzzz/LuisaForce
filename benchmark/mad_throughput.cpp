@@ -26,6 +26,8 @@ static void throughput(::benchmark::State &state,
     auto src0_buffer = device->create_buffer<float>(num_element);
     auto src1_buffer = device->create_buffer<float>(num_element);
     auto dst_buffer = device->create_buffer<float>(num_element);
+    auto command = metal::MetalCommand::mad_throughput(src0_buffer.view(), src1_buffer.view(), dst_buffer.view());
+    command->alloc_pso(device);
 
     //===-------------------------------------------------------------------===/
     // Set source buffer data
@@ -67,13 +69,11 @@ static void throughput(::benchmark::State &state,
     // Dispatch
     //===-------------------------------------------------------------------===/
     {
-        auto command = metal::MetalCommand::mad_throughput(src0_buffer.view(), src1_buffer.view(), dst_buffer.view());
-
         auto scope = capture->create_scope("test");
         capture->start_capture(scope);
         scope.mark_begin();
 
-        stream << std::move(command)
+        stream << command->clone()
                << synchronize();
 
         scope.mark_end();
@@ -111,10 +111,9 @@ static void throughput(::benchmark::State &state,
     //===-------------------------------------------------------------------===/
     {
         for ([[maybe_unused]] auto _ : state) {
-            auto command = metal::MetalCommand::mad_throughput(src0_buffer.view(), src1_buffer.view(), dst_buffer.view());
 
             auto start_time = std::chrono::high_resolution_clock::now();
-            stream << std::move(command)
+            stream << command->clone()
                    << synchronize();
             auto end_time = std::chrono::high_resolution_clock::now();
 

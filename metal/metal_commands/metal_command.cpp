@@ -6,6 +6,7 @@
 
 #include "runtime/ext/metal/metal_command.h"
 #include "metal_buffer.h"
+#include "metal_device.h"
 #include "core/logging.h"
 
 namespace luisa::compute::metal {
@@ -43,7 +44,25 @@ MTL::ComputePipelineState *MetalCommand::create_pipeline_cache(MTL::Device *devi
         LUISA_ERROR_WITH_LOCATION("could not create pso: {}",
                                   error->description()->cString(NS::StringEncoding::UTF8StringEncoding));
     }
+    pso->retain();
     return pso;
+}
+
+MetalCommand::UCommand MetalCommand::clone() {
+    return luisa::make_unique<luisa::compute::metal::MetalCommand>(this);
+}
+
+MetalCommand::MetalCommand(MetalCommand *command) noexcept
+    : CustomCommand{}, func{command->func}, pso_func{command->pso_func}, pso{command->pso} {
+    pso->retain();
+}
+
+MetalCommand::~MetalCommand() {
+    pso->release();
+}
+
+void MetalCommand::alloc_pso(Device *device) {
+    pso = pso_func(dynamic_cast<MetalDevice *>(device->impl())->handle());
 }
 
 }// namespace luisa::compute::metal

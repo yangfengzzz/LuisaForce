@@ -38,15 +38,23 @@ public:
                                                             const std::unordered_map<std::string, std::string> &macros);
 
 public:
-    explicit MetalCommand(luisa::function<void(MTL::ComputeCommandEncoder *encoder, MTL::ComputePipelineState *pso)> f,
-                          luisa::function<MTL::ComputePipelineState *(MTL::Device *device)> pso_f) noexcept
+    MetalCommand(luisa::function<void(MTL::ComputeCommandEncoder *encoder, MTL::ComputePipelineState *pso)> f,
+                 luisa::function<MTL::ComputePipelineState *(MTL::Device *device)> pso_f) noexcept
         : CustomCommand{}, func{std::move(f)}, pso_func{std::move(pso_f)} {}
+
+    MetalCommand(MetalCommand *command) noexcept;
+
+    ~MetalCommand();
 
     [[nodiscard]] StreamTag stream_tag() const noexcept override { return StreamTag::COMPUTE; }
 
     [[nodiscard]] uint64_t uuid() const noexcept override {
         return static_cast<uint64_t>(CustomCommandUUID::CUSTOM_DISPATCH);
     }
+
+    void alloc_pso(Device *device);
+
+    UCommand clone();
 
 public:
     static UCommand mad_throughput(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer) noexcept;
