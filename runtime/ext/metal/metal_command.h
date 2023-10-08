@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "core/stl/vector.h"
 #include "core/stl/functional.h"
 #include "runtime/buffer.h"
 #include "runtime/device.h"
@@ -58,6 +59,9 @@ public:
 
 public:
     static UCommand mad_throughput(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer) noexcept;
+
+    static UCommand matmul(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer,
+                           std::array<uint32_t, 3> threads, std::array<uint32_t, 3> thread_groups) noexcept;
 };
 
 }// namespace luisa::compute::metal

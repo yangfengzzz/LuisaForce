@@ -11,7 +11,6 @@
 #include <ostream>
 #include <utility>
 
-namespace vox::compute {
 class fp16;
 
 enum class DataType {
@@ -124,5 +123,3 @@ public:
 private:
     uint16_t value_{};
 };
-
-}// namespace vox::compute

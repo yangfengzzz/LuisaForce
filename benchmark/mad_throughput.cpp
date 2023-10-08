@@ -17,7 +17,7 @@ namespace vox::benchmark {
 static void throughput(::benchmark::State &state,
                        LatencyMeasureMode mode,
                        Device *device,
-                       size_t num_element, int loop_count, compute::DataType data_type) {
+                       size_t num_element, int loop_count, DataType data_type) {
     auto stream = device->create_stream();
     auto capture = device->extension<DebugCaptureExt>();
     //===-------------------------------------------------------------------===/
@@ -41,18 +41,18 @@ static void throughput(::benchmark::State &state,
         return v;
     };
 
-    if (data_type == compute::DataType::fp16) {
+    if (data_type == DataType::fp16) {
         std::vector<uint16_t> src_float_buffer(num_element);
         for (size_t i = 0; i < num_element; i++) {
-            src_float_buffer[i] = compute::fp16(getSrc0(i)).get_value();
+            src_float_buffer[i] = fp16(getSrc0(i)).get_value();
         }
         stream << src0_buffer.copy_from(src_float_buffer.data()) << synchronize();
 
         for (size_t i = 0; i < num_element; i++) {
-            src_float_buffer[i] = compute::fp16(getSrc1(i)).get_value();
+            src_float_buffer[i] = fp16(getSrc1(i)).get_value();
         }
         stream << src1_buffer.copy_from(src_float_buffer.data()) << synchronize();
-    } else if (data_type == compute::DataType::fp32) {
+    } else if (data_type == DataType::fp32) {
         std::vector<float> src_float_buffer(num_element);
         for (size_t i = 0; i < num_element; i++) {
             src_float_buffer[i] = getSrc0(i);
@@ -84,17 +84,17 @@ static void throughput(::benchmark::State &state,
     // Verify destination buffer data
     //===-------------------------------------------------------------------===/
 
-    if (data_type == compute::DataType::fp16) {
+    if (data_type == DataType::fp16) {
         std::vector<uint16_t> dst_float_buffer(num_element);
         stream << dst_buffer.copy_to(dst_float_buffer.data()) << synchronize();
         for (size_t i = 0; i < num_element; i++) {
             float limit = getSrc1(i) * (1.f / (1.f - getSrc0(i)));
-            BM_CHECK_FLOAT_EQ(compute::fp16(dst_float_buffer[i]).to_float(), limit, 0.5f)
+            BM_CHECK_FLOAT_EQ(fp16(dst_float_buffer[i]).to_float(), limit, 0.5f)
                 << "destination buffer element #" << i
                 << " has incorrect value: expected to be " << limit
-                << " but found " << compute::fp16(dst_float_buffer[i]).to_float();
+                << " but found " << fp16(dst_float_buffer[i]).to_float();
         }
-    } else if (data_type == compute::DataType::fp32) {
+    } else if (data_type == DataType::fp32) {
         std::vector<float> dst_float_buffer(num_element);
         stream << dst_buffer.copy_to(dst_float_buffer.data()) << synchronize();
         for (size_t i = 0; i < num_element; i++) {
@@ -146,7 +146,7 @@ void MADThroughPut::register_benchmarks(Device &device, LatencyMeasureMode mode)
         std::string test_name = fmt::format("{}/{}/{}/{}", gpu_name, "mad_throughput", num_element, loop_count);
 
         ::benchmark::RegisterBenchmark(test_name, throughput, mode, &device,
-                                       num_element, loop_count, compute::DataType::fp32)
+                                       num_element, loop_count, DataType::fp32)
             ->UseManualTime()
             ->Unit(::benchmark::kMicrosecond)
             ->MinTime(std::numeric_limits<float>::epsilon());// use cache make calculation fast after warmup

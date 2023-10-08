@@ -9,8 +9,6 @@
 #include <cstring>
 #include <type_traits>
 
-namespace vox::compute {
-
 template<typename To, typename From>
 static To bitcast(From x) {
     static_assert(std::is_trivially_copyable_v<From>);
@@ -50,5 +48,3 @@ float fp16::to_float() const {
     asInt = sign | exp | mantissa;
     return bitcast<float>(asInt);
 }
-
-}// namespace vox::compute
