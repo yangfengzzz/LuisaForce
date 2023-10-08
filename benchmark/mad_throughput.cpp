@@ -100,9 +100,8 @@ static void throughput(::benchmark::State &state,
         for (size_t i = 0; i < num_element; i++) {
             float limit = getSrc1(i) * (1.f / (1.f - getSrc0(i)));
             BM_CHECK_FLOAT_EQ(dst_float_buffer[i], limit, 0.01f)
-                << "destination buffer element #" << i
-                << " has incorrect value: expected to be " << limit
-                << " but found " << dst_float_buffer[i];
+                << fmt::format("destination buffer element #{}, has incorrect value: expected to be {} but found {}",
+                               i, limit, dst_float_buffer[i]);
         }
     }
 

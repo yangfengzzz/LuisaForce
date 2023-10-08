@@ -18,7 +18,7 @@ MetalCommand::UCommand MetalCommand::matmul(BufferView<float> src0_buffer, Buffe
             encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(src0_buffer.handle())->handle(), 0, 0);
             encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(src1_buffer.handle())->handle(), 0, 1);
             encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(dst_buffer.handle())->handle(), 0, 2);
-            encoder->dispatchThreads({uint32_t(N / tileN), uint32_t(M / tileM), 1}, {uint32_t(wg_size_x), uint32_t(wg_size_y), 1});
+            encoder->dispatchThreadgroups({uint32_t(N / tileN), uint32_t(M / tileM), 1}, {uint32_t(wg_size_x), uint32_t(wg_size_y), 1});
         },
         [=](MTL::Device *device) {
             std::string entry = "matmul_tiled_fp32";

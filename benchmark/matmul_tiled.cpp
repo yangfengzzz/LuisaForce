@@ -60,7 +60,7 @@ static ShaderCode kShaderCodeCases[] = {
 
 /// Fills the 2D matrix with values produced by the |generator| function.
 template<typename GeneratorFn>
-static void fill_buffer(DataType data_type, void *raw_buffer, size_t num_bytes,
+static void fill_buffer(DataType data_type, void *raw_buffer,
                         unsigned dim_1, unsigned dim_2, GeneratorFn generator) {
     auto fill = [&](auto traits) {
         using Traits = decltype(traits);
@@ -85,7 +85,7 @@ static void fill_buffer(DataType data_type, void *raw_buffer, size_t num_bytes,
 template<DataType OutputType, DataType InputType, typename Generator1Fn,
          typename Generator2Fn>
 static void check_output(const ShaderCode &shader, void *raw_buffer,
-                         size_t num_bytes, unsigned M, unsigned N, unsigned K,
+                         unsigned M, unsigned N, unsigned K,
                          Generator1Fn lhs, Generator2Fn rhs) {
     using OutputTraits = DataTypeTraits<OutputType>;
     using OutputStorageType = typename OutputTraits::storage_type;
@@ -148,12 +148,12 @@ static void matmul(::benchmark::State &state,
     };
 
     auto ptr = malloc(src0_size);
-    fill_buffer(input_type, ptr, src0_size, M, K, getSrc0);
+    fill_buffer(input_type, ptr, M, K, getSrc0);
     stream << src0_buffer.copy_from(ptr) << synchronize();
     free(ptr);
 
     ptr = malloc(src1_size);
-    fill_buffer(input_type, ptr, src1_size, K, N, getSrc1);
+    fill_buffer(input_type, ptr, K, N, getSrc1);
     stream << src1_buffer.copy_from(ptr) << synchronize();
     free(ptr);
 
@@ -175,8 +175,8 @@ static void matmul(::benchmark::State &state,
     if (output_type == DataType::fp32) {
         ptr = malloc(dst_size);
         stream << dst_buffer.copy_to(ptr) << synchronize();
-        check_output<DataType::fp32, DataType::fp32>(shader, ptr, dst_size, M,
-                                                     N, K, getSrc0, getSrc1);
+        check_output<DataType::fp32, DataType::fp32>(shader, ptr, M, N, K,
+                                                     getSrc0, getSrc1);
         free(ptr);
     }
 
@@ -226,8 +226,7 @@ void MatMul::register_benchmarks(Device &device, LatencyMeasureMode mode) {
             ::benchmark::RegisterBenchmark(test_name, matmul, mode, &device,
                                            shader, paddM, paddN, K)
                 ->UseManualTime()
-                ->Unit(::benchmark::kMicrosecond)
-                ->MinTime(std::numeric_limits<float>::epsilon());// use cache make calculation fast after warmup
+                ->Unit(::benchmark::kMicrosecond);
         }
     }
 }
