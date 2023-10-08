@@ -21,7 +21,7 @@ MetalCommand::UCommand MetalCommand::mad_throughput(BufferView<float> src0_buffe
         },
         [&](MTL::Device *device) {
             std::string entry = "mad_throughput";
-            std::string shader_source = MetalCommand::read_shader("shaders/mad_throughput.metal");
+            std::string shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/mad_throughput.metal");
 
             std::unordered_map<std::string, std::string> macros;
             macros["kLoopSize"] = std::to_string(src0_buffer.size());

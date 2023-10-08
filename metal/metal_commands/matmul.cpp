@@ -22,7 +22,7 @@ MetalCommand::UCommand MetalCommand::matmul(BufferView<float> src0_buffer, Buffe
         },
         [&](MTL::Device *device) {
             std::string entry = "matmul_tiled_fp32";
-            std::string shader_source = MetalCommand::read_shader("shaders/matmul/matmul_tiled_fp32.metal");
+            std::string shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/matmul/matmul_tiled_fp32.metal");
 
             std::unordered_map<std::string, std::string> macros;
             macros["M"] = std::to_string(M);

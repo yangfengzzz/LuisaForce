@@ -18,11 +18,11 @@ int main(int argc, char **argv) {
     ::benchmark::Initialize(&argc, argv);
     Context context{argv[0]};
     DeviceConfig config{
-        .device_index = 1};
+        .device_index = 0};
     Device device = context.create_device(&config);
 
     vox::LatencyMeasureMode mode = vox::LatencyMeasureMode::kSystemSubmit;
-    auto app = std::make_unique<vox::benchmark::MADThroughPut>();
+    auto app = std::make_unique<vox::benchmark::MatMul>();
     app->register_benchmarks(device, mode);
 
     ::benchmark::RunSpecifiedBenchmarks();
