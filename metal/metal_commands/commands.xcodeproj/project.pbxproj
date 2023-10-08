@@ -8,13 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		04774FF72AD10F760080D9FD /* mad_throughput.metal in Sources */ = {isa = PBXBuildFile; fileRef = 04774FF62AD10F760080D9FD /* mad_throughput.metal */; };
-		04774FF92AD10FF30080D9FD /* mat_mul.metal in Sources */ = {isa = PBXBuildFile; fileRef = 04774FF82AD10FF30080D9FD /* mat_mul.metal */; };
+		047750002AD23EFC0080D9FD /* matmul_tiled_fp16.metal in Sources */ = {isa = PBXBuildFile; fileRef = 04774FFB2AD23B250080D9FD /* matmul_tiled_fp16.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		04774FEC2AD10F430080D9FD /* commands.metallib */ = {isa = PBXFileReference; explicitFileType = "archive.metal-library"; includeInIndex = 0; path = commands.metallib; sourceTree = BUILT_PRODUCTS_DIR; };
 		04774FF62AD10F760080D9FD /* mad_throughput.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = mad_throughput.metal; sourceTree = "<group>"; };
-		04774FF82AD10FF30080D9FD /* mat_mul.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = mat_mul.metal; sourceTree = "<group>"; };
+		04774FF82AD10FF30080D9FD /* matmul_tiled_fp32.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = matmul_tiled_fp32.metal; sourceTree = "<group>"; };
+		04774FFB2AD23B250080D9FD /* matmul_tiled_fp16.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = matmul_tiled_fp16.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -37,10 +38,19 @@
 		04774FEE2AD10F430080D9FD /* shaders */ = {
 			isa = PBXGroup;
 			children = (
+				04774FFA2AD23AFC0080D9FD /* matmul */,
 				04774FF62AD10F760080D9FD /* mad_throughput.metal */,
-				04774FF82AD10FF30080D9FD /* mat_mul.metal */,
 			);
 			path = shaders;
+			sourceTree = "<group>";
+		};
+		04774FFA2AD23AFC0080D9FD /* matmul */ = {
+			isa = PBXGroup;
+			children = (
+				04774FF82AD10FF30080D9FD /* matmul_tiled_fp32.metal */,
+				04774FFB2AD23B250080D9FD /* matmul_tiled_fp16.metal */,
+			);
+			path = matmul;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -99,7 +109,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				04774FF72AD10F760080D9FD /* mad_throughput.metal in Sources */,
-				04774FF92AD10FF30080D9FD /* mat_mul.metal in Sources */,
+				047750002AD23EFC0080D9FD /* matmul_tiled_fp16.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
