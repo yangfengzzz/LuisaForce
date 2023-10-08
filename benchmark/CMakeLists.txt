@@ -14,6 +14,7 @@ set(SRC
         main.cpp
         mad_throughput.cpp
         matmul_tiled.cpp
+        mmt.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SRC})

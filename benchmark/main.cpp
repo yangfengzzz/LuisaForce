@@ -10,6 +10,7 @@
 
 #include "mad_throughput.h"
 #include "matmul_tiled.h"
+#include "mmt.h"
 
 using namespace luisa;
 using namespace luisa::compute;
