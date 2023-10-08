@@ -9,6 +9,7 @@
 #include "runtime/device.h"
 
 #include "mad_throughput.h"
+#include "matmul_tiled.h"
 
 using namespace luisa;
 using namespace luisa::compute;
