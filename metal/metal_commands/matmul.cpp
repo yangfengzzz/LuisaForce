@@ -9,44 +9,30 @@
 
 namespace luisa::compute::metal {
 MetalCommand::UCommand MetalCommand::matmul(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer,
-                                            std::array<uint32_t, 3> threads, std::array<uint32_t, 3> thread_groups) noexcept {
+                                            int tileM, int tileN, int tileK,
+                                            int M, int N, int K,
+                                            int wg_size_x, int wg_size_y) noexcept {
     return luisa::make_unique<luisa::compute::metal::MetalCommand>(
         [=](MTL::ComputeCommandEncoder *encoder, MTL::ComputePipelineState *pso) {
             encoder->setComputePipelineState(pso);
             encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(src0_buffer.handle())->handle(), 0, 0);
             encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(src1_buffer.handle())->handle(), 0, 1);
             encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(dst_buffer.handle())->handle(), 0, 2);
-            encoder->dispatchThreads({threads[0], threads[1], threads[2]}, {thread_groups[0], thread_groups[1], thread_groups[2]});
+            encoder->dispatchThreads({uint32_t(N / tileN), uint32_t(M / tileM), 1}, {uint32_t(wg_size_x), uint32_t(wg_size_y), 1});
         },
         [&](MTL::Device *device) {
             std::string entry = "matmul_tiled_fp32";
-            std::string shader_source = "#include <metal_stdlib>\n"
-                                        "using namespace metal;\n"
-                                        "\n"
-                                        "kernel void mad_throughput(device float4* inputA [[buffer(0)]],\n"
-                                        "                           device float4* inputB [[buffer(1)]],\n"
-                                        "                           device float4* output [[buffer(2)]],\n"
-                                        "                           uint3 tpig [[ thread_position_in_grid ]]) {\n"
-                                        "    float4 a = inputA[tpig.x];\n"
-                                        "    float4 b = inputB[tpig.x];\n"
-                                        "    float4 c = float4(1.f, 1.f, 1.f, 1.f);\n"
-                                        "    for(int i = 0; i < kLoopSize; i++) {\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "    }\n"
-                                        "    output[tpig.x] = c;\n"
-                                        "}";
+            std::string shader_source = MetalCommand::read_shader("shaders/matmul/matmul_tiled_fp32.metal");
 
             std::unordered_map<std::string, std::string> macros;
-            macros["kLoopSize"] = std::to_string(src0_buffer.size());
+            macros["M"] = std::to_string(M);
+            macros["N"] = std::to_string(N);
+            macros["K"] = std::to_string(K);
+            macros["tileM"] = std::to_string(tileM);
+            macros["tileN"] = std::to_string(tileN);
+            macros["tileK"] = std::to_string(tileK);
+            macros["WG_X"] = std::to_string(wg_size_x);
+            macros["WG_Y"] = std::to_string(wg_size_y);
             return create_pipeline_cache(device, shader_source, entry, macros);
         });
 }

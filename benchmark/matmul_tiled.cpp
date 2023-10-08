@@ -131,8 +131,9 @@ static void matmul(::benchmark::State &state,
     auto src1_buffer = device->create_buffer<float>(K * N);
     auto dst_buffer = device->create_buffer<float>(M * N);
     auto command = metal::MetalCommand::matmul(src0_buffer.view(), src1_buffer.view(), dst_buffer.view(),
-                                               {uint32_t(N / shader.tileN), uint32_t(M / shader.tileM), 1},
-                                               {uint32_t(shader.wg_size_x), uint32_t(shader.wg_size_y), 1});
+                                               shader.tileN, shader.tileM, shader.tileK,
+                                               M, N, K,
+                                               shader.wg_size_x, shader.wg_size_y);
     command->alloc_pso(device);
 
     //===-------------------------------------------------------------------===/

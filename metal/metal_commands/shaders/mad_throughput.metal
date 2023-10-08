@@ -7,7 +7,9 @@
 #include <metal_stdlib>
 using namespace metal;
 
-constant int kLoopSize [[function_constant(0)]];
+#ifndef kLoopSize
+#define kLoopSize 8
+#endif
 
 kernel void mad_throughput(device float4* inputA [[buffer(0)]],
                            device float4* inputB [[buffer(1)]],

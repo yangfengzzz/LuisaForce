@@ -21,30 +21,7 @@ MetalCommand::UCommand MetalCommand::mad_throughput(BufferView<float> src0_buffe
         },
         [&](MTL::Device *device) {
             std::string entry = "mad_throughput";
-            std::string shader_source = "#include <metal_stdlib>\n"
-                                        "using namespace metal;\n"
-                                        "\n"
-                                        "kernel void mad_throughput(device float4* inputA [[buffer(0)]],\n"
-                                        "                           device float4* inputB [[buffer(1)]],\n"
-                                        "                           device float4* output [[buffer(2)]],\n"
-                                        "                           uint3 tpig [[ thread_position_in_grid ]]) {\n"
-                                        "    float4 a = inputA[tpig.x];\n"
-                                        "    float4 b = inputB[tpig.x];\n"
-                                        "    float4 c = float4(1.f, 1.f, 1.f, 1.f);\n"
-                                        "    for(int i = 0; i < kLoopSize; i++) {\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "        c = a * c + b;\n"
-                                        "    }\n"
-                                        "    output[tpig.x] = c;\n"
-                                        "}";
+            std::string shader_source = MetalCommand::read_shader("shaders/mad_throughput.metal");
 
             std::unordered_map<std::string, std::string> macros;
             macros["kLoopSize"] = std::to_string(src0_buffer.size());

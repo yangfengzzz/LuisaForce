@@ -10,9 +10,17 @@ using namespace metal;
 uint2 gID [[threadgroup_position_in_grid]];
 uint2 laneId [[thread_position_in_threadgroup]];
 
-constant uint M [[function_constant(0)]];
-constant uint N [[function_constant(1)]];
-constant uint K [[function_constant(2)]];
+#ifndef M
+#define M 8
+#endif
+
+#ifndef N
+#define N 8
+#endif
+
+#ifndef K
+#define K 8
+#endif
 
 #ifndef TILE_M
 #define TILE_M 8

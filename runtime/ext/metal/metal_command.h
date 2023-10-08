@@ -38,6 +38,8 @@ public:
                                                             const std::string &raw_source, const std::string &entry,
                                                             const std::unordered_map<std::string, std::string> &macros);
 
+    static std::string read_shader(const std::string &filename);
+
 public:
     MetalCommand(luisa::function<void(MTL::ComputeCommandEncoder *encoder, MTL::ComputePipelineState *pso)> f,
                  luisa::function<MTL::ComputePipelineState *(MTL::Device *device)> pso_f) noexcept
@@ -61,7 +63,9 @@ public:
     static UCommand mad_throughput(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer) noexcept;
 
     static UCommand matmul(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer,
-                           std::array<uint32_t, 3> threads, std::array<uint32_t, 3> thread_groups) noexcept;
+                           int tileM, int tileN, int tileK,
+                           int M, int N, int K,
+                           int wg_size_x, int wg_size_y) noexcept;
 };
 
 }// namespace luisa::compute::metal

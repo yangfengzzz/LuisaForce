@@ -8,6 +8,7 @@
 #include "metal_buffer.h"
 #include "metal_device.h"
 #include "core/logging.h"
+#include <fstream>
 
 namespace luisa::compute::metal {
 MTL::ComputePipelineState *MetalCommand::create_pipeline_cache(MTL::Device *device,
@@ -46,6 +47,21 @@ MTL::ComputePipelineState *MetalCommand::create_pipeline_cache(MTL::Device *devi
     }
     pso->retain();
     return pso;
+}
+
+std::string MetalCommand::read_shader(const std::string &filename) {
+    std::vector<std::string> data;
+
+    std::ifstream file;
+
+    file.open(filename, std::ios::in);
+
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file: " + filename);
+    }
+
+    return std::string{(std::istreambuf_iterator<char>(file)),
+                       (std::istreambuf_iterator<char>())};
 }
 
 MetalCommand::UCommand MetalCommand::clone() {
