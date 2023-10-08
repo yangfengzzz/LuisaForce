@@ -103,11 +103,10 @@ static void check_output(const ShaderCode &shader, void *raw_buffer,
             }
 
             OutputRuntimeType gpuValue(output[i * N + j]);
-            BM_CHECK_EQ(gpuValue, acc)
-                << "destination buffer element (" << i << "," << j << ")"
-                << " has incorrect value: expected to be " << acc << " but found "
-                << gpuValue << "\n\t^ In shader: " << shader.name << ", "
-                << get_name(shader.input_type) << "->" << get_name(shader.output_type);
+            BM_CHECK_EQ(gpuValue, acc) << fmt::format("destination buffer element ({},{}) has incorrect value: "
+                                                      "expected to be {} but found {}\n\t^ In shader: {}, {}->{}",
+                                                      i, j, acc, gpuValue, shader.name,
+                                                      get_name(shader.input_type), get_name(shader.output_type));
         }
     }
 }
@@ -131,7 +130,7 @@ static void matmul(::benchmark::State &state,
     auto src1_buffer = device->create_buffer<float>(K * N);
     auto dst_buffer = device->create_buffer<float>(M * N);
     auto command = metal::MetalCommand::matmul(src0_buffer.view(), src1_buffer.view(), dst_buffer.view(),
-                                               shader.tileN, shader.tileM, shader.tileK,
+                                               shader.tileM, shader.tileN, shader.tileK,
                                                M, N, K,
                                                shader.wg_size_x, shader.wg_size_y);
     command->alloc_pso(device);

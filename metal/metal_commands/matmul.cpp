@@ -20,7 +20,7 @@ MetalCommand::UCommand MetalCommand::matmul(BufferView<float> src0_buffer, Buffe
             encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(dst_buffer.handle())->handle(), 0, 2);
             encoder->dispatchThreads({uint32_t(N / tileN), uint32_t(M / tileM), 1}, {uint32_t(wg_size_x), uint32_t(wg_size_y), 1});
         },
-        [&](MTL::Device *device) {
+        [=](MTL::Device *device) {
             std::string entry = "matmul_tiled_fp32";
             std::string shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/matmul/matmul_tiled_fp32.metal");
 
@@ -28,9 +28,9 @@ MetalCommand::UCommand MetalCommand::matmul(BufferView<float> src0_buffer, Buffe
             macros["M"] = std::to_string(M);
             macros["N"] = std::to_string(N);
             macros["K"] = std::to_string(K);
-            macros["tileM"] = std::to_string(tileM);
-            macros["tileN"] = std::to_string(tileN);
-            macros["tileK"] = std::to_string(tileK);
+            macros["TILE_M"] = std::to_string(tileM);
+            macros["TILE_N"] = std::to_string(tileN);
+            macros["TILE_K"] = std::to_string(tileK);
             macros["WG_X"] = std::to_string(wg_size_x);
             macros["WG_Y"] = std::to_string(wg_size_y);
             return create_pipeline_cache(device, shader_source, entry, macros);

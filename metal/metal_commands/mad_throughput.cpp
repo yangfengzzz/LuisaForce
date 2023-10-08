@@ -19,7 +19,7 @@ MetalCommand::UCommand MetalCommand::mad_throughput(BufferView<float> src0_buffe
             encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(dst_buffer.handle())->handle(), 0, 2);
             encoder->dispatchThreads({(uint32_t)src0_buffer.size() / 4, 1, 1}, {pso->threadExecutionWidth(), 1, 1});
         },
-        [&](MTL::Device *device) {
+        [=](MTL::Device *device) {
             std::string entry = "mad_throughput";
             std::string shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/mad_throughput.metal");
 
