@@ -11,6 +11,15 @@
 		047750002AD23EFC0080D9FD /* matmul_tiled_fp16.metal in Sources */ = {isa = PBXBuildFile; fileRef = 04774FFB2AD23B250080D9FD /* matmul_tiled_fp16.metal */; };
 		047750022AD23F600080D9FD /* matmul_tiled_i32.metal in Sources */ = {isa = PBXBuildFile; fileRef = 047750012AD23F600080D9FD /* matmul_tiled_i32.metal */; };
 		047750052AD240120080D9FD /* mmt_i8.metal in Sources */ = {isa = PBXBuildFile; fileRef = 047750042AD240120080D9FD /* mmt_i8.metal */; };
+		047750082AD24B380080D9FD /* atomic_reduce_loop_float.metal in Sources */ = {isa = PBXBuildFile; fileRef = 047750072AD24B380080D9FD /* atomic_reduce_loop_float.metal */; };
+		0477500A2AD24DAE0080D9FD /* atomic_reduce_loop_int.metal in Sources */ = {isa = PBXBuildFile; fileRef = 047750092AD24DAE0080D9FD /* atomic_reduce_loop_int.metal */; };
+		0477500C2AD24E9D0080D9FD /* atomic_reduce_subgroup_float.metal in Sources */ = {isa = PBXBuildFile; fileRef = 0477500B2AD24E9D0080D9FD /* atomic_reduce_subgroup_float.metal */; };
+		0477500E2AD24FD50080D9FD /* atomic_reduce_subgroup_int.metal in Sources */ = {isa = PBXBuildFile; fileRef = 0477500D2AD24FD50080D9FD /* atomic_reduce_subgroup_int.metal */; };
+		047750102AD2503C0080D9FD /* one_workgroup_reduce_atomic.metal in Sources */ = {isa = PBXBuildFile; fileRef = 0477500F2AD2503C0080D9FD /* one_workgroup_reduce_atomic.metal */; };
+		047750122AD254670080D9FD /* one_workgroup_reduce_loop.metal in Sources */ = {isa = PBXBuildFile; fileRef = 047750112AD254670080D9FD /* one_workgroup_reduce_loop.metal */; };
+		047750142AD254E80080D9FD /* one_workgroup_reduce_subgroup.metal in Sources */ = {isa = PBXBuildFile; fileRef = 047750132AD254E80080D9FD /* one_workgroup_reduce_subgroup.metal */; };
+		047750162AD255A10080D9FD /* tree_reduce_loop.metal in Sources */ = {isa = PBXBuildFile; fileRef = 047750152AD255A10080D9FD /* tree_reduce_loop.metal */; };
+		047750182AD2561C0080D9FD /* tree_reduce_subgroup.metal in Sources */ = {isa = PBXBuildFile; fileRef = 047750172AD2561C0080D9FD /* tree_reduce_subgroup.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,6 +29,15 @@
 		04774FFB2AD23B250080D9FD /* matmul_tiled_fp16.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = matmul_tiled_fp16.metal; sourceTree = "<group>"; };
 		047750012AD23F600080D9FD /* matmul_tiled_i32.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = matmul_tiled_i32.metal; sourceTree = "<group>"; };
 		047750042AD240120080D9FD /* mmt_i8.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = mmt_i8.metal; sourceTree = "<group>"; };
+		047750072AD24B380080D9FD /* atomic_reduce_loop_float.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = atomic_reduce_loop_float.metal; sourceTree = "<group>"; };
+		047750092AD24DAE0080D9FD /* atomic_reduce_loop_int.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = atomic_reduce_loop_int.metal; sourceTree = "<group>"; };
+		0477500B2AD24E9D0080D9FD /* atomic_reduce_subgroup_float.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = atomic_reduce_subgroup_float.metal; sourceTree = "<group>"; };
+		0477500D2AD24FD50080D9FD /* atomic_reduce_subgroup_int.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = atomic_reduce_subgroup_int.metal; sourceTree = "<group>"; };
+		0477500F2AD2503C0080D9FD /* one_workgroup_reduce_atomic.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = one_workgroup_reduce_atomic.metal; sourceTree = "<group>"; };
+		047750112AD254670080D9FD /* one_workgroup_reduce_loop.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = one_workgroup_reduce_loop.metal; sourceTree = "<group>"; };
+		047750132AD254E80080D9FD /* one_workgroup_reduce_subgroup.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = one_workgroup_reduce_subgroup.metal; sourceTree = "<group>"; };
+		047750152AD255A10080D9FD /* tree_reduce_loop.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = tree_reduce_loop.metal; sourceTree = "<group>"; };
+		047750172AD2561C0080D9FD /* tree_reduce_subgroup.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = tree_reduce_subgroup.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -42,6 +60,7 @@
 		04774FEE2AD10F430080D9FD /* shaders */ = {
 			isa = PBXGroup;
 			children = (
+				047750062AD24B1B0080D9FD /* reduction */,
 				047750032AD23FFF0080D9FD /* mmt */,
 				04774FFA2AD23AFC0080D9FD /* matmul */,
 				04774FF62AD10F760080D9FD /* mad_throughput.metal */,
@@ -65,6 +84,22 @@
 				047750042AD240120080D9FD /* mmt_i8.metal */,
 			);
 			path = mmt;
+			sourceTree = "<group>";
+		};
+		047750062AD24B1B0080D9FD /* reduction */ = {
+			isa = PBXGroup;
+			children = (
+				047750072AD24B380080D9FD /* atomic_reduce_loop_float.metal */,
+				047750092AD24DAE0080D9FD /* atomic_reduce_loop_int.metal */,
+				0477500B2AD24E9D0080D9FD /* atomic_reduce_subgroup_float.metal */,
+				0477500D2AD24FD50080D9FD /* atomic_reduce_subgroup_int.metal */,
+				047750112AD254670080D9FD /* one_workgroup_reduce_loop.metal */,
+				0477500F2AD2503C0080D9FD /* one_workgroup_reduce_atomic.metal */,
+				047750132AD254E80080D9FD /* one_workgroup_reduce_subgroup.metal */,
+				047750152AD255A10080D9FD /* tree_reduce_loop.metal */,
+				047750172AD2561C0080D9FD /* tree_reduce_subgroup.metal */,
+			);
+			path = reduction;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -122,9 +157,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				047750182AD2561C0080D9FD /* tree_reduce_subgroup.metal in Sources */,
 				047750022AD23F600080D9FD /* matmul_tiled_i32.metal in Sources */,
+				047750102AD2503C0080D9FD /* one_workgroup_reduce_atomic.metal in Sources */,
 				04774FF72AD10F760080D9FD /* mad_throughput.metal in Sources */,
+				047750122AD254670080D9FD /* one_workgroup_reduce_loop.metal in Sources */,
+				0477500E2AD24FD50080D9FD /* atomic_reduce_subgroup_int.metal in Sources */,
+				0477500C2AD24E9D0080D9FD /* atomic_reduce_subgroup_float.metal in Sources */,
+				0477500A2AD24DAE0080D9FD /* atomic_reduce_loop_int.metal in Sources */,
+				047750162AD255A10080D9FD /* tree_reduce_loop.metal in Sources */,
+				047750082AD24B380080D9FD /* atomic_reduce_loop_float.metal in Sources */,
 				047750002AD23EFC0080D9FD /* matmul_tiled_fp16.metal in Sources */,
+				047750142AD254E80080D9FD /* one_workgroup_reduce_subgroup.metal in Sources */,
 				047750052AD240120080D9FD /* mmt_i8.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
