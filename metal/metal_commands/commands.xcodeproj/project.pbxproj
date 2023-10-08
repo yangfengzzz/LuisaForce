@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		04774FF72AD10F760080D9FD /* mad_throughput.metal in Sources */ = {isa = PBXBuildFile; fileRef = 04774FF62AD10F760080D9FD /* mad_throughput.metal */; };
 		047750002AD23EFC0080D9FD /* matmul_tiled_fp16.metal in Sources */ = {isa = PBXBuildFile; fileRef = 04774FFB2AD23B250080D9FD /* matmul_tiled_fp16.metal */; };
+		047750022AD23F600080D9FD /* matmul_tiled_i32.metal in Sources */ = {isa = PBXBuildFile; fileRef = 047750012AD23F600080D9FD /* matmul_tiled_i32.metal */; };
+		047750052AD240120080D9FD /* mmt_i8.metal in Sources */ = {isa = PBXBuildFile; fileRef = 047750042AD240120080D9FD /* mmt_i8.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -16,6 +18,8 @@
 		04774FF62AD10F760080D9FD /* mad_throughput.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = mad_throughput.metal; sourceTree = "<group>"; };
 		04774FF82AD10FF30080D9FD /* matmul_tiled_fp32.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = matmul_tiled_fp32.metal; sourceTree = "<group>"; };
 		04774FFB2AD23B250080D9FD /* matmul_tiled_fp16.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = matmul_tiled_fp16.metal; sourceTree = "<group>"; };
+		047750012AD23F600080D9FD /* matmul_tiled_i32.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = matmul_tiled_i32.metal; sourceTree = "<group>"; };
+		047750042AD240120080D9FD /* mmt_i8.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = mmt_i8.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -38,6 +42,7 @@
 		04774FEE2AD10F430080D9FD /* shaders */ = {
 			isa = PBXGroup;
 			children = (
+				047750032AD23FFF0080D9FD /* mmt */,
 				04774FFA2AD23AFC0080D9FD /* matmul */,
 				04774FF62AD10F760080D9FD /* mad_throughput.metal */,
 			);
@@ -49,8 +54,17 @@
 			children = (
 				04774FF82AD10FF30080D9FD /* matmul_tiled_fp32.metal */,
 				04774FFB2AD23B250080D9FD /* matmul_tiled_fp16.metal */,
+				047750012AD23F600080D9FD /* matmul_tiled_i32.metal */,
 			);
 			path = matmul;
+			sourceTree = "<group>";
+		};
+		047750032AD23FFF0080D9FD /* mmt */ = {
+			isa = PBXGroup;
+			children = (
+				047750042AD240120080D9FD /* mmt_i8.metal */,
+			);
+			path = mmt;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -108,8 +122,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				047750022AD23F600080D9FD /* matmul_tiled_i32.metal in Sources */,
 				04774FF72AD10F760080D9FD /* mad_throughput.metal in Sources */,
 				047750002AD23EFC0080D9FD /* matmul_tiled_fp16.metal in Sources */,
+				047750052AD240120080D9FD /* mmt_i8.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
