@@ -67,7 +67,19 @@ public:
                            int M, int N, int K,
                            int wg_size_x, int wg_size_y) noexcept;
 
+    // matrix-matrix transposed multiplication of two 2D inputs.
+    static UCommand mmt(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer,
+                        int tileM, int tileN, int tileK,
+                        int M, int N, int K,
+                        int wg_size_x, int wg_size_y) noexcept;
+
     static UCommand atomic_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer, size_t batch_elements, bool is_integer = false) noexcept;
+
+    static UCommand one_workgroup_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer, size_t batch_elements) noexcept;
+
+    static UCommand tree_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer, size_t batch_elements, bool is_integer = false) noexcept;
+
+    static UCommand simd_group_arithmetic(BufferView<float> src_buffer, BufferView<float> dst_buffer, size_t batch_elements) noexcept;
 };
 
 }// namespace luisa::compute::metal
