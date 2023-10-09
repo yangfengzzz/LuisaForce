@@ -1,0 +1,166 @@
+//  Copyright (c) 2023 Feng Yang
+//
+//  I am making my contributions/submissions to this project solely in my
+//  personal capacity and am not conveying any rights to any intellectual
+//  property of any third parties.
+
+#include "utils/status_util.h"
+#include "runtime/buffer.h"
+#include "runtime/stream.h"
+#include "runtime/ext/metal/metal_command.h"
+#include <spdlog/fmt/fmt.h>
+
+#include "atomic_reduce.h"
+
+struct ShaderCode {
+    const char *name;     // Test case name
+    size_t batch_elements;// Number of elements in each batch
+    bool is_integer;      // Whether the elements should be integers
+};
+
+#define FLOAT_SHADER_CASE(kind, size)      \
+    {                                      \
+        #kind "/batch=" #size, size, false \
+    }
+
+#define INT_SHADER_CASE(kind, size)       \
+    {                                     \
+        #kind "/batch=" #size, size, true \
+    }
+
+ShaderCode kShaders[] = {
+    FLOAT_SHADER_CASE(loop, 16),
+    FLOAT_SHADER_CASE(loop, 32),
+    FLOAT_SHADER_CASE(loop, 64),
+    FLOAT_SHADER_CASE(loop, 128),
+    FLOAT_SHADER_CASE(loop, 256),
+    FLOAT_SHADER_CASE(loop, 512),
+    FLOAT_SHADER_CASE(subgroup, 64),
+    FLOAT_SHADER_CASE(subgroup, 128),
+    FLOAT_SHADER_CASE(subgroup, 256),
+    FLOAT_SHADER_CASE(subgroup, 512),
+
+    INT_SHADER_CASE(loop, 16),
+    INT_SHADER_CASE(loop, 32),
+    INT_SHADER_CASE(loop, 64),
+    INT_SHADER_CASE(loop, 128),
+    INT_SHADER_CASE(loop, 256),
+    INT_SHADER_CASE(loop, 512),
+    INT_SHADER_CASE(subgroup, 64),
+    INT_SHADER_CASE(subgroup, 128),
+    INT_SHADER_CASE(subgroup, 256),
+    INT_SHADER_CASE(subgroup, 512),
+};
+
+namespace vox::benchmark {
+static void reduce(::benchmark::State &state,
+                   LatencyMeasureMode mode,
+                   Device *device,
+                   size_t total_elements, size_t batch_elements,
+                   bool is_integer) {
+    auto stream = device->create_stream();
+    //===-------------------------------------------------------------------===/
+    // Create buffers
+    //===-------------------------------------------------------------------===/
+    const size_t src_buffer_size = total_elements * sizeof(float);
+    const size_t dst_buffer_size = sizeof(float);
+
+    auto src_buffer = device->create_buffer<float>(total_elements);
+    auto dst_buffer = device->create_buffer<float>(1);
+    auto command = metal::MetalCommand::atomic_reduce(src_buffer.view(), dst_buffer.view(), batch_elements, is_integer);
+    command->alloc_pso(device);
+
+    //===-------------------------------------------------------------------===/
+    // Set source buffer data
+    //===-------------------------------------------------------------------===/
+    auto generate_float_data = [](size_t i) -> float { return float(i % 9 - 4) * 0.5f; };
+    auto generate_int_data = [](size_t i) -> int { return int(i % 13 - 7); };
+
+    auto ptr = malloc(src_buffer_size);
+    if (is_integer) {
+        auto *src_int_buffer = reinterpret_cast<int *>(ptr);
+        for (size_t i = 0; i < src_buffer_size / sizeof(int); i++) {
+            src_int_buffer[i] = generate_int_data(i);
+        }
+    } else {
+        auto *src_float_buffer = reinterpret_cast<float *>(ptr);
+        for (size_t i = 0; i < src_buffer_size / sizeof(float); i++) {
+            src_float_buffer[i] = generate_float_data(i);
+        }
+    }
+    stream << src_buffer.copy_from(ptr) << synchronize();
+    free(ptr);
+
+    //===-------------------------------------------------------------------===/
+    // Dispatch
+    //===-------------------------------------------------------------------===/
+    {
+        stream << command->clone()
+               << synchronize();
+    }
+
+    //===-------------------------------------------------------------------===/
+    // Verify destination buffer data
+    //===-------------------------------------------------------------------===/
+    ptr = malloc(dst_buffer_size);
+    stream << dst_buffer.copy_to(ptr) << synchronize();
+    if (is_integer) {
+        auto *dst_int_buffer = reinterpret_cast<int *>(ptr);
+        int total = 0;
+        for (size_t i = 0; i < total_elements; i++) {
+            total += generate_int_data(i);
+        };
+        BM_CHECK_EQ(dst_int_buffer[0], total)
+            << fmt::format("destination buffer element #0 has incorrect value: expected to be {} but found {}",
+                           total, dst_int_buffer[0]);
+    } else {
+        auto *dst_float_buffer = reinterpret_cast<float *>(ptr);
+        float total = 0.f;
+        for (size_t i = 0; i < total_elements; i++) {
+            total += generate_float_data(i);
+        };
+        BM_CHECK_FLOAT_EQ(dst_float_buffer[0], total, 0.01f)
+            << fmt::format("destination buffer element #0 has incorrect value: expected to be {} but found {}",
+                           total, dst_float_buffer[0]);
+    }
+
+    //===-------------------------------------------------------------------===/
+    // Benchmarking
+    //===-------------------------------------------------------------------===/
+    for ([[maybe_unused]] auto _ : state) {
+        auto start_time = std::chrono::high_resolution_clock::now();
+        stream << command->clone()
+               << synchronize();
+        auto end_time = std::chrono::high_resolution_clock::now();
+
+        auto elapsed_seconds = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time);
+        switch (mode) {
+            case LatencyMeasureMode::kSystemSubmit:
+                state.SetIterationTime(elapsed_seconds.count());
+                break;
+        }
+    }
+
+    state.SetBytesProcessed(state.iterations() * src_buffer_size);
+    state.counters["FLOps"] =
+        ::benchmark::Counter(total_elements,
+                             ::benchmark::Counter::kIsIterationInvariant |
+                                 ::benchmark::Counter::kIsRate,
+                             ::benchmark::Counter::kIs1000);
+}
+
+void AtomicReduce::register_benchmarks(Device &device, LatencyMeasureMode mode) {
+    const auto gpu_name = device.backend_name();
+
+    const size_t total_elements = 1 << 22;// 4M
+    for (const auto &shader : kShaders) {
+        std::string test_name = fmt::format("{}/{}{}{}", gpu_name, total_elements, (shader.is_integer ? "xi32/" : "xf32/"), shader.name);
+
+        ::benchmark::RegisterBenchmark(test_name, reduce, mode, &device,
+                                       total_elements, shader.batch_elements, shader.is_integer)
+            ->UseManualTime()
+            ->Unit(::benchmark::kMicrosecond);
+    }
+}
+
+}// namespace vox::benchmark

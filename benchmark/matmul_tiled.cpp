@@ -4,7 +4,6 @@
 //  personal capacity and am not conveying any rights to any intellectual
 //  property of any third parties.
 
-#include "mad_throughput.h"
 #include "utils/data_type_util.h"
 #include "utils/status_util.h"
 #include "runtime/buffer.h"

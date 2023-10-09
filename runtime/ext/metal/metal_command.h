@@ -66,6 +66,8 @@ public:
                            int tileM, int tileN, int tileK,
                            int M, int N, int K,
                            int wg_size_x, int wg_size_y) noexcept;
+
+    static UCommand atomic_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer, size_t batch_elements, bool is_integer = false) noexcept;
 };
 
 }// namespace luisa::compute::metal

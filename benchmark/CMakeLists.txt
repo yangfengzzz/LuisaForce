@@ -15,6 +15,7 @@ set(SRC
         mad_throughput.cpp
         matmul_tiled.cpp
         mmt.cpp
+        atomic_reduce.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SRC})
