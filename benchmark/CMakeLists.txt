@@ -18,6 +18,7 @@ set(SRC
         atomic_reduce.cpp
         one_workgroup_reduce.cpp
         tree_reduce.cpp
+        simd_group_arithmetic.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SRC})

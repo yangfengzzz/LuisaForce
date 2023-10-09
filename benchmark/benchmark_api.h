@@ -58,4 +58,9 @@ public:
     void register_benchmarks(Device &device, LatencyMeasureMode mode) override;
 };
 
+class SimdGroupArithmetic : public BenchmarkAPI {
+public:
+    void register_benchmarks(Device &device, LatencyMeasureMode mode) override;
+};
+
 }// namespace luisa
