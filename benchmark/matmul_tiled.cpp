@@ -11,7 +11,7 @@
 #include "runtime/ext/metal/metal_command.h"
 #include <spdlog/fmt/fmt.h>
 
-#include "matmul_tiled.h"
+#include "benchmark_api.h"
 
 struct ShaderCode {
     const char *name;// Shader case name
@@ -110,7 +110,7 @@ static void check_output(const ShaderCode &shader, void *raw_buffer,
     }
 }
 
-namespace vox::benchmark {
+namespace luisa {
 static void matmul(::benchmark::State &state,
                    LatencyMeasureMode mode,
                    Device *device,
@@ -230,4 +230,4 @@ void MatMul::register_benchmarks(Device &device, LatencyMeasureMode mode) {
     }
 }
 
-}// namespace vox::benchmark
+}// namespace luisa

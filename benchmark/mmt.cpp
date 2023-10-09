@@ -11,7 +11,7 @@
 #include "runtime/ext/metal/metal_command.h"
 #include <spdlog/fmt/fmt.h>
 
-#include "mmt.h"
+#include "benchmark_api.h"
 
 struct ShaderCode {
     const char *name;// Shader case name
@@ -99,7 +99,7 @@ static void check_output(const ShaderCode &shader, void *raw_buffer,
 // Returns true iff |a| is a multiple of |b|.
 static bool is_multiple_of(int a, int b) { return a >= b && a % b == 0; }
 
-namespace vox::benchmark {
+namespace luisa {
 static void Mmt(::benchmark::State &state,
                 LatencyMeasureMode mode,
                 Device *device,
@@ -221,4 +221,4 @@ void MMT::register_benchmarks(Device &device, LatencyMeasureMode mode) {
     }
 }
 
-}// namespace vox::benchmark
+}// namespace luisa

@@ -9,10 +9,9 @@
 #include <benchmark/benchmark.h>
 #include "runtime/device.h"
 
-using namespace luisa;
 using namespace luisa::compute;
 
-namespace vox {
+namespace luisa {
 enum class LatencyMeasureMode {
     // time spent from queue submit to returning from queue wait
     kSystemSubmit,
@@ -27,4 +26,31 @@ public:
     // LatencyMeasureMode::kSystemDispatch.
     virtual void register_benchmarks(Device &queue, LatencyMeasureMode mode) = 0;
 };
-}// namespace vox
+
+class MADThroughPut : public BenchmarkAPI {
+public:
+    void register_benchmarks(Device &device, LatencyMeasureMode mode) override;
+};
+
+class MatMul : public BenchmarkAPI {
+public:
+    void register_benchmarks(Device &device, LatencyMeasureMode mode) override;
+};
+
+// matrix-matrix transposed multiplication of two 2D inputs.
+class MMT : public BenchmarkAPI {
+public:
+    void register_benchmarks(Device &device, LatencyMeasureMode mode) override;
+};
+
+class AtomicReduce : public BenchmarkAPI {
+public:
+    void register_benchmarks(Device &device, LatencyMeasureMode mode) override;
+};
+
+class OneWorkgroupReduce : public BenchmarkAPI {
+public:
+    void register_benchmarks(Device &device, LatencyMeasureMode mode) override;
+};
+
+}// namespace luisa

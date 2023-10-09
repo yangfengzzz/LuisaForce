@@ -4,7 +4,7 @@
 //  personal capacity and am not conveying any rights to any intellectual
 //  property of any third parties.
 
-#include "mad_throughput.h"
+#include "benchmark_api.h"
 #include "utils/data_type_util.h"
 #include "utils/status_util.h"
 #include "runtime/buffer.h"
@@ -13,7 +13,7 @@
 #include "runtime/ext/debug_capture_ext.h"
 #include <spdlog/fmt/fmt.h>
 
-namespace vox::benchmark {
+namespace luisa {
 static void throughput(::benchmark::State &state,
                        LatencyMeasureMode mode,
                        Device *device,
@@ -152,4 +152,4 @@ void MADThroughPut::register_benchmarks(Device &device, LatencyMeasureMode mode)
     }
 }
 
-}// namespace vox::benchmark
+}// namespace luisa

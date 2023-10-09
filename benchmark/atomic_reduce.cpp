@@ -10,7 +10,7 @@
 #include "runtime/ext/metal/metal_command.h"
 #include <spdlog/fmt/fmt.h>
 
-#include "atomic_reduce.h"
+#include "benchmark_api.h"
 
 struct ShaderCode {
     const char *name;     // Test case name
@@ -52,7 +52,7 @@ ShaderCode kShaders[] = {
     INT_SHADER_CASE(subgroup, 512),
 };
 
-namespace vox::benchmark {
+namespace luisa {
 static void reduce(::benchmark::State &state,
                    LatencyMeasureMode mode,
                    Device *device,
@@ -163,4 +163,4 @@ void AtomicReduce::register_benchmarks(Device &device, LatencyMeasureMode mode) 
     }
 }
 
-}// namespace vox::benchmark
+}// namespace luisa
