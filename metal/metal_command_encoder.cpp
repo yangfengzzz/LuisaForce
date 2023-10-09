@@ -14,6 +14,7 @@
 #include "metal_command_encoder.h"
 #include "runtime/ext/registry.h"
 #include "runtime/ext/metal/metal_command.h"
+#include "runtime/ext/metal/mps_command.h"
 
 namespace luisa::compute::metal {
 
@@ -254,7 +255,7 @@ void MetalCommandEncoder::visit(CustomCommand *command) noexcept {
     switch (command->uuid()) {
         case to_underlying(CustomCommandUUID::CUSTOM_DISPATCH): {
             auto metal_command = dynamic_cast<MetalCommand *>(command);
-            LUISA_ASSERT(metal_command != nullptr, "Invalid CudaLCuBCommand.");
+            LUISA_ASSERT(metal_command != nullptr, "Invalid MetalCustomCommand.");
 
             if (!metal_command->pso) {
                 metal_command->pso = metal_command->pso_func(device());
@@ -263,6 +264,17 @@ void MetalCommandEncoder::visit(CustomCommand *command) noexcept {
             auto encoder = _command_buffer->computeCommandEncoder();
             metal_command->func(encoder, metal_command->pso);
             encoder->endEncoding();
+
+            break;
+        }
+        case to_underlying(CustomCommandUUID::PERFORMANCE_DISPATCH): {
+            auto metal_command = dynamic_cast<MPSCommand *>(command);
+            LUISA_ASSERT(metal_command != nullptr, "Invalid Metal Performance Shaders Command.");
+
+            if (metal_command->objects.empty()) {
+                metal_command->objects = metal_command->kernel_func(device());
+            }
+            metal_command->func(_command_buffer, metal_command->objects);
 
             break;
         }

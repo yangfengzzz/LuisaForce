@@ -45,9 +45,9 @@ public:
                  luisa::function<MTL::ComputePipelineState *(MTL::Device *device)> pso_f) noexcept
         : CustomCommand{}, func{std::move(f)}, pso_func{std::move(pso_f)} {}
 
-    MetalCommand(MetalCommand *command) noexcept;
+    explicit MetalCommand(MetalCommand *command) noexcept;
 
-    ~MetalCommand();
+    ~MetalCommand() override;
 
     [[nodiscard]] StreamTag stream_tag() const noexcept override { return StreamTag::COMPUTE; }
 

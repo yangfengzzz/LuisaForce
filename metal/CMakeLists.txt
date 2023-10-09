@@ -38,6 +38,9 @@ set(COMMANDS_FILES
         metal_commands/one_workgroup_reduce.cpp
         metal_commands/tree_reduce.cpp
         metal_commands/simd_group_arithmetic.cpp
+        ## MPS
+        metal_commands/mps_command.cpp
+        metal_commands/mps_gemm.mm
 )
 
 source_group("common\\" FILES ${COMMON_FILES})
@@ -61,6 +64,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         xxHash
         EASTL
         metal-cpp
+        "-framework MetalPerformanceShaders"
 )
 
 if (${NEED_LINK_ATOMIC})
