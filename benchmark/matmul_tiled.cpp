@@ -9,6 +9,7 @@
 #include "runtime/buffer.h"
 #include "runtime/stream.h"
 #include "runtime/ext/metal/metal_command.h"
+#include "runtime/ext/metal/mps_command.h"
 #include <spdlog/fmt/fmt.h>
 
 #include "benchmark_api.h"
@@ -133,6 +134,9 @@ static void matmul(::benchmark::State &state,
                                                M, N, K,
                                                shader.wg_size_x, shader.wg_size_y);
     command->alloc_pso(device);
+
+    auto mps_command = metal::MPSCommand::gemm(src0_buffer.view(), src1_buffer.view(), dst_buffer.view(),
+                                               M, N, K);
 
     //===-------------------------------------------------------------------===/
     // Set source buffer data
