@@ -10,6 +10,7 @@
 #include "runtime/stream.h"
 #include "runtime/ext/metal/metal_command.h"
 #include "runtime/ext/metal/mps_command.h"
+#include "runtime/ext/debug_capture_ext.h"
 #include <spdlog/fmt/fmt.h>
 
 #include "benchmark_api.h"
@@ -117,6 +118,7 @@ static void matmul(::benchmark::State &state,
                    Device *device,
                    const ShaderCode &shader, int M, int N, int K) {
     auto stream = device->create_stream();
+    auto capture = device->extension<DebugCaptureExt>();
     //===-------------------------------------------------------------------===/
     // Create buffers
     //===-------------------------------------------------------------------===/
@@ -168,8 +170,15 @@ static void matmul(::benchmark::State &state,
     // Dispatch
     //===-------------------------------------------------------------------===/
     {
+        auto scope = capture->create_scope("test");
+        capture->start_capture(scope);
+        scope.mark_begin();
+
         stream << command->clone()
                << synchronize();
+
+        scope.mark_end();
+        capture->stop_capture();
     }
 
     //===-------------------------------------------------------------------===/

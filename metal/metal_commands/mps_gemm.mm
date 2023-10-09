@@ -37,15 +37,18 @@ MPSCommand::UCommand MPSCommand::gemm(BufferView<float> src0_buffer, BufferView<
                                                                     dataType:MPSDataTypeFloat32];
             auto left_m = (NS::Object *)[[MPSMatrix alloc] initWithBuffer:(id<MTLBuffer>)reinterpret_cast<const MetalBuffer *>(src0_buffer.handle())->handle()
                                                                descriptor:left_desc];
+            left_m->retain();
             auto right_m = (NS::Object *)[[MPSMatrix alloc] initWithBuffer:(id<MTLBuffer>)reinterpret_cast<const MetalBuffer *>(src1_buffer.handle())->handle()
                                                                 descriptor:right_desc];
+            right_m->retain();
             auto result_m = (NS::Object *)[[MPSMatrix alloc] initWithBuffer:(id<MTLBuffer>)reinterpret_cast<const MetalBuffer *>(dst_buffer.handle())->handle()
                                                                  descriptor:result_desc];
-
+            result_m->retain();
             auto mps = (NS::Object *)[[MPSMatrixMultiplication alloc] initWithDevice:(id<MTLDevice>)device
                                                                           resultRows:M
                                                                        resultColumns:N
                                                                      interiorColumns:K];
+            mps->retain();
 
             return luisa::vector<NS::Object *>{mps, left_m, right_m, result_m};
         });
