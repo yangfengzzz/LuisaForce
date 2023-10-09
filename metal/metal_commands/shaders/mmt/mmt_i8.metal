@@ -7,10 +7,6 @@
 #include <metal_stdlib>
 using namespace metal;
 
-uint2 wgID [[threadgroup_position_in_grid]];
-uint2 localID [[thread_position_in_threadgroup]];
-uint threadID [[thread_index_in_simdgroup]];
-
 #ifndef M
 #define M 8
 #endif
@@ -55,7 +51,10 @@ int32_t sdot(char4 lhs, char4 rhs) {
 
 kernel void mmt_i8(device char4* inputA [[buffer(0)]],
                    device char4* inputB [[buffer(1)]],
-                   device int32_t* outputO [[buffer(2)]]) {
+                   device int32_t* outputO [[buffer(2)]],
+                   uint2 wgID [[threadgroup_position_in_grid]],
+                   uint2 localID [[thread_position_in_threadgroup]],
+                   uint threadID [[thread_index_in_simdgroup]]) {
     constexpr uint VECTORIZE_K = 4;
     const uint K_VEC = K / VECTORIZE_K;
     constexpr uint K0_VEC = K0 / VECTORIZE_K;

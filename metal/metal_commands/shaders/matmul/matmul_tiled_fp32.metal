@@ -7,9 +7,6 @@
 #include <metal_stdlib>
 using namespace metal;
 
-uint2 gID [[threadgroup_position_in_grid]];
-uint2 laneId [[thread_position_in_threadgroup]];
-
 #ifndef M
 #define M 8
 #endif
@@ -48,7 +45,9 @@ uint coordToOffset(uint i, uint j, uint stride) {
 
 kernel void matmul_tiled_fp32(device float4* inputA [[buffer(0)]],
                               device float4* inputB [[buffer(1)]],
-                              device float4* outputO [[buffer(2)]]) {
+                              device float4* outputO [[buffer(2)]],
+                              uint2 gID [[threadgroup_position_in_grid]],
+                              uint2 laneId [[thread_position_in_threadgroup]]) {
     const uint strideA = K;
     const uint strideB = N;
     const uint strideC = N;

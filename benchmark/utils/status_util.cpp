@@ -27,7 +27,7 @@ Logger &get_error_logger() {
 }
 
 CheckError::CheckError(const char *file, int line) : logger_(get_error_logger()) {
-    logger_ << file << ":" << line << ": check error: ";
+    logger_ << fmt::format("{}:{}: check error: ", file, line);
 }
 
 CheckError::~CheckError() {

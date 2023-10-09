@@ -7,15 +7,14 @@
 #include <metal_stdlib>
 using namespace metal;
 
-uint wgID [[threadgroup_position_in_grid]];
-uint laneID [[thread_position_in_threadgroup]];
-
 #ifndef BATCH_SIZE
 #define BATCH_SIZE 8
 #endif
 
 kernel void atomic_reduce_loop_int(device int4* Input [[buffer(0)]],
-                                   device atomic<int>* Output [[buffer(1)]]) {
+                                   device atomic<int>* Output [[buffer(1)]],
+                                   uint wgID [[threadgroup_position_in_grid]],
+                                   uint laneID [[thread_position_in_threadgroup]]) {
     if (laneID != 0) return;
     
     uint wgBaseOffset = wgID * BATCH_SIZE / 4;

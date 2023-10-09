@@ -16,21 +16,12 @@ MetalCommand::UCommand MetalCommand::one_workgroup_reduce(BufferView<float> src_
             encoder->setComputePipelineState(pso);
             encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(src_buffer.handle())->handle(), 0, 0);
             encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(dst_buffer.handle())->handle(), 0, 1);
-            uint32_t thread_count = 16;
-            if (mode == ReduceMode::Atomic) {
-                thread_count = 1;
-            }
-            encoder->dispatchThreadgroups({1, 1, 1}, {thread_count, 1, 1});
+            encoder->dispatchThreadgroups({1, 1, 1}, {16, 1, 1});
         },
         [=](MTL::Device *device) {
             std::string entry;
             std::string shader_source;
             switch (mode) {
-                case ReduceMode::Atomic:
-                    entry = "one_workgroup_reduce_atomic";
-                    shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/reduction/one_workgroup_reduce_atomic.metal");
-                    break;
-
                 case ReduceMode::Loop:
                     entry = "one_workgroup_reduce_loop";
                     shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/reduction/one_workgroup_reduce_loop.metal");

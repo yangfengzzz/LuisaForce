@@ -75,7 +75,6 @@ public:
 
     enum class ReduceMode {
         Loop,
-        Atomic,
         SimdGroup
     };
 
@@ -86,7 +85,7 @@ public:
                                          size_t batch_elements, ReduceMode mode) noexcept;
 
     static UCommand tree_reduce(BufferView<float> buffer,
-                                size_t batch_elements, ReduceMode mode) noexcept;
+                                size_t batch_elements, ReduceMode mode, bool is_integer) noexcept;
 
     enum class ArithmeticMode {
         Add,

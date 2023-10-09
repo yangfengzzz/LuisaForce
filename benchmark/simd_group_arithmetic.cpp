@@ -18,12 +18,10 @@ struct ShaderCode {
 };
 
 static ShaderCode kShaderCodeCases[] = {
-    // clang-format off
-    {"add/loop", metal::MetalCommand::ArithmeticMode::Add},
+//    {"add/loop", metal::MetalCommand::ArithmeticMode::Add},
     {"add/intrinsic", metal::MetalCommand::ArithmeticMode::Add},
-    {"mul/loop", metal::MetalCommand::ArithmeticMode::Mul},
+//    {"mul/loop", metal::MetalCommand::ArithmeticMode::Mul},
     {"mul/intrinsic", metal::MetalCommand::ArithmeticMode::Mul},
-    // clang-format on
 };
 
 namespace luisa {
@@ -49,7 +47,7 @@ static void calculate_simd_group_arithmetic(::benchmark::State &state,
     // +: fill the whole buffer as 1.0f.
     // *: fill with alternating subgroup_size and (1 / subgroup_size).
     auto ptr = malloc(buffer_num_bytes);
-    float *src_float_buffer = reinterpret_cast<float *>(ptr);
+    auto *src_float_buffer = reinterpret_cast<float *>(ptr);
     switch (arith_op) {
         case metal::MetalCommand::ArithmeticMode::Add: {
             for (int i = 0; i < buffer_num_bytes / sizeof(float); ++i) {
@@ -80,7 +78,7 @@ static void calculate_simd_group_arithmetic(::benchmark::State &state,
     ptr = malloc(buffer_num_bytes);
     stream << dst_buffer.copy_to(ptr) << synchronize();
 
-    float *dst_float_buffer = reinterpret_cast<float *>(ptr);
+    auto *dst_float_buffer = reinterpret_cast<float *>(ptr);
     switch (arith_op) {
         case metal::MetalCommand::ArithmeticMode::Add: {
             for (int i = 0; i < buffer_num_bytes / sizeof(float); ++i) {

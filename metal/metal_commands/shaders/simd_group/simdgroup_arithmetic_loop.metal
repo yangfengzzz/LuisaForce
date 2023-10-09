@@ -7,13 +7,6 @@
 #include <metal_stdlib>
 using namespace metal;
 
-uint count [[simdgroups_per_threadgroup]];
-uint index [[thread_position_in_grid]];
-
-#ifndef kArraySize
-#define kArraySize 8
-#endif
-
 #ifndef ARITHMETIC_ADD
 #ifndef ARITHMETIC_MUL
 #define ARITHMETIC_MUL
@@ -22,7 +15,8 @@ uint index [[thread_position_in_grid]];
 
 kernel void simdgroup_arithmetic_loop(device float* input_values [[buffer(0)]],
                                       device float* output_values [[buffer(1)]],
-                                      uint3 tpig [[ thread_position_in_grid ]]) {
+                                      uint count [[threads_per_simdgroup]],
+                                      uint index [[thread_position_in_grid]]) {
     float value = 0.f;
     
     if (simd_is_first()) {

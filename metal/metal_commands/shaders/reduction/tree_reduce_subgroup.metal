@@ -7,24 +7,27 @@
 #include <metal_stdlib>
 using namespace metal;
 
-uint wgID [[threadgroup_position_in_grid]];
-uint laneID [[thread_position_in_threadgroup]];
-uint laneCount [[threads_per_threadgroup]];
-uint stride [[threadgroups_per_grid]];
-
 #ifndef BATCH_SIZE
 #define BATCH_SIZE 8
 #endif
 
-kernel void tree_reduce_subgroup(device float* IOBuffer [[buffer(0)]]) {
-    float laneResult = IOBuffer[wgID + stride * laneID];
+#ifndef TYPE
+#define TYPE float
+#endif
+
+kernel void tree_reduce_subgroup(device TYPE* IOBuffer [[buffer(0)]],
+                                 uint wgID [[threadgroup_position_in_grid]],
+                                 uint laneID [[thread_position_in_threadgroup]],
+                                 uint laneCount [[threads_per_threadgroup]],
+                                 uint stride [[threadgroups_per_grid]]) {
+    TYPE laneResult = IOBuffer[wgID + stride * laneID];
     
     for (uint i = 1; i < BATCH_SIZE / 16; ++i) {
         laneResult += IOBuffer[wgID + stride * (laneCount * i + laneID)];
     }
     
     // Final reduction with one subgroup
-    float wgResult = simd_sum(laneResult);
+    TYPE wgResult = simd_sum(laneResult);
     if (simd_is_first()) {
         IOBuffer[wgID] = wgResult;
     }

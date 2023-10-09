@@ -7,14 +7,13 @@
 #include <metal_stdlib>
 using namespace metal;
 
-uint laneID [[thread_position_in_threadgroup]];
-
 #ifndef totalCount
 #define totalCount 8
 #endif
 
 kernel void one_workgroup_reduce_loop(device float4* Input [[buffer(0)]],
-                                      device float* Output [[buffer(1)]]) {
+                                      device float* Output [[buffer(1)]],
+                                      uint laneID [[thread_position_in_threadgroup]]) {
     if (laneID != 0) return;
     
     float4 wgResult = Input[0];

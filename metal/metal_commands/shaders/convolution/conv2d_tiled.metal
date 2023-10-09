@@ -7,10 +7,6 @@
 #include <metal_stdlib>
 using namespace metal;
 
-uint3 wgID [[threadgroup_position_in_grid]];
-uint3 threadID [[thread_position_in_threadgroup]];
-uint3 threadCount [[threadgroups_per_grid]];
-
 constant uint OH [[function_constant(0)]]; // Output height
 constant uint OW [[function_constant(1)]]; // Output width
 constant uint OC [[function_constant(2)]]; // Output channel
@@ -48,7 +44,10 @@ uint outputCoordToOffset(uint h, uint w, uint c) {
 
 kernel void conv2d_tiled(device float4* Input [[buffer(0)]],
                          device float4* Filter [[buffer(1)]],
-                         device float4* Output [[buffer(2)]]) {
+                         device float4* Output [[buffer(2)]],
+                         uint3 wgID [[threadgroup_position_in_grid]],
+                         uint3 threadID [[thread_position_in_threadgroup]],
+                         uint3 threadCount [[threadgroups_per_grid]]) {
     // Each invocation calculates (IVC_OH * IVC_OW * IVC_OC * 4) output elements.
     float4 O[IVC_OH][IVC_OW][IVC_OC];
     

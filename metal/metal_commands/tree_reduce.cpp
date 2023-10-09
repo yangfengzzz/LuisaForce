@@ -9,7 +9,7 @@
 
 namespace luisa::compute::metal {
 MetalCommand::UCommand MetalCommand::tree_reduce(BufferView<float> buffer,
-                                                 size_t batch_elements, ReduceMode mode) noexcept {
+                                                 size_t batch_elements, ReduceMode mode, bool is_integer) noexcept {
     return luisa::make_unique<luisa::compute::metal::MetalCommand>(
         [=](MTL::ComputeCommandEncoder *encoder, MTL::ComputePipelineState *pso) {
             encoder->setComputePipelineState(pso);
@@ -22,9 +22,6 @@ MetalCommand::UCommand MetalCommand::tree_reduce(BufferView<float> buffer,
             std::string entry;
             std::string shader_source;
             switch (mode) {
-                case ReduceMode::Atomic:
-                    break;
-
                 case ReduceMode::Loop:
                     entry = "tree_reduce_loop";
                     shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/reduction/tree_reduce_loop.metal");
@@ -37,6 +34,11 @@ MetalCommand::UCommand MetalCommand::tree_reduce(BufferView<float> buffer,
 
             std::unordered_map<std::string, std::string> macros;
             macros["BATCH_SIZE"] = std::to_string(batch_elements);
+            if (is_integer) {
+                macros["TYPE"] = "int";
+            } else {
+                macros["TYPE"] = "float";
+            }
             return create_pipeline_cache(device, shader_source, entry, macros);
         });
 }

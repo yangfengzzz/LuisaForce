@@ -18,17 +18,9 @@ struct ShaderCode {
     metal::MetalCommand::ReduceMode mode;
 };
 
-#define ATOMIC_CASE(size) \
-    { "atomic", size, metal::MetalCommand::ReduceMode::Atomic }
-
 static ShaderCode kShaders[] = {
     {"loop", 16, metal::MetalCommand::ReduceMode::Loop},
     {"subgroup", 16, metal::MetalCommand::ReduceMode::SimdGroup},
-    ATOMIC_CASE(16),
-    ATOMIC_CASE(32),
-    ATOMIC_CASE(64),
-    ATOMIC_CASE(128),
-    ATOMIC_CASE(256),
 };
 
 namespace luisa {

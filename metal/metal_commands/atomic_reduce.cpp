@@ -23,18 +23,18 @@ MetalCommand::UCommand MetalCommand::atomic_reduce(BufferView<float> src_buffer,
             if (mode == ReduceMode::Loop) {
                 if (is_integer) {
                     entry = "atomic_reduce_loop_int";
-                    shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/matmul/atomic_reduce_loop_int.metal");
+                    shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/reduction/atomic_reduce_loop_int.metal");
                 } else {
                     entry = "atomic_reduce_loop_float";
-                    shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/matmul/atomic_reduce_loop_float.metal");
+                    shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/reduction/atomic_reduce_loop_float.metal");
                 }
             } else if (mode == ReduceMode::SimdGroup) {
                 if (is_integer) {
                     entry = "atomic_reduce_subgroup_int";
-                    shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/matmul/atomic_reduce_subgroup_int.metal");
+                    shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/reduction/atomic_reduce_subgroup_int.metal");
                 } else {
                     entry = "atomic_reduce_subgroup_float";
-                    shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/matmul/atomic_reduce_subgroup_float.metal");
+                    shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/reduction/atomic_reduce_subgroup_float.metal");
                 }
             }
 

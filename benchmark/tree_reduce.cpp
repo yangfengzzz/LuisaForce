@@ -63,23 +63,23 @@ static void reduce(::benchmark::State &state,
 
     auto reduce_buffer = device->create_buffer<float>(total_elements);
     auto data_buffer = device->create_buffer<float>(total_elements);
-    auto command = metal::MetalCommand::tree_reduce(reduce_buffer.view(), shader.batch_elements, shader.mode);
+    auto command = metal::MetalCommand::tree_reduce(reduce_buffer.view(), shader.batch_elements, shader.mode, shader.is_integer);
     command->alloc_pso(device);
 
     //===-------------------------------------------------------------------===/
     // Set source buffer data
     //===-------------------------------------------------------------------===/
-    auto generate_float_data = [](size_t i) { return float(i % 9 - 4) * 0.5f; };
-    auto generate_int_data = [](size_t i) { return i % 13 - 7; };
+    auto generate_float_data = [](size_t i) -> float { return float(i % 9 - 4) * 0.5f; };
+    auto generate_int_data = [](size_t i) -> int { return int(i % 13 - 7); };
 
     auto ptr = malloc(buffer_size);
     if (shader.is_integer) {
-        int *src_int_buffer = reinterpret_cast<int *>(ptr);
+        auto *src_int_buffer = reinterpret_cast<int *>(ptr);
         for (size_t i = 0; i < buffer_size / sizeof(int); i++) {
             src_int_buffer[i] = generate_int_data(i);
         }
     } else {
-        float *src_float_buffer = reinterpret_cast<float *>(ptr);
+        auto *src_float_buffer = reinterpret_cast<float *>(ptr);
         for (size_t i = 0; i < buffer_size / sizeof(float); i++) {
             src_float_buffer[i] = generate_float_data(i);
         }
