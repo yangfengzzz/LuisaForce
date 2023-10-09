@@ -7,10 +7,12 @@
 #include <metal_stdlib>
 using namespace metal;
 
-constant int kArraySize [[function_constant(0)]];
-
 uint count [[simdgroups_per_threadgroup]];
 uint index [[thread_position_in_grid]];
+
+#ifndef kArraySize
+#define kArraySize 8
+#endif
 
 #ifndef ARITHMETIC_ADD
 #ifndef ARITHMETIC_MUL

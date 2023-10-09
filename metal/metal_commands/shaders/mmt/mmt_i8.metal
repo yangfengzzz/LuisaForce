@@ -11,9 +11,17 @@ uint2 wgID [[threadgroup_position_in_grid]];
 uint2 localID [[thread_position_in_threadgroup]];
 uint threadID [[thread_index_in_simdgroup]];
 
-constant uint M [[function_constant(0)]];
-constant uint N [[function_constant(1)]];
-constant uint K [[function_constant(2)]];
+#ifndef M
+#define M 8
+#endif
+
+#ifndef N
+#define N 8
+#endif
+
+#ifndef K
+#define K 8
+#endif
 
 #ifndef M0
 #define M0 8

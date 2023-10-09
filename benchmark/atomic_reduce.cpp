@@ -15,49 +15,49 @@
 struct ShaderCode {
     const char *name;     // Test case name
     size_t batch_elements;// Number of elements in each batch
-    bool is_integer;      // Whether the elements should be integers
+    metal::MetalCommand::ReduceMode mode;
+    bool is_integer;// Whether the elements should be integers
 };
 
-#define FLOAT_SHADER_CASE(kind, size)      \
-    {                                      \
-        #kind "/batch=" #size, size, false \
+#define FLOAT_SHADER_CASE(kind, size, mode)      \
+    {                                            \
+        #kind "/batch=" #size, size, mode, false \
     }
 
-#define INT_SHADER_CASE(kind, size)       \
-    {                                     \
-        #kind "/batch=" #size, size, true \
+#define INT_SHADER_CASE(kind, size, mode)       \
+    {                                           \
+        #kind "/batch=" #size, size, mode, true \
     }
 
 static ShaderCode kShaders[] = {
-    FLOAT_SHADER_CASE(loop, 16),
-    FLOAT_SHADER_CASE(loop, 32),
-    FLOAT_SHADER_CASE(loop, 64),
-    FLOAT_SHADER_CASE(loop, 128),
-    FLOAT_SHADER_CASE(loop, 256),
-    FLOAT_SHADER_CASE(loop, 512),
-    FLOAT_SHADER_CASE(subgroup, 64),
-    FLOAT_SHADER_CASE(subgroup, 128),
-    FLOAT_SHADER_CASE(subgroup, 256),
-    FLOAT_SHADER_CASE(subgroup, 512),
+    FLOAT_SHADER_CASE(loop, 16, metal::MetalCommand::ReduceMode::Loop),
+    FLOAT_SHADER_CASE(loop, 32, metal::MetalCommand::ReduceMode::Loop),
+    FLOAT_SHADER_CASE(loop, 64, metal::MetalCommand::ReduceMode::Loop),
+    FLOAT_SHADER_CASE(loop, 128, metal::MetalCommand::ReduceMode::Loop),
+    FLOAT_SHADER_CASE(loop, 256, metal::MetalCommand::ReduceMode::Loop),
+    FLOAT_SHADER_CASE(loop, 512, metal::MetalCommand::ReduceMode::Loop),
+    FLOAT_SHADER_CASE(subgroup, 64, metal::MetalCommand::ReduceMode::SimdGroup),
+    FLOAT_SHADER_CASE(subgroup, 128, metal::MetalCommand::ReduceMode::SimdGroup),
+    FLOAT_SHADER_CASE(subgroup, 256, metal::MetalCommand::ReduceMode::SimdGroup),
+    FLOAT_SHADER_CASE(subgroup, 512, metal::MetalCommand::ReduceMode::SimdGroup),
 
-    INT_SHADER_CASE(loop, 16),
-    INT_SHADER_CASE(loop, 32),
-    INT_SHADER_CASE(loop, 64),
-    INT_SHADER_CASE(loop, 128),
-    INT_SHADER_CASE(loop, 256),
-    INT_SHADER_CASE(loop, 512),
-    INT_SHADER_CASE(subgroup, 64),
-    INT_SHADER_CASE(subgroup, 128),
-    INT_SHADER_CASE(subgroup, 256),
-    INT_SHADER_CASE(subgroup, 512),
+    INT_SHADER_CASE(loop, 16, metal::MetalCommand::ReduceMode::Loop),
+    INT_SHADER_CASE(loop, 32, metal::MetalCommand::ReduceMode::Loop),
+    INT_SHADER_CASE(loop, 64, metal::MetalCommand::ReduceMode::Loop),
+    INT_SHADER_CASE(loop, 128, metal::MetalCommand::ReduceMode::Loop),
+    INT_SHADER_CASE(loop, 256, metal::MetalCommand::ReduceMode::Loop),
+    INT_SHADER_CASE(loop, 512, metal::MetalCommand::ReduceMode::Loop),
+    INT_SHADER_CASE(subgroup, 64, metal::MetalCommand::ReduceMode::SimdGroup),
+    INT_SHADER_CASE(subgroup, 128, metal::MetalCommand::ReduceMode::SimdGroup),
+    INT_SHADER_CASE(subgroup, 256, metal::MetalCommand::ReduceMode::SimdGroup),
+    INT_SHADER_CASE(subgroup, 512, metal::MetalCommand::ReduceMode::SimdGroup),
 };
 
 namespace luisa {
 static void reduce(::benchmark::State &state,
                    LatencyMeasureMode mode,
                    Device *device,
-                   size_t total_elements, size_t batch_elements,
-                   bool is_integer) {
+                   size_t total_elements, const ShaderCode& shader) {
     auto stream = device->create_stream();
     //===-------------------------------------------------------------------===/
     // Create buffers
@@ -67,7 +67,8 @@ static void reduce(::benchmark::State &state,
 
     auto src_buffer = device->create_buffer<float>(total_elements);
     auto dst_buffer = device->create_buffer<float>(1);
-    auto command = metal::MetalCommand::atomic_reduce(src_buffer.view(), dst_buffer.view(), batch_elements, is_integer);
+    auto command = metal::MetalCommand::atomic_reduce(src_buffer.view(), dst_buffer.view(),
+                                                      shader.batch_elements, shader.mode, shader.is_integer);
     command->alloc_pso(device);
 
     //===-------------------------------------------------------------------===/
@@ -77,7 +78,7 @@ static void reduce(::benchmark::State &state,
     auto generate_int_data = [](size_t i) -> int { return int(i % 13 - 7); };
 
     auto ptr = malloc(src_buffer_size);
-    if (is_integer) {
+    if (shader.is_integer) {
         auto *src_int_buffer = reinterpret_cast<int *>(ptr);
         for (size_t i = 0; i < src_buffer_size / sizeof(int); i++) {
             src_int_buffer[i] = generate_int_data(i);
@@ -104,7 +105,7 @@ static void reduce(::benchmark::State &state,
     //===-------------------------------------------------------------------===/
     ptr = malloc(dst_buffer_size);
     stream << dst_buffer.copy_to(ptr) << synchronize();
-    if (is_integer) {
+    if (shader.is_integer) {
         auto *dst_int_buffer = reinterpret_cast<int *>(ptr);
         int total = 0;
         for (size_t i = 0; i < total_elements; i++) {
@@ -158,7 +159,7 @@ void AtomicReduce::register_benchmarks(Device &device, LatencyMeasureMode mode) 
         std::string test_name = fmt::format("{}/{}{}{}", gpu_name, total_elements, (shader.is_integer ? "xi32/" : "xf32/"), shader.name);
 
         ::benchmark::RegisterBenchmark(test_name, reduce, mode, &device,
-                                       total_elements, shader.batch_elements, shader.is_integer)
+                                       total_elements, shader)
             ->UseManualTime()
             ->Unit(::benchmark::kMicrosecond);
     }

@@ -10,7 +10,9 @@ using namespace metal;
 uint threadCount [[threadgroups_per_grid]];
 uint threadID [[thread_position_in_threadgroup]];
 
-constant uint totalCount [[function_constant(0)]];
+#ifndef totalCount
+#define totalCount 8
+#endif
 
 kernel void one_workgroup_reduce_atomic(device float4* Input [[buffer(0)]],
                                         device float* Output [[buffer(1)]]) {

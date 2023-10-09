@@ -117,10 +117,10 @@ static void Mmt(::benchmark::State &state,
     auto src0_buffer = device->create_buffer<float>(M * K);
     auto src1_buffer = device->create_buffer<float>(K * N);
     auto dst_buffer = device->create_buffer<float>(M * N);
-    auto command = metal::MetalCommand::matmul(src0_buffer.view(), src1_buffer.view(), dst_buffer.view(),
-                                               shader.M0, shader.N0, shader.K0,
-                                               M, N, K,
-                                               shader.wg_size_x, shader.wg_size_y);
+    auto command = metal::MetalCommand::mmt(src0_buffer.view(), src1_buffer.view(), dst_buffer.view(),
+                                            shader.M0, shader.N0, shader.K0,
+                                            M, N, K,
+                                            shader.wg_size_x, shader.wg_size_y);
     command->alloc_pso(device);
 
     //===-------------------------------------------------------------------===/

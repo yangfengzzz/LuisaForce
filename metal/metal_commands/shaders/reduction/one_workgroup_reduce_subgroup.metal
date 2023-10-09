@@ -10,7 +10,9 @@ using namespace metal;
 uint laneCount [[threadgroups_per_grid]];
 uint laneID [[thread_position_in_threadgroup]];
 
-constant uint totalCount [[function_constant(0)]];
+#ifndef totalCount
+#define totalCount 8
+#endif
 
 kernel void one_workgroup_reduce_subgroup(device float4* Input [[buffer(0)]],
                                           device float* Output [[buffer(1)]]) {

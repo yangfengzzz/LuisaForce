@@ -12,33 +12,26 @@
 
 #include "benchmark_api.h"
 
-enum class Arithmetic {
-    Add,
-    Mul
-};
-
 struct ShaderCode {
     const char *name;// Test case name
-    Arithmetic op;
+    metal::MetalCommand::ArithmeticMode op;
 };
 
 static ShaderCode kShaderCodeCases[] = {
     // clang-format off
-    {"add/loop", Arithmetic::Add},
-    {"add/intrinsic", Arithmetic::Add},
-    {"mul/loop", Arithmetic::Mul},
-    {"mul/intrinsic", Arithmetic::Mul},
+    {"add/loop", metal::MetalCommand::ArithmeticMode::Add},
+    {"add/intrinsic", metal::MetalCommand::ArithmeticMode::Add},
+    {"mul/loop", metal::MetalCommand::ArithmeticMode::Mul},
+    {"mul/intrinsic", metal::MetalCommand::ArithmeticMode::Mul},
     // clang-format on
 };
-
-static uint32_t kWorkgroupSize = 64;
 
 namespace luisa {
 static void calculate_simd_group_arithmetic(::benchmark::State &state,
                                             LatencyMeasureMode mode,
                                             Device *device,
                                             int num_elements, uint32_t subgroup_size,
-                                            Arithmetic arith_op) {
+                                            metal::MetalCommand::ArithmeticMode arith_op) {
     auto stream = device->create_stream();
     //===-------------------------------------------------------------------===/
     // Create buffers
@@ -47,7 +40,7 @@ static void calculate_simd_group_arithmetic(::benchmark::State &state,
 
     auto src_buffer = device->create_buffer<float>(num_elements);
     auto dst_buffer = device->create_buffer<float>(num_elements);
-    auto command = metal::MetalCommand::atomic_reduce(src_buffer.view(), dst_buffer.view(), 0, 0);
+    auto command = metal::MetalCommand::simd_group_arithmetic(src_buffer.view(), dst_buffer.view(), num_elements, arith_op);
     command->alloc_pso(device);
 
     //===-------------------------------------------------------------------===/
@@ -58,12 +51,12 @@ static void calculate_simd_group_arithmetic(::benchmark::State &state,
     auto ptr = malloc(buffer_num_bytes);
     float *src_float_buffer = reinterpret_cast<float *>(ptr);
     switch (arith_op) {
-        case Arithmetic::Add: {
+        case metal::MetalCommand::ArithmeticMode::Add: {
             for (int i = 0; i < buffer_num_bytes / sizeof(float); ++i) {
                 src_float_buffer[i] = 1.0f;
             }
         } break;
-        case Arithmetic::Mul: {
+        case metal::MetalCommand::ArithmeticMode::Mul: {
             for (int i = 0; i < buffer_num_bytes / sizeof(float); i += 2) {
                 src_float_buffer[i] = subgroup_size;
                 src_float_buffer[i + 1] = 1.0f / subgroup_size;
@@ -89,7 +82,7 @@ static void calculate_simd_group_arithmetic(::benchmark::State &state,
 
     float *dst_float_buffer = reinterpret_cast<float *>(ptr);
     switch (arith_op) {
-        case Arithmetic::Add: {
+        case metal::MetalCommand::ArithmeticMode::Add: {
             for (int i = 0; i < buffer_num_bytes / sizeof(float); ++i) {
                 float expected_value = 1.0f;
                 if (i % subgroup_size == 0) {
@@ -101,7 +94,7 @@ static void calculate_simd_group_arithmetic(::benchmark::State &state,
                                    i, expected_value, dst_float_buffer[i]);
             }
         } break;
-        case Arithmetic::Mul: {
+        case metal::MetalCommand::ArithmeticMode::Mul: {
             for (int i = 0; i < buffer_num_bytes / sizeof(float); ++i) {
                 float expected_value = 0.0f;
                 if (i % subgroup_size == 0) {

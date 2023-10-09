@@ -9,7 +9,7 @@
 
 namespace luisa::compute::metal {
 MetalCommand::UCommand MetalCommand::atomic_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer,
-                                                   size_t batch_elements, bool is_integer) noexcept {
+                                                   size_t batch_elements, ReduceMode mode, bool is_integer) noexcept {
     return luisa::make_unique<luisa::compute::metal::MetalCommand>(
         [=](MTL::ComputeCommandEncoder *encoder, MTL::ComputePipelineState *pso) {
             encoder->setComputePipelineState(pso);
@@ -20,12 +20,22 @@ MetalCommand::UCommand MetalCommand::atomic_reduce(BufferView<float> src_buffer,
         [=](MTL::Device *device) {
             std::string entry;
             std::string shader_source;
-            if (is_integer) {
-                entry = "atomic_reduce_loop_int";
-                shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/matmul/atomic_reduce_loop_float.metal");
-            } else {
-                entry = "atomic_reduce_loop_float";
-                shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/matmul/atomic_reduce_loop_int.metal");
+            if (mode == ReduceMode::Loop) {
+                if (is_integer) {
+                    entry = "atomic_reduce_loop_int";
+                    shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/matmul/atomic_reduce_loop_int.metal");
+                } else {
+                    entry = "atomic_reduce_loop_float";
+                    shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/matmul/atomic_reduce_loop_float.metal");
+                }
+            } else if (mode == ReduceMode::SimdGroup) {
+                if (is_integer) {
+                    entry = "atomic_reduce_subgroup_int";
+                    shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/matmul/atomic_reduce_subgroup_int.metal");
+                } else {
+                    entry = "atomic_reduce_subgroup_float";
+                    shader_source = MetalCommand::read_shader("metal/metal_commands/shaders/matmul/atomic_reduce_subgroup_float.metal");
+                }
             }
 
             std::unordered_map<std::string, std::string> macros;

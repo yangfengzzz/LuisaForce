@@ -10,7 +10,9 @@ using namespace metal;
 uint wgID [[threadgroup_position_in_grid]];
 uint laneID [[thread_position_in_threadgroup]];
 
-constant uint BATCH_SIZE [[function_constant(0)]];
+#ifndef BATCH_SIZE
+#define BATCH_SIZE 8
+#endif
 
 kernel void atomic_reduce_subgroup_int(device int4* Input [[buffer(0)]],
                                        device atomic<int>* Output [[buffer(1)]]) {

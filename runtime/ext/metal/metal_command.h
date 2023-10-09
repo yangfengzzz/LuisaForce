@@ -73,13 +73,28 @@ public:
                         int M, int N, int K,
                         int wg_size_x, int wg_size_y) noexcept;
 
-    static UCommand atomic_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer, size_t batch_elements, bool is_integer = false) noexcept;
+    enum class ReduceMode {
+        Loop,
+        Atomic,
+        SimdGroup
+    };
 
-    static UCommand one_workgroup_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer, size_t batch_elements) noexcept;
+    static UCommand atomic_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer,
+                                  size_t batch_elements, ReduceMode mode, bool is_integer) noexcept;
 
-    static UCommand tree_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer, size_t batch_elements, bool is_integer = false) noexcept;
+    static UCommand one_workgroup_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer,
+                                         size_t batch_elements, ReduceMode mode) noexcept;
 
-    static UCommand simd_group_arithmetic(BufferView<float> src_buffer, BufferView<float> dst_buffer, size_t batch_elements) noexcept;
+    static UCommand tree_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer,
+                                size_t batch_elements, ReduceMode mode) noexcept;
+
+    enum class ArithmeticMode {
+        Add,
+        Mul
+    };
+
+    static UCommand simd_group_arithmetic(BufferView<float> src_buffer, BufferView<float> dst_buffer,
+                                          size_t batch_elements, ArithmeticMode mode) noexcept;
 };
 
 }// namespace luisa::compute::metal

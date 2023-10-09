@@ -15,14 +15,15 @@
 struct ShaderCode {
     const char *name;  // Test case name
     int workgroup_size;// Number of invocations per workgroup
+    metal::MetalCommand::ReduceMode mode;
 };
 
 #define ATOMIC_CASE(size) \
-    { "atomic", size }
+    { "atomic", size, metal::MetalCommand::ReduceMode::Atomic }
 
 static ShaderCode kShaders[] = {
-    {"loop", 16},
-    {"subgroup", 16},
+    {"loop", 16, metal::MetalCommand::ReduceMode::Loop},
+    {"subgroup", 16, metal::MetalCommand::ReduceMode::SimdGroup},
     ATOMIC_CASE(16),
     ATOMIC_CASE(32),
     ATOMIC_CASE(64),
@@ -34,7 +35,8 @@ namespace luisa {
 static void reduce(::benchmark::State &state,
                    LatencyMeasureMode mode,
                    Device *device,
-                   size_t total_elements, int workgroup_size) {
+                   size_t total_elements,
+                   const ShaderCode& shader) {
     auto stream = device->create_stream();
     //===-------------------------------------------------------------------===/
     // Create buffers
@@ -44,7 +46,7 @@ static void reduce(::benchmark::State &state,
 
     auto src_buffer = device->create_buffer<float>(total_elements);
     auto dst_buffer = device->create_buffer<float>(1);
-    auto command = metal::MetalCommand::atomic_reduce(src_buffer.view(), dst_buffer.view(), workgroup_size);
+    auto command = metal::MetalCommand::one_workgroup_reduce(src_buffer.view(), dst_buffer.view(), total_elements, shader.mode);
     command->alloc_pso(device);
 
     //===-------------------------------------------------------------------===/
@@ -53,7 +55,7 @@ static void reduce(::benchmark::State &state,
     auto generate_float_data = [](size_t i) { return float(i % 9 - 4) * 0.5f; };
 
     auto ptr = malloc(src_buffer_size);
-    float *src_float_buffer = reinterpret_cast<float *>(ptr);
+    auto *src_float_buffer = reinterpret_cast<float *>(ptr);
     for (size_t i = 0; i < src_buffer_size / sizeof(float); i++) {
         src_float_buffer[i] = generate_float_data(i);
     }
@@ -74,7 +76,7 @@ static void reduce(::benchmark::State &state,
     ptr = malloc(dst_buffer_size);
     stream << dst_buffer.copy_to(ptr) << synchronize();
 
-    float *dst_float_buffer = reinterpret_cast<float *>(ptr);
+    auto *dst_float_buffer = reinterpret_cast<float *>(ptr);
     float total = 0.f;
     for (size_t i = 0; i < total_elements; i++) {
         total += generate_float_data(i);
@@ -119,7 +121,7 @@ void OneWorkgroupReduce::register_benchmarks(Device &device, LatencyMeasureMode 
                                                 shader.workgroup_size, shader.name);
 
             ::benchmark::RegisterBenchmark(test_name, reduce, mode, &device,
-                                           total_elements, shader.workgroup_size)
+                                           total_elements, shader)
                 ->UseManualTime()
                 ->Unit(::benchmark::kMicrosecond);
         }

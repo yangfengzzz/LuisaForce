@@ -11,8 +11,13 @@ uint wgID [[threadgroup_position_in_grid]];
 uint laneID [[thread_position_in_threadgroup]];
 uint laneCount [[threadgroups_per_grid]];
 
-constant uint stride [[function_constant(0)]];
-constant uint BATCH_SIZE [[function_constant(1)]];
+#ifndef stride
+#define stride 8
+#endif
+
+#ifndef BATCH_SIZE
+#define BATCH_SIZE 8
+#endif
 
 kernel void tree_reduce_subgroup(device float* IOBuffer [[buffer(0)]]) {
     float laneResult = IOBuffer[wgID + stride * laneID];
