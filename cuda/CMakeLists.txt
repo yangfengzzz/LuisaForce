@@ -45,6 +45,10 @@ set(CUB_FILES
         lcub/private/dcub/device_spmv.cu
 )
 
+set(CUSTOM_COMMANDS
+        cuda_commands/mad_throughput.cu
+)
+
 if (VULKAN_FOUND)
     set(VULKAN_CUDA_FILES
             cuda_semaphore.cpp
@@ -57,6 +61,7 @@ set(PROJECT_FILES
         ${COMMON_FILES}
         ${VULKAN_CUDA_FILES}
         ${CUB_FILES}
+        ${CUSTOM_COMMANDS}
 )
 
 #NB: switch this to shared library and things stop working. (there is likely two copies of volk somewhere.

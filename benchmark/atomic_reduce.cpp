@@ -57,7 +57,7 @@ namespace luisa {
 static void reduce(::benchmark::State &state,
                    LatencyMeasureMode mode,
                    Device *device,
-                   size_t total_elements, const ShaderCode& shader) {
+                   size_t total_elements, const ShaderCode &shader) {
     auto stream = device->create_stream();
     //===-------------------------------------------------------------------===/
     // Create buffers
