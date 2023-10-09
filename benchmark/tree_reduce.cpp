@@ -54,16 +54,16 @@ static void reduce(::benchmark::State &state,
                    LatencyMeasureMode mode,
                    Device *device,
                    size_t total_elements,
-                   const ShaderCode& shader) {
+                   const ShaderCode &shader) {
     auto stream = device->create_stream();
     //===-------------------------------------------------------------------===/
     // Create buffers
     //===-------------------------------------------------------------------===/
     const size_t buffer_size = total_elements * sizeof(float);
 
-    auto src_buffer = device->create_buffer<float>(total_elements);
-    auto dst_buffer = device->create_buffer<float>(total_elements);
-    auto command = metal::MetalCommand::tree_reduce(src_buffer.view(), dst_buffer.view(), shader.batch_elements, shader.mode);
+    auto reduce_buffer = device->create_buffer<float>(total_elements);
+    auto data_buffer = device->create_buffer<float>(total_elements);
+    auto command = metal::MetalCommand::tree_reduce(reduce_buffer.view(), shader.batch_elements, shader.mode);
     command->alloc_pso(device);
 
     //===-------------------------------------------------------------------===/
@@ -84,14 +84,15 @@ static void reduce(::benchmark::State &state,
             src_float_buffer[i] = generate_float_data(i);
         }
     }
-    stream << src_buffer.copy_from(ptr) << synchronize();
+    stream << data_buffer.copy_from(ptr) << synchronize();
     free(ptr);
 
     //===-------------------------------------------------------------------===/
     // Dispatch
     //===-------------------------------------------------------------------===/
     {
-        stream << command->clone()
+        stream << reduce_buffer.copy_from(data_buffer)
+               << command->clone()
                << synchronize();
     }
 
@@ -99,9 +100,9 @@ static void reduce(::benchmark::State &state,
     // Verify destination buffer data
     //===-------------------------------------------------------------------===/
     ptr = malloc(buffer_size);
-    stream << dst_buffer.copy_to(ptr) << synchronize();
+    stream << reduce_buffer.copy_to(ptr) << synchronize();
     if (shader.is_integer) {
-        int *dst_int_buffer = reinterpret_cast<int *>(ptr);
+        auto *dst_int_buffer = reinterpret_cast<int *>(ptr);
         int total = 0;
         for (size_t i = 0; i < total_elements; i++) {
             total += generate_int_data(i);
@@ -110,7 +111,7 @@ static void reduce(::benchmark::State &state,
             << fmt::format("destination buffer element #0 has incorrect value: expected to be {} but found {}",
                            total, dst_int_buffer[0]);
     } else {
-        float *dst_float_buffer = reinterpret_cast<float *>(ptr);
+        auto *dst_float_buffer = reinterpret_cast<float *>(ptr);
         float total = 0.f;
         for (size_t i = 0; i < total_elements; i++) {
             total += generate_float_data(i);
@@ -125,6 +126,8 @@ static void reduce(::benchmark::State &state,
     // Benchmarking
     //===-------------------------------------------------------------------===/
     for ([[maybe_unused]] auto _ : state) {
+        stream << reduce_buffer.copy_from(data_buffer) << synchronize();
+
         auto start_time = std::chrono::high_resolution_clock::now();
         stream << command->clone()
                << synchronize();

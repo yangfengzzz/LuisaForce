@@ -9,10 +9,7 @@ using namespace metal;
 
 uint wgID [[threadgroup_position_in_grid]];
 uint laneID [[thread_position_in_threadgroup]];
-
-#ifndef stride
-#define stride 8
-#endif
+uint stride [[threadgroups_per_grid]];
 
 #ifndef BATCH_SIZE
 #define BATCH_SIZE 8

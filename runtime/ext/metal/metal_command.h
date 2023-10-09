@@ -85,7 +85,7 @@ public:
     static UCommand one_workgroup_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer,
                                          size_t batch_elements, ReduceMode mode) noexcept;
 
-    static UCommand tree_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer,
+    static UCommand tree_reduce(BufferView<float> buffer,
                                 size_t batch_elements, ReduceMode mode) noexcept;
 
     enum class ArithmeticMode {

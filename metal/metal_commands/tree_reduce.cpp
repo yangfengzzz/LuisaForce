@@ -8,14 +8,15 @@
 #include "metal_buffer.h"
 
 namespace luisa::compute::metal {
-MetalCommand::UCommand MetalCommand::tree_reduce(BufferView<float> src_buffer, BufferView<float> dst_buffer,
+MetalCommand::UCommand MetalCommand::tree_reduce(BufferView<float> buffer,
                                                  size_t batch_elements, ReduceMode mode) noexcept {
     return luisa::make_unique<luisa::compute::metal::MetalCommand>(
         [=](MTL::ComputeCommandEncoder *encoder, MTL::ComputePipelineState *pso) {
             encoder->setComputePipelineState(pso);
-            encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(src_buffer.handle())->handle(), 0, 0);
-            encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(dst_buffer.handle())->handle(), 0, 1);
-//            encoder->dispatchThreads({(uint32_t)src0_buffer.size() / 4, 1, 1}, {pso->threadExecutionWidth(), 1, 1});
+            encoder->setBuffer(reinterpret_cast<const MetalBuffer *>(buffer.handle())->handle(), 0, 0);
+            for (uint32_t batch = buffer.size() / batch_elements; batch > 0; batch /= batch_elements) {
+                encoder->dispatchThreadgroups({uint32_t(batch), 1, 1}, {16, 1, 1});
+            }
         },
         [=](MTL::Device *device) {
             std::string entry;
