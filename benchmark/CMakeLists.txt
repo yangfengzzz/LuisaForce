@@ -17,6 +17,7 @@ set(SRC
         mmt.cpp
         atomic_reduce.cpp
         one_workgroup_reduce.cpp
+        tree_reduce.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SRC})

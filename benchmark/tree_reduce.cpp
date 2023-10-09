@@ -18,9 +18,10 @@ struct ShaderCode {
     bool is_integer;      // Whether the elements should be integers
 };
 
-#define FLOAT_SHADER_CASE(kind, size)      \
-    {                                      \
-        #kind "/batch=" #size, size, false \
+#define FLOAT_SHADER_CASE(kind, size) \
+    {                                 \
+        #kind "/batch=" #size, size,  \
+            false                     \
     }
 
 #define INT_SHADER_CASE(kind, size)       \
@@ -33,23 +34,19 @@ static ShaderCode kShaders[] = {
     FLOAT_SHADER_CASE(loop, 32),
     FLOAT_SHADER_CASE(loop, 64),
     FLOAT_SHADER_CASE(loop, 128),
-    FLOAT_SHADER_CASE(loop, 256),
-    FLOAT_SHADER_CASE(loop, 512),
+    FLOAT_SHADER_CASE(subgroup, 16),
+    FLOAT_SHADER_CASE(subgroup, 32),
     FLOAT_SHADER_CASE(subgroup, 64),
     FLOAT_SHADER_CASE(subgroup, 128),
-    FLOAT_SHADER_CASE(subgroup, 256),
-    FLOAT_SHADER_CASE(subgroup, 512),
 
     INT_SHADER_CASE(loop, 16),
     INT_SHADER_CASE(loop, 32),
     INT_SHADER_CASE(loop, 64),
     INT_SHADER_CASE(loop, 128),
-    INT_SHADER_CASE(loop, 256),
-    INT_SHADER_CASE(loop, 512),
+    INT_SHADER_CASE(subgroup, 16),
+    INT_SHADER_CASE(subgroup, 32),
     INT_SHADER_CASE(subgroup, 64),
     INT_SHADER_CASE(subgroup, 128),
-    INT_SHADER_CASE(subgroup, 256),
-    INT_SHADER_CASE(subgroup, 512),
 };
 
 namespace luisa {
@@ -62,29 +59,28 @@ static void reduce(::benchmark::State &state,
     //===-------------------------------------------------------------------===/
     // Create buffers
     //===-------------------------------------------------------------------===/
-    const size_t src_buffer_size = total_elements * sizeof(float);
-    const size_t dst_buffer_size = sizeof(float);
+    const size_t buffer_size = total_elements * sizeof(float);
 
     auto src_buffer = device->create_buffer<float>(total_elements);
-    auto dst_buffer = device->create_buffer<float>(1);
+    auto dst_buffer = device->create_buffer<float>(total_elements);
     auto command = metal::MetalCommand::atomic_reduce(src_buffer.view(), dst_buffer.view(), batch_elements, is_integer);
     command->alloc_pso(device);
 
     //===-------------------------------------------------------------------===/
     // Set source buffer data
     //===-------------------------------------------------------------------===/
-    auto generate_float_data = [](size_t i) -> float { return float(i % 9 - 4) * 0.5f; };
-    auto generate_int_data = [](size_t i) -> int { return int(i % 13 - 7); };
+    auto generate_float_data = [](size_t i) { return float(i % 9 - 4) * 0.5f; };
+    auto generate_int_data = [](size_t i) { return i % 13 - 7; };
 
-    auto ptr = malloc(src_buffer_size);
+    auto ptr = malloc(buffer_size);
     if (is_integer) {
-        auto *src_int_buffer = reinterpret_cast<int *>(ptr);
-        for (size_t i = 0; i < src_buffer_size / sizeof(int); i++) {
+        int *src_int_buffer = reinterpret_cast<int *>(ptr);
+        for (size_t i = 0; i < buffer_size / sizeof(int); i++) {
             src_int_buffer[i] = generate_int_data(i);
         }
     } else {
-        auto *src_float_buffer = reinterpret_cast<float *>(ptr);
-        for (size_t i = 0; i < src_buffer_size / sizeof(float); i++) {
+        float *src_float_buffer = reinterpret_cast<float *>(ptr);
+        for (size_t i = 0; i < buffer_size / sizeof(float); i++) {
             src_float_buffer[i] = generate_float_data(i);
         }
     }
@@ -102,10 +98,10 @@ static void reduce(::benchmark::State &state,
     //===-------------------------------------------------------------------===/
     // Verify destination buffer data
     //===-------------------------------------------------------------------===/
-    ptr = malloc(dst_buffer_size);
+    ptr = malloc(buffer_size);
     stream << dst_buffer.copy_to(ptr) << synchronize();
     if (is_integer) {
-        auto *dst_int_buffer = reinterpret_cast<int *>(ptr);
+        int *dst_int_buffer = reinterpret_cast<int *>(ptr);
         int total = 0;
         for (size_t i = 0; i < total_elements; i++) {
             total += generate_int_data(i);
@@ -114,7 +110,7 @@ static void reduce(::benchmark::State &state,
             << fmt::format("destination buffer element #0 has incorrect value: expected to be {} but found {}",
                            total, dst_int_buffer[0]);
     } else {
-        auto *dst_float_buffer = reinterpret_cast<float *>(ptr);
+        float *dst_float_buffer = reinterpret_cast<float *>(ptr);
         float total = 0.f;
         for (size_t i = 0; i < total_elements; i++) {
             total += generate_float_data(i);
@@ -124,6 +120,7 @@ static void reduce(::benchmark::State &state,
                            total, dst_float_buffer[0]);
     }
     free(ptr);
+
 
     //===-------------------------------------------------------------------===/
     // Benchmarking
@@ -142,7 +139,7 @@ static void reduce(::benchmark::State &state,
         }
     }
 
-    state.SetBytesProcessed(state.iterations() * src_buffer_size);
+    state.SetBytesProcessed(state.iterations() * buffer_size);
     state.counters["FLOps"] =
         ::benchmark::Counter(total_elements,
                              ::benchmark::Counter::kIsIterationInvariant |
@@ -150,11 +147,14 @@ static void reduce(::benchmark::State &state,
                              ::benchmark::Counter::kIs1000);
 }
 
-void AtomicReduce::register_benchmarks(Device &device, LatencyMeasureMode mode) {
+void TreeReduce::register_benchmarks(Device &device, LatencyMeasureMode mode) {
     const auto gpu_name = device.backend_name();
 
-    const size_t total_elements = 1 << 22;// 4M
     for (const auto &shader : kShaders) {
+        // Find the power of batch_elements that are larger than 1M.
+        size_t total_elements = shader.batch_elements;
+        while (total_elements < (1 << 20)) total_elements *= shader.batch_elements;
+
         std::string test_name = fmt::format("{}/{}{}{}", gpu_name, total_elements, (shader.is_integer ? "xi32/" : "xf32/"), shader.name);
 
         ::benchmark::RegisterBenchmark(test_name, reduce, mode, &device,
@@ -163,5 +163,4 @@ void AtomicReduce::register_benchmarks(Device &device, LatencyMeasureMode mode) 
             ->Unit(::benchmark::kMicrosecond);
     }
 }
-
 }// namespace luisa

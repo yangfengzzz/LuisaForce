@@ -162,8 +162,11 @@ static void Mmt(::benchmark::State &state,
     // Verify destination buffer data
     //===-------------------------------------------------------------------===/
     if (input_type == DataType::i8) {
+        ptr = malloc(dst_size);
+        stream << dst_buffer.copy_to(ptr) << synchronize();
         check_output<DataType::i32, DataType::i8>(shader, ptr, M,
                                                   N, K, getLhs, getRhs);
+        free(ptr);
     }
 
     //===-------------------------------------------------------------------===/
