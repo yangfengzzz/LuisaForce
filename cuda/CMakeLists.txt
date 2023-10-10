@@ -79,6 +79,14 @@ set(STL_FILES
         stl/cuda_context.cpp
         stl/sort.h
         stl/sort.cu
+        stl/scan.h
+        stl/scan.cu
+        stl/hashgrid.h
+        stl/hashgrid.cu
+        stl/hashgrid.cpp
+        stl/reduce.h
+        stl/reduce.cu
+        stl/reduce.cpp
 )
 
 if (VULKAN_FOUND)
