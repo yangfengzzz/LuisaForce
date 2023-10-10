@@ -68,6 +68,12 @@ set(MATH_FILES
         math/intersect.h
         math/intersect_tri.h
         math/matnn.h
+        math/fabric.h
+)
+
+set(STL_FILES
+        stl/cuda_util.h
+        stl/cuda_util.cpp
 )
 
 if (VULKAN_FOUND)
@@ -84,6 +90,7 @@ set(PROJECT_FILES
         ${CUB_FILES}
         ${CUSTOM_COMMANDS}
         ${MATH_FILES}
+        ${STL_FILES}
 )
 
 #NB: switch this to shared library and things stop working. (there is likely two copies of volk somewhere.
