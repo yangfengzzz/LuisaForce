@@ -62,6 +62,11 @@ set(MATH_FILES
         math/bounds.h
         math/solid_angle.h
         math/spatial.h
+        # method
+        math/svd.h
+        math/intersect.h
+        math/intersect_tri.h
+        math/matnn.h
 )
 
 if (VULKAN_FOUND)
