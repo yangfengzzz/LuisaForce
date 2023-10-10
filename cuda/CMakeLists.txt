@@ -77,6 +77,7 @@ set(STL_FILES
         stl/cuda_context.h
         stl/cuda_context.cu
         stl/cuda_context.cpp
+        # cub
         stl/sort.h
         stl/sort.cu
         stl/scan.h
@@ -87,6 +88,13 @@ set(STL_FILES
         stl/reduce.h
         stl/reduce.cu
         stl/reduce.cpp
+        stl/marching.h
+        stl/marching.cu
+        stl/runlength_encode.h
+        stl/runlength_encode.cu
+        # cutlass
+        stl/cutlass_gemm.h
+        stl/cutlass_gemm.cu
 )
 
 if (VULKAN_FOUND)
@@ -117,6 +125,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         core
         CUDA::cuda_driver
         CUDA::nvrtc_static
+        CUTLASS
+        cutlass_tools_util_includes
 )
 
 if (VULKAN_FOUND)

@@ -4,14 +4,19 @@
 #  personal capacity and am not conveying any rights to any intellectual
 #  property of any third parties.
 
+if (CUDA_FOUND)
+    add_subdirectory(cutlass)
+endif ()
+
+if (APPLE)
 # Metal cpp
 add_library(metal-cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/impl_metal.cpp
-        )
+)
 
 target_include_directories(metal-cpp PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/metal-cpp"
-        )
+)
 
 target_link_libraries(metal-cpp
         "-framework Metal"
@@ -19,7 +24,8 @@ target_link_libraries(metal-cpp
         "-framework AppKit"
         "-framework Foundation"
         "-framework QuartzCore"
-        )
+)
+endif ()
 
 # googletest
 add_subdirectory(googletest)
@@ -47,7 +53,7 @@ set(IMGUI_FILES
         "${IMGUI_DIR}/misc/cpp/imgui_stdlib.h")
 add_library(imgui STATIC ${IMGUI_FILES})
 target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/misc/cpp)
-target_compile_definitions(imgui PUBLIC IMGUI_USER_CONFIG="${CMAKE_CURRENT_SOURCE_DIR}/imconfig.h")
+target_compile_definitions(imgui PRIVATE "IMGUI_USER_CONFIG=${CMAKE_CURRENT_SOURCE_DIR}/imconfig.h")
 set_target_properties(imgui PROPERTIES FOLDER "ThirdParty" POSITION_INDEPENDENT_CODE ON)
 
 # stb
