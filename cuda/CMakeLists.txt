@@ -74,6 +74,9 @@ set(MATH_FILES
 set(STL_FILES
         stl/cuda_util.h
         stl/cuda_util.cpp
+        stl/cuda_context.h
+        stl/cuda_context.cu
+        stl/cuda_context.cpp
 )
 
 if (VULKAN_FOUND)

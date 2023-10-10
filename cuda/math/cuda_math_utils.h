@@ -138,6 +138,8 @@ static_assert(sizeof(half) == 2, "Size of half / float16 type must be 2-bytes");
 
 typedef half float16;
 
+#if defined(__CUDA_ARCH__)
+
 CUDA_CALLABLE inline half float_to_half(float x) {
     half h;
     asm("{  cvt.rn.f16.f32 %0, %1;}\n"
@@ -153,6 +155,23 @@ CUDA_CALLABLE inline float half_to_float(half x) {
         : "h"(x.u));
     return val;
 }
+
+#else// Native C++ for Warp builtins outside of kernels
+
+uint16_t float_to_half_bits(float x);
+float half_bits_to_float(uint16_t u);
+
+inline half float_to_half(float x) {
+    half h;
+    h.u = float_to_half_bits(x);
+    return h;
+}
+
+inline float half_to_float(half h) {
+    return half_bits_to_float(h.u);
+}
+
+#endif
 
 // BAD operator implementations for fp16 arithmetic...
 
@@ -250,15 +269,15 @@ inline CUDA_CALLABLE uint16 sign(uint16 x) { return 1; }
 inline CUDA_CALLABLE uint32 sign(uint32 x) { return 1; }
 inline CUDA_CALLABLE uint64 sign(uint64 x) { return 1; }
 
-inline bool CUDA_CALLABLE isfinite(half x) {
-    return ::isfinite(float(x));
-}
-inline bool CUDA_CALLABLE isfinite(float x) {
-    return ::isfinite(x);
-}
-inline bool CUDA_CALLABLE isfinite(double x) {
-    return ::isfinite(x);
-}
+//inline bool CUDA_CALLABLE isfinite(half x) {
+//    return ::isfinite(float(x));
+//}
+//inline bool CUDA_CALLABLE isfinite(float x) {
+//    return ::isfinite(x);
+//}
+//inline bool CUDA_CALLABLE isfinite(double x) {
+//    return ::isfinite(x);
+//}
 
 inline CUDA_CALLABLE void print(float16 f) {
     printf("%g\n", half_to_float(f));

@@ -1,0 +1,100 @@
+/** Copyright (c) 2022 NVIDIA CORPORATION.  All rights reserved.
+ * NVIDIA CORPORATION and its licensors retain all intellectual property
+ * and proprietary rights in and to this software, related documentation
+ * and any modifications thereto.  Any use, reproduction, disclosure or
+ * distribution of this software and related documentation without an express
+ * license agreement from NVIDIA CORPORATION is strictly prohibited.
+ */
+
+#pragma once
+
+#include "cuda/math/array.h"
+#include "cuda/math/vec.h"
+
+namespace luisa::compute::cuda {
+void *alloc_host(size_t s);
+void *alloc_pinned(size_t s);
+void *alloc_device(void *context, size_t s);
+void *alloc_temp_device(void *context, size_t s);
+
+void free_host(void *ptr);
+void free_pinned(void *ptr);
+void free_device(void *context, void *ptr);
+void free_temp_device(void *context, void *ptr);
+
+// all memcpys are performed asynchronously
+void memcpy_h2h(void *dest, void *src, size_t n);
+void memcpy_h2d(void *context, void *dest, void *src, size_t n);
+void memcpy_d2h(void *context, void *dest, void *src, size_t n);
+void memcpy_d2d(void *context, void *dest, void *src, size_t n);
+void memcpy_peer(void *context, void *dest, void *src, size_t n);
+
+// all memsets are performed asynchronously
+void memset_host(void *dest, int value, size_t n);
+void memset_device(void *context, void *dest, int value, size_t n);
+
+// takes srcsize bytes starting at src and repeats them n times at dst (writes srcsize * n bytes in total):
+void memtile_host(void *dest, const void *src, size_t srcsize, size_t n);
+void memtile_device(void *context, void *dest, const void *src, size_t srcsize, size_t n);
+
+int cuda_driver_version(); // CUDA driver version
+int cuda_toolkit_version();// CUDA Toolkit version used to build Warp
+
+int nvrtc_supported_arch_count();
+void nvrtc_supported_archs(int *archs);
+
+int cuda_device_get_count();
+void *cuda_device_primary_context_retain(int ordinal);
+void cuda_device_primary_context_release(int ordinal);
+const char *cuda_device_get_name(int ordinal);
+int cuda_device_get_arch(int ordinal);
+int cuda_device_is_uva(int ordinal);
+int cuda_device_is_memory_pool_supported(int ordinal);
+
+void *cuda_context_get_current();
+void cuda_context_set_current(void *context);
+void cuda_context_push_current(void *context);
+void cuda_context_pop_current();
+void *cuda_context_create(int device_ordinal);
+void cuda_context_destroy(void *context);
+int cuda_context_get_device_ordinal(void *context);
+int cuda_context_is_primary(void *context);
+int cuda_context_is_memory_pool_supported(void *context);
+void *cuda_context_get_stream(void *context);
+void cuda_context_set_stream(void *context, void *stream);
+int cuda_context_can_access_peer(void *context, void *peer_context);
+int cuda_context_enable_peer_access(void *context, void *peer_context);
+
+// ensures all device side operations have completed in the current context
+void cuda_context_synchronize(void *context);
+
+// return cudaError_t code
+uint64_t cuda_context_check(void *context);
+
+void *cuda_stream_create(void *context);
+void cuda_stream_destroy(void *context, void *stream);
+void cuda_stream_synchronize(void *context, void *stream);
+void *cuda_stream_get_current();
+void cuda_stream_wait_event(void *context, void *stream, void *event);
+void cuda_stream_wait_stream(void *context, void *stream, void *other_stream, void *event);
+
+void *cuda_event_create(void *context, unsigned flags);
+void cuda_event_destroy(void *context, void *event);
+void cuda_event_record(void *context, void *event, void *stream);
+
+void cuda_graph_begin_capture(void *context);
+void *cuda_graph_end_capture(void *context);
+void cuda_graph_launch(void *context, void *graph);
+void cuda_graph_destroy(void *context, void *graph);
+
+size_t cuda_compile_program(const char *cuda_src, int arch, const char *include_dir, bool debug, bool verbose, bool verify_fp, bool fast_math, const char *output_file);
+
+void *cuda_load_module(void *context, const char *ptx);
+void cuda_unload_module(void *context, void *module);
+void *cuda_get_kernel(void *context, void *module, const char *name);
+size_t cuda_launch_kernel(void *context, void *kernel, size_t dim, void **args);
+
+void cuda_set_context_restore_policy(bool always_restore);
+int cuda_get_context_restore_policy();
+
+}// namespace luisa::compute::cuda
