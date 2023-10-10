@@ -77,6 +77,8 @@ set(STL_FILES
         stl/cuda_context.h
         stl/cuda_context.cu
         stl/cuda_context.cpp
+        stl/sort.h
+        stl/sort.cu
 )
 
 if (VULKAN_FOUND)
