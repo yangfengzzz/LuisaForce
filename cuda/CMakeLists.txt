@@ -51,6 +51,8 @@ set(CUSTOM_COMMANDS
 
 set(MATH_FILES
         math/cuda_math_utils.h
+        math/initializer_array.h
+        math/vec.h
 )
 
 if (VULKAN_FOUND)
