@@ -53,6 +53,15 @@ set(MATH_FILES
         math/cuda_math_utils.h
         math/initializer_array.h
         math/vec.h
+        math/mat.h
+        math/quat.h
+        math/array.h
+        math/rand.h
+        math/noise.h
+        math/range.h
+        math/bounds.h
+        math/solid_angle.h
+        math/spatial.h
 )
 
 if (VULKAN_FOUND)
