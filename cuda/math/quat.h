@@ -324,4 +324,9 @@ inline CUDA_CALLABLE quat_t<Type> quat_identity() {
     return quat_t<Type>(Type(0), Type(0), Type(0), Type(1));
 }
 
+template<typename Type>
+inline CUDA_CALLABLE void print(quat_t<Type> i) {
+    printf("%g %g %g %g\n", float(i.x), float(i.y), float(i.z), float(i.w));
+}
+
 }// namespace luisa::compute::cuda

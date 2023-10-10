@@ -285,4 +285,9 @@ using spatial_matrixh = spatial_matrix_t<half>;
 using spatial_matrixf = spatial_matrix_t<float>;
 using spatial_matrixd = spatial_matrix_t<double>;
 
+template<typename Type>
+inline CUDA_CALLABLE void print(transform_t<Type> t) {
+    printf("(%g %g %g) (%g %g %g %g)\n", float(t.p[0]), float(t.p[1]), float(t.p[2]), float(t.q.x), float(t.q.y), float(t.q.z), float(t.q.w));
+}
+
 }// namespace luisa::compute::cuda

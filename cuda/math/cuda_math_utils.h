@@ -138,8 +138,6 @@ static_assert(sizeof(half) == 2, "Size of half / float16 type must be 2-bytes");
 
 typedef half float16;
 
-#if defined(__CUDA_ARCH__)
-
 CUDA_CALLABLE inline half float_to_half(float x) {
     half h;
     asm("{  cvt.rn.f16.f32 %0, %1;}\n"
@@ -155,37 +153,6 @@ CUDA_CALLABLE inline float half_to_float(half x) {
         : "h"(x.u));
     return val;
 }
-
-#elif defined(__clang__)
-
-// _Float16 is Clang's native half-precision floating-point type
-inline half float_to_half(float x) {
-
-    _Float16 f16 = static_cast<_Float16>(x);
-    return *reinterpret_cast<half *>(&f16);
-}
-
-inline float half_to_float(half h) {
-    _Float16 f16 = *reinterpret_cast<_Float16 *>(&h);
-    return static_cast<float>(f16);
-}
-
-#else// Native C++ for Warp builtins outside of kernels
-
-extern "C" LUISA_API uint16_t float_to_half_bits(float x);
-extern "C" LUISA_API float half_bits_to_float(uint16_t u);
-
-inline half float_to_half(float x) {
-    half h;
-    h.u = float_to_half_bits(x);
-    return h;
-}
-
-inline float half_to_float(half h) {
-    return half_bits_to_float(h.u);
-}
-
-#endif
 
 // BAD operator implementations for fp16 arithmetic...
 
@@ -939,34 +906,6 @@ inline CUDA_CALLABLE void print(unsigned long long i) {
     printf("%llu\n", i);
 }
 
-template<unsigned Length, typename Type>
-inline CUDA_CALLABLE void print(vec_t<Length, Type> v) {
-    for (unsigned i = 0; i < Length; ++i) {
-        printf("%g ", float(v[i]));
-    }
-    printf("\n");
-}
-
-template<typename Type>
-inline CUDA_CALLABLE void print(quat_t<Type> i) {
-    printf("%g %g %g %g\n", float(i.x), float(i.y), float(i.z), float(i.w));
-}
-
-template<unsigned Rows, unsigned Cols, typename Type>
-inline CUDA_CALLABLE void print(const mat_t<Rows, Cols, Type> &m) {
-    for (unsigned i = 0; i < Rows; ++i) {
-        for (unsigned j = 0; j < Cols; ++j) {
-            printf("%g ", float(m.data[i][j]));
-        }
-        printf("\n");
-    }
-}
-
-template<typename Type>
-inline CUDA_CALLABLE void print(transform_t<Type> t) {
-    printf("(%g %g %g) (%g %g %g %g)\n", float(t.p[0]), float(t.p[1]), float(t.p[2]), float(t.q.x), float(t.q.y), float(t.q.z), float(t.q.w));
-}
-
 template<typename T>
 inline CUDA_CALLABLE void expect_eq(const T &actual, const T &expected) {
     if (!(actual == expected)) {
@@ -992,18 +931,6 @@ inline CUDA_CALLABLE void expect_neq(const T &actual, const T &expected) {
 template<typename T>
 inline CUDA_CALLABLE void expect_near(const T &actual, const T &expected, const T &tolerance) {
     if (abs(actual - expected) > tolerance) {
-        printf("Error, expect_near() failed with tolerance ");
-        print(tolerance);
-        printf("\t Expected: ");
-        print(expected);
-        printf("\t Actual: ");
-        print(actual);
-    }
-}
-
-inline CUDA_CALLABLE void expect_near(const vec3 &actual, const vec3 &expected, const float &tolerance) {
-    const float diff = max(max(abs(actual[0] - expected[0]), abs(actual[1] - expected[1])), abs(actual[2] - expected[2]));
-    if (diff > tolerance) {
         printf("Error, expect_near() failed with tolerance ");
         print(tolerance);
         printf("\t Expected: ");

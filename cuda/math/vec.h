@@ -262,6 +262,11 @@ inline CUDA_CALLABLE vec_t<Length, Type> add(vec_t<Length, Type> a, vec_t<Length
     return ret;
 }
 
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, Type> operator+(vec_t<Length, Type> a, vec_t<Length, Type> b) {
+    return add(a, b);
+}
+
 template<typename Type>
 inline CUDA_CALLABLE vec_t<2, Type> add(vec_t<2, Type> a, vec_t<2, Type> b) {
     return vec_t<2, Type>(a.c[0] + b.c[0], a.c[1] + b.c[1]);
@@ -280,6 +285,11 @@ inline CUDA_CALLABLE vec_t<Length, Type> sub(vec_t<Length, Type> a, vec_t<Length
         ret[i] = Type(a[i] - b[i]);
     }
     return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, Type> operator-(vec_t<Length, Type> a, vec_t<Length, Type> b) {
+    return sub(a, b);
 }
 
 template<typename Type>
@@ -538,6 +548,26 @@ CUDA_CALLABLE inline int longest_axis(const vec_t<Length, Type> &v) {
 template<unsigned Length, typename Type>
 CUDA_CALLABLE inline vec_t<Length, Type> lerp(const vec_t<Length, Type> &a, const vec_t<Length, Type> &b, Type t) {
     return a * (Type(1) - t) + b * t;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE void print(vec_t<Length, Type> v) {
+    for (unsigned i = 0; i < Length; ++i) {
+        printf("%g ", float(v[i]));
+    }
+    printf("\n");
+}
+
+inline CUDA_CALLABLE void expect_near(const vec3 &actual, const vec3 &expected, const float &tolerance) {
+    const float diff = max(max(abs(actual[0] - expected[0]), abs(actual[1] - expected[1])), abs(actual[2] - expected[2]));
+    if (diff > tolerance) {
+        printf("Error, expect_near() failed with tolerance ");
+        print(tolerance);
+        printf("\t Expected: ");
+        print(expected);
+        printf("\t Actual: ");
+        print(actual);
+    }
 }
 
 }// namespace luisa::compute::cuda
