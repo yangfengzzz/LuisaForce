@@ -10,7 +10,7 @@
 
 namespace luisa::compute::cuda {
 template<typename TYPE>
-__global__ void mad_throughput_kernel(CUdeviceptr src0, CUdeviceptr src1, CUdeviceptr dst, uint32_t kLoopSize) {
+__global__ void matmul_tiled_fp32(CUdeviceptr src0, CUdeviceptr src1, CUdeviceptr dst, uint32_t kLoopSize) {
     auto *inputA = reinterpret_cast<TYPE *>(src0);
     auto *inputB = reinterpret_cast<TYPE *>(src1);
     auto *outputO = reinterpret_cast<TYPE *>(dst);
@@ -35,12 +35,15 @@ __global__ void mad_throughput_kernel(CUdeviceptr src0, CUdeviceptr src1, CUdevi
     outputO[index] = c;
 }
 
-CudaCommand::UCommand CudaCommand::mad_throughput(BufferView<float> src0_buffer,
-                                                  BufferView<float> src1_buffer,
-                                                  BufferView<float> dst_buffer) noexcept {
+CudaCommand::UCommand CudaCommand::matmul(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer,
+                                          int tileM, int tileN, int tileK,
+                                          int M, int N, int K,
+                                          int wg_size_x, int wg_size_y) noexcept {
     return luisa::make_unique<luisa::compute::cuda::CudaLCubCommand>(
         [=](CUstream stream) {
-            mad_throughput_kernel<vec4f><<<src0_buffer.size() / (4 * 16), 16, 0, stream>>>(
+            dim3 gridDim(uint32_t(N / tileN), uint32_t(M / tileM));
+            dim3 blockDim(wg_size_x, wg_size_y);
+            matmul_tiled_fp32<vec4f><<<gridDim, blockDim, 0, stream>>>(
                 reinterpret_cast<const CUDABuffer *>(src0_buffer.handle())->handle(),
                 reinterpret_cast<const CUDABuffer *>(src1_buffer.handle())->handle(),
                 reinterpret_cast<const CUDABuffer *>(dst_buffer.handle())->handle(),

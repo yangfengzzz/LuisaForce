@@ -47,6 +47,7 @@ set(CUB_FILES
 
 set(CUSTOM_COMMANDS
         cuda_commands/mad_throughput.cu
+        cuda_commands/matmul.cu
 )
 
 set(MATH_FILES
