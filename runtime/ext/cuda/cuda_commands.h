@@ -10,7 +10,7 @@
 #include "runtime/ext/cuda/lcub/dcub_common.h"
 #include "runtime/ext/cuda/lcub/cuda_lcub_command.h"
 
-namespace luisa::compute::cuda::lcub {
+namespace luisa::compute::cuda {
 class LC_BACKEND_API CudaCommand {
     template<typename T>
     using BufferView = luisa::compute::BufferView<T>;

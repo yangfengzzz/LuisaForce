@@ -8,7 +8,7 @@
 #include "cuda/cuda_buffer.h"
 #include "cuda/math/vec.h"
 
-namespace luisa::compute::cuda::lcub {
+namespace luisa::compute::cuda {
 #define TYPE vec4f
 
 __global__ void mad_throughput_kernel(CUdeviceptr src0, CUdeviceptr src1, CUdeviceptr dst, uint32_t kLoopSize) {
@@ -49,4 +49,4 @@ CudaCommand::UCommand CudaCommand::mad_throughput(BufferView<float> src0_buffer,
         });
 }
 
-}// namespace luisa::compute::cuda::lcub
+}// namespace luisa::compute::cuda

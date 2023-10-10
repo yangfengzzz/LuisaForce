@@ -19,12 +19,24 @@ namespace luisa::compute::cuda {
 
 class CudaLCubCommand final : public luisa::compute::CustomCommand {
 public:
+    using UCommand = luisa::unique_ptr<luisa::compute::cuda::CudaLCubCommand>;
+
     luisa::function<void(CUstream)> func;
 
 public:
     explicit CudaLCubCommand(luisa::function<void(CUstream)> f) noexcept
         : CustomCommand{}, func{std::move(f)} {}
+
+    explicit CudaLCubCommand(CudaLCubCommand *command) noexcept
+        : CustomCommand{}, func{command->func} {
+    }
+
+    inline UCommand clone() {
+        return luisa::make_unique<CudaLCubCommand>(this);
+    }
+
     [[nodiscard]] StreamTag stream_tag() const noexcept override { return StreamTag::COMPUTE; }
+
     [[nodiscard]] uint64_t uuid() const noexcept override {
         return static_cast<uint64_t>(CustomCommandUUID::CUDA_LCUB_COMMAND);
     }

@@ -9,8 +9,15 @@
 #include "utils/status_util.h"
 #include "runtime/buffer.h"
 #include "runtime/stream.h"
+#ifdef LUISA_PLATFORM_APPLE
 #include "runtime/ext/metal/metal_command.h"
 #include "runtime/ext/debug_capture_ext.h"
+#endif
+
+#ifdef LUISA_PLATFORM_CUDA
+#include "runtime/ext/cuda/cuda_commands.h"
+#endif
+
 #include <spdlog/fmt/fmt.h>
 
 namespace luisa {
@@ -19,15 +26,20 @@ static void throughput(::benchmark::State &state,
                        Device *device,
                        size_t num_element, int loop_count, DataType data_type) {
     auto stream = device->create_stream();
-    auto capture = device->extension<DebugCaptureExt>();
     //===-------------------------------------------------------------------===/
     // Create buffers
     //===-------------------------------------------------------------------===/
     auto src0_buffer = device->create_buffer<float>(num_element);
     auto src1_buffer = device->create_buffer<float>(num_element);
     auto dst_buffer = device->create_buffer<float>(num_element);
+#ifdef LUISA_PLATFORM_APPLE
     auto command = metal::MetalCommand::mad_throughput(src0_buffer.view(), src1_buffer.view(), dst_buffer.view());
     command->alloc_pso(device);
+#endif
+
+#ifdef LUISA_PLATFORM_CUDA
+    auto command = cuda::CudaCommand::mad_throughput(src0_buffer.view(), src1_buffer.view(), dst_buffer.view());
+#endif
 
     //===-------------------------------------------------------------------===/
     // Set source buffer data
@@ -69,15 +81,8 @@ static void throughput(::benchmark::State &state,
     // Dispatch
     //===-------------------------------------------------------------------===/
     {
-        auto scope = capture->create_scope("test");
-        capture->start_capture(scope);
-        scope.mark_begin();
-
         stream << command->clone()
                << synchronize();
-
-        scope.mark_end();
-        capture->stop_capture();
     }
 
     //===-------------------------------------------------------------------===/

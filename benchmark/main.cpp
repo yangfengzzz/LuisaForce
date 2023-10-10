@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     Device device = context.create_device(&config);
 
     LatencyMeasureMode mode = LatencyMeasureMode::kSystemSubmit;
-    auto app = std::make_unique<MatMul>();
+    auto app = std::make_unique<MADThroughPut>();
     app->register_benchmarks(device, mode);
 
     ::benchmark::RunSpecifiedBenchmarks();
