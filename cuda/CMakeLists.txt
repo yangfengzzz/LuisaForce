@@ -49,6 +49,10 @@ set(CUSTOM_COMMANDS
         cuda_commands/mad_throughput.cu
 )
 
+set(MATH_FILES
+        math/cuda_math_utils.h
+)
+
 if (VULKAN_FOUND)
     set(VULKAN_CUDA_FILES
             cuda_semaphore.cpp
@@ -62,6 +66,7 @@ set(PROJECT_FILES
         ${VULKAN_CUDA_FILES}
         ${CUB_FILES}
         ${CUSTOM_COMMANDS}
+        ${MATH_FILES}
 )
 
 #NB: switch this to shared library and things stop working. (there is likely two copies of volk somewhere.
