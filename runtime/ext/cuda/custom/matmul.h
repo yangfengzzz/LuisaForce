@@ -80,7 +80,7 @@ CudaCommand::UCommand CudaCommand::matmul(BufferView<float> src0_buffer, BufferV
         [=](CUstream stream) {
             dim3 gridDim(uint32_t(N / TILE_N), uint32_t(M / TILE_M));
             dim3 blockDim(WG_X, WG_Y);
-            matmul_tiled_fp32<8, 8, 8, 1, 1><<<gridDim, blockDim, 0, stream>>>(
+            matmul_tiled_fp32<TILE_M, TILE_N, TILE_K, WG_X, WG_Y><<<gridDim, blockDim, 0, stream>>>(
                 reinterpret_cast<const CUDABuffer *>(src0_buffer.handle())->handle(),
                 reinterpret_cast<const CUDABuffer *>(src1_buffer.handle())->handle(),
                 reinterpret_cast<const CUDABuffer *>(dst_buffer.handle())->handle(),
