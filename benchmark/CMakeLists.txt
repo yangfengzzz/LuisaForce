@@ -26,8 +26,11 @@ set(CUDA_SRC
 
 set(SRC
         ${BENCH_SRC}
-        ${CUDA_SRC}
 )
+
+if (CUDA_FOUND)
+    list(APPEND SRC ${CUDA_SRC})
+endif ()
 
 add_executable(${PROJECT_NAME} ${SRC})
 

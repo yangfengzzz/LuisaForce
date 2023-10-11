@@ -93,7 +93,7 @@ struct ShaderCode : ShaderCodeBase {
                                                    wg_size_x(), wg_size_y());
         command->alloc_pso(device);
 
-        auto mps_command = metal::MPSCommand::gemm(src0_buffer.view(), src1_buffer.view(), dst_buffer.view(),
+        auto mps_command = metal::MPSCommand::gemm(src0_buffer, src1_buffer, dst_buffer,
                                                    M, N, K);
         return command;
     }
