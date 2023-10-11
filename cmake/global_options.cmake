@@ -21,10 +21,8 @@
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
 
-set(METAL_WARNINGS_AS_ERRORS ON CACHE BOOL "Enable Warnings as Errors")
-set(METAL_BUILD_TESTS OFF CACHE BOOL "Enable generation and building of Vulkan best practice tests.")
-set(METAL_CLANG_TIDY OFF CACHE STRING "Use CMake Clang Tidy integration")
-set(METAL_CLANG_TIDY_EXTRAS "-header-filter=framework,samples,app;-checks=-*,google-*,-google-runtime-references;--fix;--fix-errors" CACHE STRING "Clang Tidy Parameters")
+set(CMAKE_CLANG_TIDY OFF CACHE STRING "Use CMake Clang Tidy integration")
+set(CMAKE_CLANG_TIDY_EXTRAS "-header-filter=framework,samples,app;-checks=-*,google-*,-google-runtime-references;--fix;--fix-errors" CACHE STRING "Clang Tidy Parameters")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/${CMAKE_BUILD_TYPE}/${TARGET_ARCH}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "lib/${CMAKE_BUILD_TYPE}/${TARGET_ARCH}")
@@ -41,7 +39,7 @@ add_definitions(-DROOT_PATH_SIZE=${ROOT_PATH_SIZE})
 set(CMAKE_C_FLAGS_DEBUG   "-DDEBUG=0 ${CMAKE_C_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG=0 ${CMAKE_CXX_FLAGS_DEBUG}")
 
-if (METAL_CLANG_TIDY)
+if (CMAKE_CLANG_TIDY)
     find_program(CLANG_TIDY "clang-tidy" "clang-tidy-15" REQUIRED)
-    set(METAL_DO_CLANG_TIDY ${CLANG_TIDY} ${METAL_CLANG_TIDY_EXTRAS})
+    set(CMAKE_DO_CLANG_TIDY ${CLANG_TIDY} ${CMAKE_CLANG_TIDY_EXTRAS})
 endif()

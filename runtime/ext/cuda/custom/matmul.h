@@ -4,12 +4,13 @@
 //  personal capacity and am not conveying any rights to any intellectual
 //  property of any third parties.
 
-#include "runtime/ext/cuda/cuda_commands.h"
 #include "cuda/cuda_buffer.h"
 #include "cuda/math/vec.h"
 
+#ifdef __CUDACC__
+
 namespace luisa::compute::cuda {
-__device__ uint coordToOffset(uint i, uint j, uint stride) {
+__device__ inline uint coordToOffset(uint i, uint j, uint stride) {
     return (stride * i + j);
 }
 
@@ -72,14 +73,13 @@ __global__ void matmul_tiled_fp32(CUdeviceptr src0, CUdeviceptr src1, CUdevicept
     }
 }
 
+template<uint TILE_M, uint TILE_N, uint TILE_K, uint WG_X, uint WG_Y>
 CudaCommand::UCommand CudaCommand::matmul(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer,
-                                          int tileM, int tileN, int tileK,
-                                          int M, int N, int K,
-                                          int wg_size_x, int wg_size_y) noexcept {
+                                          int M, int N, int K) noexcept {
     return luisa::make_unique<luisa::compute::cuda::CudaLCubCommand>(
         [=](CUstream stream) {
-            dim3 gridDim(uint32_t(N / tileN), uint32_t(M / tileM));
-            dim3 blockDim(wg_size_x, wg_size_y);
+            dim3 gridDim(uint32_t(N / TILE_N), uint32_t(M / TILE_M));
+            dim3 blockDim(WG_X, WG_Y);
             matmul_tiled_fp32<8, 8, 8, 1, 1><<<gridDim, blockDim, 0, stream>>>(
                 reinterpret_cast<const CUDABuffer *>(src0_buffer.handle())->handle(),
                 reinterpret_cast<const CUDABuffer *>(src1_buffer.handle())->handle(),
@@ -89,3 +89,5 @@ CudaCommand::UCommand CudaCommand::matmul(BufferView<float> src0_buffer, BufferV
 }
 
 }// namespace luisa::compute::cuda
+
+#endif

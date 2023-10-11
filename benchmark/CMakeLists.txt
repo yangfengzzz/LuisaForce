@@ -7,18 +7,26 @@
 # create sample app project
 project(kernel-benchmark LANGUAGES C CXX)
 
-set(SRC
+set(BENCH_SRC
         utils/data_type_util.cpp
         utils/status_util.cpp
         ##
         main.cpp
         mad_throughput.cpp
-#        matmul_tiled.cpp
-#        mmt.cpp
-#        atomic_reduce.cpp
-#        one_workgroup_reduce.cpp
-#        tree_reduce.cpp
-#        simd_group_arithmetic.cpp
+        matmul_tiled.cpp
+        #        mmt.cpp
+        #        atomic_reduce.cpp
+        #        one_workgroup_reduce.cpp
+        #        tree_reduce.cpp
+        #        simd_group_arithmetic.cpp
+)
+
+set(CUDA_SRC
+        matmul_tiled.cu)
+
+set(SRC
+        ${BENCH_SRC}
+        ${CUDA_SRC}
 )
 
 add_executable(${PROJECT_NAME} ${SRC})

@@ -12,16 +12,16 @@
 
 namespace luisa::compute::cuda {
 class LC_BACKEND_API CudaCommand {
+public:
     template<typename T>
     using BufferView = luisa::compute::BufferView<T>;
     using UCommand = luisa::unique_ptr<luisa::compute::cuda::CudaLCubCommand>;
 public:
     static UCommand mad_throughput(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer) noexcept;
 
+    template<uint TILE_M, uint TILE_N, uint TILE_K, uint WG_X, uint WG_Y>
     static UCommand matmul(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer,
-                           int tileM, int tileN, int tileK,
-                           int M, int N, int K,
-                           int wg_size_x, int wg_size_y) noexcept;
+                           int M, int N, int K) noexcept;
 
     // matrix-matrix transposed multiplication of two 2D inputs.
     static UCommand mmt(BufferView<float> src0_buffer, BufferView<float> src1_buffer, BufferView<float> dst_buffer,
@@ -51,4 +51,6 @@ public:
     static UCommand simd_group_arithmetic(BufferView<float> src_buffer, BufferView<float> dst_buffer,
                                           size_t batch_elements, ArithmeticMode mode) noexcept;
 };
-}// namespace luisa::compute::cuda::lcub
+}// namespace luisa::compute::cuda
+
+#include "custom/matmul.h"

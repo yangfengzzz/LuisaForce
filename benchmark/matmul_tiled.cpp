@@ -8,35 +8,118 @@
 #include "utils/status_util.h"
 #include "runtime/buffer.h"
 #include "runtime/stream.h"
+#ifdef LUISA_PLATFORM_APPLE
 #include "runtime/ext/metal/metal_command.h"
 #include "runtime/ext/metal/mps_command.h"
 #include "runtime/ext/debug_capture_ext.h"
+#endif
+
+#ifdef LUISA_PLATFORM_CUDA
+#include "runtime/ext/cuda/cuda_commands.h"
+#endif
+
 #include <spdlog/fmt/fmt.h>
 
 #include "benchmark_api.h"
 
-struct ShaderCode {
-    const char *name;// Shader case name
-    int tileM;
-    int tileN;
-    int tileK;
-    int wg_size_x;
-    int wg_size_y;
+struct ShaderCodeBase {
+    const char *name;    // Shader case name
     DataType input_type; // LHS & RHS element type
     DataType output_type;// Output/Result matrix element type
+
+    ShaderCodeBase(const char *name, DataType input_type, DataType output_type)
+        : name{name},
+          input_type{input_type},
+          output_type{output_type} {}
+
+    [[nodiscard]] virtual uint tileM() const = 0;
+    [[nodiscard]] virtual uint tileN() const = 0;
+    [[nodiscard]] virtual uint tileK() const = 0;
+    [[nodiscard]] virtual uint wg_size_x() const = 0;
+    [[nodiscard]] virtual uint wg_size_y() const = 0;
+
+#ifdef LUISA_PLATFORM_APPLE
+    virtual luisa::compute::metal::MetalCommand::UCommand create_command(Device *device,
+                                                                         BufferView<float> src0_buffer,
+                                                                         BufferView<float> src1_buffer,
+                                                                         BufferView<float> dst_buffer,
+                                                                         uint M, uint N, uint K) const = 0;
+#endif
+
+#ifdef LUISA_PLATFORM_CUDA
+    virtual luisa::compute::cuda::CudaCommand::UCommand create_command(Device *device,
+                                                                       BufferView<float> src0_buffer,
+                                                                       BufferView<float> src1_buffer,
+                                                                       BufferView<float> dst_buffer,
+                                                                       uint M, uint N, uint K) const = 0;
+#endif
 };
 
-#define SHADER_TILE_F32(M, N, K, X, Y)                    \
-    ShaderCode {                                          \
-        "Tile[" #M "x" #N "x" #K "]",                     \
-            M, N, K, X, Y, DataType::fp32, DataType::fp32 \
+template<uint TILE_M, uint TILE_N, uint TILE_K, uint WG_X, uint WG_Y>
+struct ShaderCode : ShaderCodeBase {
+    ShaderCode(const char *name, DataType input_type, DataType output_type)
+        : ShaderCodeBase{name, input_type, output_type} {
     }
 
-#define SHADER_TILE_I32(M, N, K, X, Y)                  \
-    ShaderCode {                                        \
-        "Tile[" #M "x" #N "x" #K "]",                   \
-            M, N, K, X, Y, DataType::i32, DataType::i32 \
+    [[nodiscard]] uint tileM() const override {
+        return TILE_M;
     }
+
+    [[nodiscard]] uint tileN() const override {
+        return TILE_N;
+    }
+
+    [[nodiscard]] uint tileK() const override {
+        return TILE_K;
+    }
+
+    [[nodiscard]] uint wg_size_x() const override {
+        return WG_X;
+    }
+
+    [[nodiscard]] uint wg_size_y() const override {
+        return WG_Y;
+    }
+
+#ifdef LUISA_PLATFORM_APPLE
+    luisa::compute::metal::MetalCommand::UCommand create_command(Device *device,
+                                                                 BufferView<float> src0_buffer,
+                                                                 BufferView<float> src1_buffer,
+                                                                 BufferView<float> dst_buffer,
+                                                                 uint M, uint N, uint K) const override {
+        auto command = metal::MetalCommand::matmul(src0_buffer, src1_buffer, dst_buffer,
+                                                   tileM(), tileN(), tileK(),
+                                                   M, N, K,
+                                                   wg_size_x(), wg_size_y());
+        command->alloc_pso(device);
+
+        auto mps_command = metal::MPSCommand::gemm(src0_buffer.view(), src1_buffer.view(), dst_buffer.view(),
+                                                   M, N, K);
+        return command;
+    }
+#endif
+
+#ifdef LUISA_PLATFORM_CUDA
+    luisa::compute::cuda::CudaCommand::UCommand create_command(Device *device,
+                                                               BufferView<float> src0_buffer,
+                                                               BufferView<float> src1_buffer,
+                                                               BufferView<float> dst_buffer,
+                                                               uint M, uint N, uint K) const override {
+        return cuda::CudaCommand::matmul<TILE_M, TILE_N, TILE_K, WG_X, WG_Y>(src0_buffer, src1_buffer, dst_buffer,
+                                                                             M, N, K);
+    }
+#endif
+};
+
+#define SHADER_TILE_F32(M, N, K, X, Y)           \
+    std::make_unique<ShaderCode<M, N, K, X, Y>>( \
+        "Tile[" #M "x" #N "x" #K "]",            \
+        DataType::fp32, DataType::fp32)
+
+#define SHADER_TILE_I32(M, N, K, X, Y)           \
+    std::make_unique<ShaderCode<M, N, K, X, Y>>( \
+        "Tile[" #M "x" #N "x" #K "]",            \
+        DataType::i32, DataType::i32)
 
 #define WORKGROUP_TILE_N_F32(X, Y, N)                                    \
     SHADER_TILE_F32(2, N, 4, X, Y), SHADER_TILE_F32(4, N, 4, X, Y),      \
@@ -52,7 +135,7 @@ struct ShaderCode {
         SHADER_TILE_I32(4, N, 8, X, Y), SHADER_TILE_I32(8, N, 8, X, Y),  \
         SHADER_TILE_I32(16, N, 8, X, Y), SHADER_TILE_I32(32, N, 8, X, Y)
 
-static ShaderCode kShaderCodeCases[] = {
+static std::unique_ptr<ShaderCodeBase> kShaderCodeCases[] = {
     WORKGROUP_TILE_N_F32(16, 1, 64),
     WORKGROUP_TILE_N_F32(16, 1, 128),
     WORKGROUP_TILE_N_I32(16, 1, 64),
@@ -85,7 +168,7 @@ static void fill_buffer(DataType data_type, void *raw_buffer,
 /// |rhs|.
 template<DataType OutputType, DataType InputType, typename Generator1Fn,
          typename Generator2Fn>
-static void check_output(const ShaderCode &shader, void *raw_buffer,
+static void check_output(const ShaderCodeBase *shader, void *raw_buffer,
                          unsigned M, unsigned N, unsigned K,
                          Generator1Fn lhs, Generator2Fn rhs) {
     using OutputTraits = DataTypeTraits<OutputType>;
@@ -106,8 +189,8 @@ static void check_output(const ShaderCode &shader, void *raw_buffer,
             OutputRuntimeType gpuValue(output[i * N + j]);
             BM_CHECK_EQ(gpuValue, acc) << fmt::format("destination buffer element ({},{}) has incorrect value: "
                                                       "expected to be {} but found {}\n\t^ In shader: {}, {}->{}",
-                                                      i, j, acc, gpuValue, shader.name,
-                                                      get_name(shader.input_type), get_name(shader.output_type));
+                                                      i, j, acc, gpuValue, shader->name,
+                                                      get_name(shader->input_type), get_name(shader->output_type));
         }
     }
 }
@@ -116,14 +199,13 @@ namespace luisa {
 static void matmul(::benchmark::State &state,
                    LatencyMeasureMode mode,
                    Device *device,
-                   const ShaderCode &shader, int M, int N, int K) {
+                   const ShaderCodeBase *shader, int M, int N, int K) {
     auto stream = device->create_stream();
-    auto capture = device->extension<DebugCaptureExt>();
     //===-------------------------------------------------------------------===/
     // Create buffers
     //===-------------------------------------------------------------------===/
-    DataType input_type = shader.input_type;
-    DataType output_type = shader.output_type;
+    DataType input_type = shader->input_type;
+    DataType output_type = shader->output_type;
     const size_t src0_size = M * K * get_size(input_type);
     const size_t src1_size = K * N * get_size(input_type);
     const size_t dst_size = M * N * get_size(output_type);
@@ -131,14 +213,9 @@ static void matmul(::benchmark::State &state,
     auto src0_buffer = device->create_buffer<float>(M * K);
     auto src1_buffer = device->create_buffer<float>(K * N);
     auto dst_buffer = device->create_buffer<float>(M * N);
-    auto command = metal::MetalCommand::matmul(src0_buffer.view(), src1_buffer.view(), dst_buffer.view(),
-                                               shader.tileM, shader.tileN, shader.tileK,
-                                               M, N, K,
-                                               shader.wg_size_x, shader.wg_size_y);
-    command->alloc_pso(device);
-
-    auto mps_command = metal::MPSCommand::gemm(src0_buffer.view(), src1_buffer.view(), dst_buffer.view(),
-                                               M, N, K);
+    auto command = shader->create_command(device,
+                                          src0_buffer.view(), src1_buffer.view(), dst_buffer.view(),
+                                          M, N, K);
 
     //===-------------------------------------------------------------------===/
     // Set source buffer data
@@ -170,15 +247,8 @@ static void matmul(::benchmark::State &state,
     // Dispatch
     //===-------------------------------------------------------------------===/
     {
-        auto scope = capture->create_scope("test");
-        capture->start_capture(scope);
-        scope.mark_begin();
-
         stream << command->clone()
                << synchronize();
-
-        scope.mark_end();
-        capture->stop_capture();
     }
 
     //===-------------------------------------------------------------------===/
@@ -225,18 +295,18 @@ void MatMul::register_benchmarks(Device &device, LatencyMeasureMode mode) {
     const int K = 1024;
 
     for (DataType input_type : {DataType::fp32}) {
-        for (const ShaderCode &shader : kShaderCodeCases) {
-            if (shader.input_type != input_type) continue;
-            int paddM = (M + shader.tileM - 1) / shader.tileM * shader.tileM;
-            int paddN = (N + shader.tileN - 1) / shader.tileN * shader.tileN;
+        for (const auto &shader : kShaderCodeCases) {
+            if (shader->input_type != input_type) continue;
+            int paddM = (M + shader->tileM() - 1) / shader->tileM() * shader->tileM();
+            int paddN = (N + shader->tileN() - 1) / shader->tileN() * shader->tileN();
             std::string matmul_size = fmt::format("{}x{}x{}", M, N, K);
-            std::string workgroup_size = fmt::format("{}x{}x1", shader.wg_size_x, shader.wg_size_y);
-            std::string type_info = fmt::format("{}->{}", get_name(shader.input_type), get_name(shader.output_type));
+            std::string workgroup_size = fmt::format("{}x{}x1", shader->wg_size_x(), shader->wg_size_y());
+            std::string type_info = fmt::format("{}->{}", get_name(shader->input_type), get_name(shader->output_type));
             std::string test_name = fmt::format("{}/Matmul[{}]/{}/{}/Workgroup[{}]",
-                                                gpu_name, matmul_size, type_info, shader.name, workgroup_size);
+                                                gpu_name, matmul_size, type_info, shader->name, workgroup_size);
 
             ::benchmark::RegisterBenchmark(test_name, matmul, mode, &device,
-                                           shader, paddM, paddN, K)
+                                           shader.get(), paddM, paddN, K)
                 ->UseManualTime()
                 ->Unit(::benchmark::kMicrosecond);
         }

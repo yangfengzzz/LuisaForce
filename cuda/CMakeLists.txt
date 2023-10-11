@@ -47,7 +47,6 @@ set(CUB_FILES
 
 set(CUSTOM_COMMANDS
         cuda_commands/mad_throughput.cu
-        cuda_commands/matmul.cu
 )
 
 set(MATH_FILES
@@ -118,6 +117,12 @@ set(PROJECT_FILES
 add_library(${PROJECT_NAME} OBJECT ${PROJECT_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-deprecated-declarations)
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    target_compile_options(${PROJECT_NAME} PRIVATE /W3 /WX)
+endif ()
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ../)
 
 # Link third party libraries
@@ -139,6 +144,6 @@ if (${NEED_LINK_ATOMIC})
     target_link_libraries(${PROJECT_NAME} PUBLIC atomic)
 endif ()
 
-if (METAL_DO_CLANG_TIDY)
-    set_target_properties(framework PROPERTIES CXX_CLANG_TIDY "${METAL_DO_CLANG_TIDY}")
+if (CMAKE_DO_CLANG_TIDY)
+    set_target_properties(framework PROPERTIES CXX_CLANG_TIDY "${CMAKE_DO_CLANG_TIDY}")
 endif ()

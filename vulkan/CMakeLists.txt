@@ -42,6 +42,6 @@ if (${NEED_LINK_ATOMIC})
     target_link_libraries(${PROJECT_NAME} PUBLIC atomic)
 endif ()
 
-if (METAL_DO_CLANG_TIDY)
-    set_target_properties(framework PROPERTIES CXX_CLANG_TIDY "${METAL_DO_CLANG_TIDY}")
+if (CMAKE_DO_CLANG_TIDY)
+    set_target_properties(framework PROPERTIES CXX_CLANG_TIDY "${CMAKE_DO_CLANG_TIDY}")
 endif ()
