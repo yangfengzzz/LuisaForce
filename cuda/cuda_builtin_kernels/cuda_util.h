@@ -18,26 +18,26 @@ namespace luisa::compute::cuda {
 #if defined(__CUDACC__)
 #if _DEBUG
 // helper for launching kernels (synchronize + error checking after each kernel)
-#define wp_launch_device(context, kernel, dim, args)                                      \
-    {                                                                                     \
-        if (dim) {                                                                        \
-            ContextGuard guard(context);                                                  \
-            const int num_threads = 256;                                                  \
-            const int num_blocks = (dim + num_threads - 1) / num_threads;                 \
-            kernel<<<num_blocks, 256, 0, (cudaStream_t)cuda_stream_get_current()>>> args; \
-            check_cuda(cuda_context_check(WP_CURRENT_CONTEXT));                           \
-        }                                                                                 \
+#define wp_launch_device(context, kernel, stream, dim, args)              \
+    {                                                                     \
+        if (dim) {                                                        \
+            ContextGuard guard(context);                                  \
+            const int num_threads = 256;                                  \
+            const int num_blocks = (dim + num_threads - 1) / num_threads; \
+            kernel<<<num_blocks, 256, 0, stream>>> args;                  \
+            check_cuda(cuda_context_check(WP_CURRENT_CONTEXT));           \
+        }                                                                 \
     }
 #else
 // helper for launching kernels (no error checking)
-#define wp_launch_device(context, kernel, dim, args)                                      \
-    {                                                                                     \
-        if (dim) {                                                                        \
-            ContextGuard guard(context);                                                  \
-            const int num_threads = 256;                                                  \
-            const int num_blocks = (dim + num_threads - 1) / num_threads;                 \
-            kernel<<<num_blocks, 256, 0, (cudaStream_t)cuda_stream_get_current()>>> args; \
-        }                                                                                 \
+#define wp_launch_device(context, kernel, stream, dim, args)              \
+    {                                                                     \
+        if (dim) {                                                        \
+            ContextGuard guard(context);                                  \
+            const int num_threads = 256;                                  \
+            const int num_blocks = (dim + num_threads - 1) / num_threads; \
+            kernel<<<num_blocks, 256, 0, stream>>> args;                  \
+        }                                                                 \
     }
 #endif// _DEBUG
 #endif// defined(__CUDACC__)

@@ -46,19 +46,19 @@ __global__ void compute_cell_offsets(int *cell_starts, int *cell_ends, const int
     }
 }
 
-void hash_grid_rebuild_device(const wp::HashGrid &grid, const wp::vec3 *points, int num_points) {
+void hash_grid_rebuild_device(const wp::HashGrid &grid, const wp::vec3 *points, int num_points, CUstream stream) {
     ContextGuard guard(grid.context);
 
-    wp_launch_device(WP_CURRENT_CONTEXT, compute_cell_indices, num_points, (grid, points, num_points));
+    wp_launch_device(WP_CURRENT_CONTEXT, compute_cell_indices, stream, num_points, (grid, points, num_points));
 
-    radix_sort_pairs_device(WP_CURRENT_CONTEXT, grid.point_cells, grid.point_ids, num_points);
+    radix_sort_pairs_device(WP_CURRENT_CONTEXT, grid.point_cells, grid.point_ids, num_points, nullptr);
 
     const int num_cells = grid.dim_x * grid.dim_y * grid.dim_z;
 
-    memset_device(WP_CURRENT_CONTEXT, grid.cell_starts, 0, sizeof(int) * num_cells);
-    memset_device(WP_CURRENT_CONTEXT, grid.cell_ends, 0, sizeof(int) * num_cells);
+    memset_device(WP_CURRENT_CONTEXT, grid.cell_starts, 0, sizeof(int) * num_cells, stream);
+    memset_device(WP_CURRENT_CONTEXT, grid.cell_ends, 0, sizeof(int) * num_cells, stream);
 
-    wp_launch_device(WP_CURRENT_CONTEXT, compute_cell_offsets, num_points, (grid.cell_starts, grid.cell_ends, grid.point_cells, num_points));
+    wp_launch_device(WP_CURRENT_CONTEXT, compute_cell_offsets, stream, num_points, (grid.cell_starts, grid.cell_ends, grid.point_cells, num_points));
 }
 
 }// namespace luisa::compute::cuda

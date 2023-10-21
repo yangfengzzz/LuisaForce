@@ -390,8 +390,7 @@ void marching_cubes_destroy_device(uint64_t id) {
     delete mc;
 }
 
-int marching_cubes_surface_device(
-    uint64_t id,
+int marching_cubes_surface_device(uint64_t id,
     const float *field,
     int nx,
     int ny,
@@ -402,7 +401,7 @@ int marching_cubes_surface_device(
     int max_verts,
     int max_tris,
     int *out_num_verts,
-    int *out_num_tris) {
+    int *out_num_tris, CUstream stream) {
 
     if (!id)
         return -1;
@@ -422,15 +421,15 @@ int marching_cubes_surface_device(
     marching_cubes_resize(mc, nx, ny, nz);
 
     // create vertices
-    wp_launch_device(WP_CURRENT_CONTEXT, count_cell_verts, mc.num_cells, (mc, field, threshold));
+    wp_launch_device(WP_CURRENT_CONTEXT, count_cell_verts, stream, mc.num_cells, (mc, field, threshold));
 
     int num_last;
-    memcpy_d2h(WP_CURRENT_CONTEXT, &num_last, &mc.first_cell_vert[mc.num_cells - 1], sizeof(int));
+    memcpy_d2h(WP_CURRENT_CONTEXT, &num_last, &mc.first_cell_vert[mc.num_cells - 1], sizeof(int), stream);
 
-    scan_device(mc.first_cell_vert, mc.first_cell_vert, mc.num_cells, false);
+    scan_device(mc.first_cell_vert, mc.first_cell_vert, mc.num_cells, false, stream);
 
     int num_verts;
-    memcpy_d2h(WP_CURRENT_CONTEXT, &num_verts, &mc.first_cell_vert[mc.num_cells - 1], sizeof(int));
+    memcpy_d2h(WP_CURRENT_CONTEXT, &num_verts, &mc.first_cell_vert[mc.num_cells - 1], sizeof(int), stream);
     cuda_context_synchronize(WP_CURRENT_CONTEXT);
 
     num_verts += num_last;
@@ -443,17 +442,17 @@ int marching_cubes_surface_device(
     }
 
     // create vertices
-    wp_launch_device(WP_CURRENT_CONTEXT, create_cell_verts, mc.num_cells, (mc, verts, nullptr, field, threshold));
+    wp_launch_device(WP_CURRENT_CONTEXT, create_cell_verts, stream, mc.num_cells, (mc, verts, nullptr, field, threshold));
 
     // create triangles
-    wp_launch_device(WP_CURRENT_CONTEXT, count_cell_tris, mc.num_cells, (mc, field, threshold));
+    wp_launch_device(WP_CURRENT_CONTEXT, count_cell_tris, stream, mc.num_cells, (mc, field, threshold));
 
-    memcpy_d2h(WP_CURRENT_CONTEXT, &num_last, &mc.first_cell_tri[mc.num_cells - 1], sizeof(int));
+    memcpy_d2h(WP_CURRENT_CONTEXT, &num_last, &mc.first_cell_tri[mc.num_cells - 1], sizeof(int), stream);
 
-    scan_device(mc.first_cell_tri, mc.first_cell_tri, mc.num_cells, false);
+    scan_device(mc.first_cell_tri, mc.first_cell_tri, mc.num_cells, false, stream);
 
     int num_indices;
-    memcpy_d2h(WP_CURRENT_CONTEXT, &num_indices, &mc.first_cell_tri[mc.num_cells - 1], sizeof(int));
+    memcpy_d2h(WP_CURRENT_CONTEXT, &num_indices, &mc.first_cell_tri[mc.num_cells - 1], sizeof(int), stream);
     cuda_context_synchronize(WP_CURRENT_CONTEXT);
 
     num_indices += num_last;
@@ -465,7 +464,7 @@ int marching_cubes_surface_device(
         return -1;
     }
 
-    wp_launch_device(WP_CURRENT_CONTEXT, create_cell_tris, mc.num_cells, (mc, field, triangles, threshold));
+    wp_launch_device(WP_CURRENT_CONTEXT, create_cell_tris, stream, mc.num_cells, (mc, field, triangles, threshold));
 
     *out_num_verts = num_verts;
     *out_num_tris = num_tris;

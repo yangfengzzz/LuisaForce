@@ -9,10 +9,10 @@
 namespace luisa::compute::cuda {
 
 template<typename T>
-void scan_device(const T *values_in, T *values_out, int n, bool inclusive = true);
+void scan_device(const T *values_in, T *values_out, int n, bool inclusive, CUstream stream);
 
-void array_scan_int_device(uint64_t in, uint64_t out, int len, bool inclusive);
+void array_scan_int_device(uint64_t in, uint64_t out, int len, bool inclusive, CUstream stream);
 
-void array_scan_float_device(uint64_t in, uint64_t out, int len, bool inclusive);
+void array_scan_float_device(uint64_t in, uint64_t out, int len, bool inclusive, CUstream stream);
 
 }// namespace luisa::compute::cuda

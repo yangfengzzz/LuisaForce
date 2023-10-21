@@ -86,29 +86,28 @@ struct cub_strided_iterator {
 };
 
 template<typename T>
-void array_sum_device(const T *ptr_a, T *ptr_out, int count, int byte_stride, int type_length) {
+void array_sum_device(const T *ptr_a, T *ptr_out, int count, int byte_stride, int type_length, CUstream stream) {
     assert((byte_stride % sizeof(T)) == 0);
     const int stride = byte_stride / sizeof(T);
 
     ContextGuard guard(cuda_context_get_current());
-    auto stream = static_cast<cudaStream_t>(cuda_stream_get_current());
 
     cub_strided_iterator<const T> ptr_strided{ptr_a, stride};
 
     size_t buff_size = 0;
     check_cuda(cub::DeviceReduce::Sum(nullptr, buff_size, ptr_strided, ptr_out, count, stream));
-    void *temp_buffer = alloc_temp_device(WP_CURRENT_CONTEXT, buff_size);
+    void *temp_buffer = alloc_temp_device(WP_CURRENT_CONTEXT, buff_size, stream);
 
     for (int k = 0; k < type_length; ++k) {
         cub_strided_iterator<const T> ptr_strided{ptr_a + k, stride};
         check_cuda(cub::DeviceReduce::Sum(temp_buffer, buff_size, ptr_strided, ptr_out + k, count, stream));
     }
 
-    free_temp_device(WP_CURRENT_CONTEXT, temp_buffer);
+    free_temp_device(WP_CURRENT_CONTEXT, temp_buffer, stream);
 }
 
 template<typename T>
-void array_sum_device_dispatch(const T *ptr_a, T *ptr_out, int count, int byte_stride, int type_length) {
+void array_sum_device_dispatch(const T *ptr_a, T *ptr_out, int count, int byte_stride, int type_length, CUstream  stream) {
     using vec2 = wp::vec_t<2, T>;
     using vec3 = wp::vec_t<3, T>;
     using vec4 = wp::vec_t<4, T>;
@@ -117,20 +116,20 @@ void array_sum_device_dispatch(const T *ptr_a, T *ptr_out, int count, int byte_s
 
     if ((type_length % 4) == 0 && (byte_stride % sizeof(vec4)) == 0) {
         return array_sum_device(reinterpret_cast<const vec4 *>(ptr_a), reinterpret_cast<vec4 *>(ptr_out), count,
-                                byte_stride, type_length / 4);
+                                byte_stride, type_length / 4, stream);
     }
 
     if ((type_length % 3) == 0 && (byte_stride % sizeof(vec3)) == 0) {
         return array_sum_device(reinterpret_cast<const vec3 *>(ptr_a), reinterpret_cast<vec3 *>(ptr_out), count,
-                                byte_stride, type_length / 3);
+                                byte_stride, type_length / 3, stream);
     }
 
     if ((type_length % 2) == 0 && (byte_stride % sizeof(vec2)) == 0) {
         return array_sum_device(reinterpret_cast<const vec2 *>(ptr_a), reinterpret_cast<vec2 *>(ptr_out), count,
-                                byte_stride, type_length / 2);
+                                byte_stride, type_length / 2, stream);
     }
 
-    return array_sum_device(ptr_a, ptr_out, count, byte_stride, type_length);
+    return array_sum_device(ptr_a, ptr_out, count, byte_stride, type_length, stream);
 }
 
 template<typename T>
@@ -225,29 +224,28 @@ private:
 
 template<typename ElemT, typename ScalarT>
 void array_inner_device(const ElemT *ptr_a, const ElemT *ptr_b, ScalarT *ptr_out, int count, int byte_stride_a,
-                        int byte_stride_b, int type_length) {
+                        int byte_stride_b, int type_length, CUstream stream) {
     assert((byte_stride_a % sizeof(ElemT)) == 0);
     assert((byte_stride_b % sizeof(ElemT)) == 0);
     const int stride_a = byte_stride_a / sizeof(ElemT);
     const int stride_b = byte_stride_b / sizeof(ElemT);
 
     ContextGuard guard(cuda_context_get_current());
-    auto stream = static_cast<cudaStream_t>(cuda_stream_get_current());
 
     cub_inner_product_iterator<ElemT, ScalarT> inner_iterator{ptr_a, ptr_b, stride_a, stride_b, type_length};
 
     size_t buff_size = 0;
     check_cuda(cub::DeviceReduce::Sum(nullptr, buff_size, inner_iterator, ptr_out, count, stream));
-    void *temp_buffer = alloc_temp_device(WP_CURRENT_CONTEXT, buff_size);
+    void *temp_buffer = alloc_temp_device(WP_CURRENT_CONTEXT, buff_size, stream);
 
     check_cuda(cub::DeviceReduce::Sum(temp_buffer, buff_size, inner_iterator, ptr_out, count, stream));
 
-    free_temp_device(WP_CURRENT_CONTEXT, temp_buffer);
+    free_temp_device(WP_CURRENT_CONTEXT, temp_buffer, stream);
 }
 
 template<typename T>
 void array_inner_device_dispatch(const T *ptr_a, const T *ptr_b, T *ptr_out, int count, int byte_stride_a,
-                                 int byte_stride_b, int type_length) {
+                                 int byte_stride_b, int type_length, CUstream stream) {
     using vec2 = wp::vec_t<2, T>;
     using vec3 = wp::vec_t<3, T>;
     using vec4 = wp::vec_t<4, T>;
@@ -256,54 +254,54 @@ void array_inner_device_dispatch(const T *ptr_a, const T *ptr_b, T *ptr_out, int
 
     if ((type_length % 4) == 0 && (byte_stride_a % sizeof(vec4)) == 0 && (byte_stride_b % sizeof(vec4)) == 0) {
         return array_inner_device(reinterpret_cast<const vec4 *>(ptr_a), reinterpret_cast<const vec4 *>(ptr_b), ptr_out,
-                                  count, byte_stride_a, byte_stride_b, type_length / 4);
+                                  count, byte_stride_a, byte_stride_b, type_length / 4, stream);
     }
 
     if ((type_length % 3) == 0 && (byte_stride_a % sizeof(vec3)) == 0 && (byte_stride_b % sizeof(vec3)) == 0) {
         return array_inner_device(reinterpret_cast<const vec3 *>(ptr_a), reinterpret_cast<const vec3 *>(ptr_b), ptr_out,
-                                  count, byte_stride_a, byte_stride_b, type_length / 3);
+                                  count, byte_stride_a, byte_stride_b, type_length / 3, stream);
     }
 
     if ((type_length % 2) == 0 && (byte_stride_a % sizeof(vec2)) == 0 && (byte_stride_b % sizeof(vec2)) == 0) {
         return array_inner_device(reinterpret_cast<const vec2 *>(ptr_a), reinterpret_cast<const vec2 *>(ptr_b), ptr_out,
-                                  count, byte_stride_a, byte_stride_b, type_length / 2);
+                                  count, byte_stride_a, byte_stride_b, type_length / 2, stream);
     }
 
-    return array_inner_device(ptr_a, ptr_b, ptr_out, count, byte_stride_a, byte_stride_b, type_length);
+    return array_inner_device(ptr_a, ptr_b, ptr_out, count, byte_stride_a, byte_stride_b, type_length, stream);
 }
 
 }// anonymous namespace
 
 void array_inner_float_device(uint64_t a, uint64_t b, uint64_t out, int count, int byte_stride_a, int byte_stride_b,
-                              int type_len) {
+                              int type_len, CUstream stream) {
     void *context = cuda_context_get_current();
 
     const auto *ptr_a = (const float *)(a);
     const auto *ptr_b = (const float *)(b);
     auto *ptr_out = (float *)(out);
 
-    array_inner_device_dispatch(ptr_a, ptr_b, ptr_out, count, byte_stride_a, byte_stride_b, type_len);
+    array_inner_device_dispatch(ptr_a, ptr_b, ptr_out, count, byte_stride_a, byte_stride_b, type_len, stream);
 }
 
 void array_inner_double_device(uint64_t a, uint64_t b, uint64_t out, int count, int byte_stride_a, int byte_stride_b,
-                               int type_len) {
+                               int type_len, CUstream stream) {
     const auto *ptr_a = (const double *)(a);
     const auto *ptr_b = (const double *)(b);
     auto *ptr_out = (double *)(out);
 
-    array_inner_device_dispatch(ptr_a, ptr_b, ptr_out, count, byte_stride_a, byte_stride_b, type_len);
+    array_inner_device_dispatch(ptr_a, ptr_b, ptr_out, count, byte_stride_a, byte_stride_b, type_len, stream);
 }
 
-void array_sum_float_device(uint64_t a, uint64_t out, int count, int byte_stride, int type_length) {
+void array_sum_float_device(uint64_t a, uint64_t out, int count, int byte_stride, int type_length, CUstream stream) {
     const auto *ptr_a = (const float *)(a);
     auto *ptr_out = (float *)(out);
-    array_sum_device_dispatch(ptr_a, ptr_out, count, byte_stride, type_length);
+    array_sum_device_dispatch(ptr_a, ptr_out, count, byte_stride, type_length, stream);
 }
 
-void array_sum_double_device(uint64_t a, uint64_t out, int count, int byte_stride, int type_length) {
+void array_sum_double_device(uint64_t a, uint64_t out, int count, int byte_stride, int type_length, CUstream stream) {
     const auto *ptr_a = (const double *)(a);
     auto *ptr_out = (double *)(out);
-    array_sum_device_dispatch(ptr_a, ptr_out, count, byte_stride, type_length);
+    array_sum_device_dispatch(ptr_a, ptr_out, count, byte_stride, type_length, stream);
 }
 
 }// namespace luisa::compute::cuda

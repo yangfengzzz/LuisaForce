@@ -48,10 +48,6 @@ static inline CUcontext get_current_context() {
         return nullptr;
 }
 
-static inline CUstream get_current_stream() {
-    return static_cast<CUstream>(cuda_context_get_stream(nullptr));
-}
-
 static ContextInfo *get_context_info(CUcontext ctx) {
     if (!ctx) {
         ctx = get_current_context();
@@ -85,16 +81,16 @@ __global__ void memset_kernel(int *dest, int value, size_t n) {
     }
 }
 
-void memset_device(void *context, void *dest, int value, size_t n) {
+void memset_device(void *context, void *dest, int value, size_t n, CUstream stream) {
     ContextGuard guard(context);
 
     if ((n % 4) > 0) {
         // for unaligned lengths fallback to CUDA memset
-        check_cuda(cudaMemsetAsync(dest, value, n, get_current_stream()));
+        check_cuda(cudaMemsetAsync(dest, value, n, stream));
     } else {
         // custom kernel to support 4-byte values (and slightly lower host overhead)
         const size_t num_words = n / 4;
-        wp_launch_device(WP_CURRENT_CONTEXT, memset_kernel, num_words, ((int *)dest, value, num_words));
+        wp_launch_device(WP_CURRENT_CONTEXT, memset_kernel, stream, num_words, ((int *)dest, value, num_words));
     }
 }
 
@@ -106,7 +102,7 @@ void *alloc_device(void *context, size_t s) {
     return ptr;
 }
 
-void *alloc_temp_device(void *context, size_t s) {
+void *alloc_temp_device(void *context, size_t s, CUstream stream) {
     // "cudaMallocAsync ignores the current device/context when determining where the allocation will reside. Instead,
     // cudaMallocAsync determines the resident device based on the specified memory pool or the supplied stream."
     ContextGuard guard(context);
@@ -114,7 +110,7 @@ void *alloc_temp_device(void *context, size_t s) {
     void *ptr;
 
     if (cuda_context_is_memory_pool_supported(context)) {
-        check_cuda(cudaMallocAsync(&ptr, s, get_current_stream()));
+        check_cuda(cudaMallocAsync(&ptr, s, stream));
     } else {
         check_cuda(cudaMalloc(&ptr, s));
     }
@@ -128,32 +124,32 @@ void free_device(void *context, void *ptr) {
     check_cuda(cudaFree(ptr));
 }
 
-void free_temp_device(void *context, void *ptr) {
+void free_temp_device(void *context, void *ptr, CUstream stream) {
     ContextGuard guard(context);
 
     if (cuda_context_is_memory_pool_supported(context)) {
-        check_cuda(cudaFreeAsync(ptr, get_current_stream()));
+        check_cuda(cudaFreeAsync(ptr, stream));
     } else {
         check_cuda(cudaFree(ptr));
     }
 }
 
-void memcpy_h2d(void *context, void *dest, void *src, size_t n) {
+void memcpy_h2d(void *context, void *dest, void *src, size_t n, CUstream stream) {
     ContextGuard guard(context);
 
-    check_cuda(cudaMemcpyAsync(dest, src, n, cudaMemcpyHostToDevice, get_current_stream()));
+    check_cuda(cudaMemcpyAsync(dest, src, n, cudaMemcpyHostToDevice, stream));
 }
 
-void memcpy_d2h(void *context, void *dest, void *src, size_t n) {
+void memcpy_d2h(void *context, void *dest, void *src, size_t n, CUstream stream) {
     ContextGuard guard(context);
 
-    check_cuda(cudaMemcpyAsync(dest, src, n, cudaMemcpyDeviceToHost, get_current_stream()));
+    check_cuda(cudaMemcpyAsync(dest, src, n, cudaMemcpyDeviceToHost, stream));
 }
 
-void memcpy_d2d(void *context, void *dest, void *src, size_t n) {
+void memcpy_d2d(void *context, void *dest, void *src, size_t n, CUstream stream) {
     ContextGuard guard(context);
 
-    check_cuda(cudaMemcpyAsync(dest, src, n, cudaMemcpyDeviceToDevice, get_current_stream()));
+    check_cuda(cudaMemcpyAsync(dest, src, n, cudaMemcpyDeviceToDevice, stream));
 }
 
 int cuda_device_is_memory_pool_supported(int ordinal) {
@@ -183,18 +179,6 @@ int cuda_context_is_memory_pool_supported(void *context) {
         return cuda_device_is_memory_pool_supported(ordinal);
     }
     return 0;
-}
-
-void *cuda_context_get_stream(void *context) {
-    ContextInfo *info = get_context_info(static_cast<CUcontext>(context));
-    if (info) {
-        return info->stream;
-    }
-    return nullptr;
-}
-
-void *cuda_stream_get_current() {
-    return get_current_stream();
 }
 
 }// namespace luisa::compute::cuda

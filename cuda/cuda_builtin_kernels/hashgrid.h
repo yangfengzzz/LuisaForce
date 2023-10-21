@@ -9,8 +9,8 @@
 #include "cuda_builtin/math/cuda_vec.h"
 
 namespace luisa::compute::cuda {
-uint64_t hash_grid_create_device(void *context, int dim_x, int dim_y, int dim_z);
-void hash_grid_reserve_device(uint64_t id, int num_points);
+uint64_t hash_grid_create_device(void *context, int dim_x, int dim_y, int dim_z, CUstream stream);
+void hash_grid_reserve_device(uint64_t id, int num_points, CUstream stream);
 void hash_grid_destroy_device(uint64_t id);
-void hash_grid_update_device(uint64_t id, float cell_width, const wp::vec3 *positions, int num_points);
+void hash_grid_update_device(uint64_t id, float cell_width, const wp::vec3 *positions, int num_points, CUstream stream);
 }// namespace luisa::compute::cuda

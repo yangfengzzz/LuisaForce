@@ -23,7 +23,7 @@ struct RadixSortTemp {
 // map temp buffers to CUDA contexts
 static std::map<void *, RadixSortTemp> g_radix_sort_temp_map;
 
-void radix_sort_reserve(void *context, int n, void **mem_out, size_t *size_out) {
+void radix_sort_reserve(void *context, int n, void **mem_out, size_t *size_out, CUstream stream) {
     ContextGuard guard(context);
 
     cub::DoubleBuffer<int> d_keys;
@@ -37,7 +37,7 @@ void radix_sort_reserve(void *context, int n, void **mem_out, size_t *size_out) 
         d_keys,
         d_values,
         n, 0, 32,
-        (cudaStream_t)cuda_stream_get_current()));
+        stream));
 
     if (!context)
         context = cuda_context_get_current();
@@ -56,14 +56,14 @@ void radix_sort_reserve(void *context, int n, void **mem_out, size_t *size_out) 
         *size_out = temp.size;
 }
 
-void radix_sort_pairs_device(void *context, int *keys, int *values, int n) {
+void radix_sort_pairs_device(void *context, int *keys, int *values, int n, CUstream stream) {
     ContextGuard guard(context);
 
     cub::DoubleBuffer<int> d_keys(keys, keys + n);
     cub::DoubleBuffer<int> d_values(values, values + n);
 
     RadixSortTemp temp;
-    radix_sort_reserve(WP_CURRENT_CONTEXT, n, &temp.mem, &temp.size);
+    radix_sort_reserve(WP_CURRENT_CONTEXT, n, &temp.mem, &temp.size, stream);
 
     // sort
     check_cuda(cub::DeviceRadixSort::SortPairs(
@@ -72,20 +72,20 @@ void radix_sort_pairs_device(void *context, int *keys, int *values, int n) {
         d_keys,
         d_values,
         n, 0, 32,
-        (cudaStream_t)cuda_stream_get_current()));
+        stream));
 
     if (d_keys.Current() != keys)
-        memcpy_d2d(WP_CURRENT_CONTEXT, keys, d_keys.Current(), sizeof(int) * n);
+        memcpy_d2d(WP_CURRENT_CONTEXT, keys, d_keys.Current(), sizeof(int) * n, stream);
 
     if (d_values.Current() != values)
-        memcpy_d2d(WP_CURRENT_CONTEXT, values, d_values.Current(), sizeof(int) * n);
+        memcpy_d2d(WP_CURRENT_CONTEXT, values, d_values.Current(), sizeof(int) * n, stream);
 }
 
-void radix_sort_pairs_int_device(uint64_t keys, uint64_t values, int n) {
+void radix_sort_pairs_int_device(uint64_t keys, uint64_t values, int n, CUstream stream) {
     radix_sort_pairs_device(
         WP_CURRENT_CONTEXT,
         reinterpret_cast<int *>(keys),
-        reinterpret_cast<int *>(values), n);
+        reinterpret_cast<int *>(values), n, stream);
 }
 
 }// namespace luisa::compute::cuda

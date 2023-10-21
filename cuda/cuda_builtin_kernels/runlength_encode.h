@@ -7,9 +7,11 @@
 #pragma
 
 #include "cuda_builtin/math/cuda_math_utils.h"
+#include <cuda.h>
 
 namespace luisa::compute::cuda {
 
-void runlength_encode_int_device(uint64_t values, uint64_t run_values, uint64_t run_lengths, uint64_t run_count, int n);
+void runlength_encode_int_device(uint64_t values, uint64_t run_values, uint64_t run_lengths,
+                                 uint64_t run_count, int n, CUstream stream);
 
 }// namespace luisa::compute::cuda
