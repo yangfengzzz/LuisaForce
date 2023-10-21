@@ -40,7 +40,7 @@
 #define DEG_TO_RAD 0.01745329251994329577
 
 #if defined(__CUDACC__) && !defined(_MSC_VER)
-__device__ void __debugbreak() {}
+inline __device__ void __debugbreak() {}
 #endif
 
 namespace wp {
@@ -145,20 +145,6 @@ CUDA_CALLABLE inline float half_to_float(half x) {
         : "=f"(val)
         : "h"(x.u));
     return val;
-}
-
-#elif defined(__clang__)
-
-// _Float16 is Clang's native half-precision floating-point type
-inline half float_to_half(float x) {
-
-    _Float16 f16 = static_cast<_Float16>(x);
-    return *reinterpret_cast<half *>(&f16);
-}
-
-inline float half_to_float(half h) {
-    _Float16 f16 = *reinterpret_cast<_Float16 *>(&h);
-    return static_cast<float>(f16);
 }
 
 #else// Native C++ for Warp builtins outside of kernels
@@ -274,15 +260,15 @@ inline CUDA_CALLABLE uint16 sign(uint16 x) { return 1; }
 inline CUDA_CALLABLE uint32 sign(uint32 x) { return 1; }
 inline CUDA_CALLABLE uint64 sign(uint64 x) { return 1; }
 
-inline bool CUDA_CALLABLE isfinite(half x) {
-    return ::isfinite(float(x));
-}
-inline bool CUDA_CALLABLE isfinite(float x) {
-    return ::isfinite(x);
-}
-inline bool CUDA_CALLABLE isfinite(double x) {
-    return ::isfinite(x);
-}
+//inline bool CUDA_CALLABLE isfinite(half x) {
+//    return ::isfinite(float(x));
+//}
+//inline bool CUDA_CALLABLE isfinite(float x) {
+//    return ::isfinite(x);
+//}
+//inline bool CUDA_CALLABLE isfinite(double x) {
+//    return ::isfinite(x);
+//}
 
 inline CUDA_CALLABLE void print(float16 f) {
     printf("%g\n", half_to_float(f));
