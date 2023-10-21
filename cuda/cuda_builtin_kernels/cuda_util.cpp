@@ -21,7 +21,7 @@ bool check_cu_result(CUresult result, const char *file, int line) {
     if (result == CUDA_SUCCESS)
         return true;
 
-    const char *errString = NULL;
+    const char *errString = nullptr;
     cuGetErrorString(result, &errString);
 
     if (errString)

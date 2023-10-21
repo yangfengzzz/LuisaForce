@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "cuda/math/array.h"
-#include "cuda/math/vec.h"
+#include "cuda_builtin/math/cuda_array.h"
+#include "cuda_builtin/math/cuda_vec.h"
 
 namespace luisa::compute::cuda {
 void *alloc_host(size_t s);

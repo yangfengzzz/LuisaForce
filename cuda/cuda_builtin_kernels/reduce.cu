@@ -9,6 +9,8 @@
 
 #include <cub/device/device_reduce.cuh>
 
+using namespace wp;
+
 namespace luisa::compute::cuda {
 namespace {
 template<typename T>
@@ -91,7 +93,7 @@ void array_sum_device(const T *ptr_a, T *ptr_out, int count, int byte_stride, in
     const int stride = byte_stride / sizeof(T);
 
     ContextGuard guard(cuda_context_get_current());
-    cudaStream_t stream = static_cast<cudaStream_t>(cuda_stream_get_current());
+    auto stream = static_cast<cudaStream_t>(cuda_stream_get_current());
 
     cub_strided_iterator<const T> ptr_strided{ptr_a, stride};
 
@@ -232,7 +234,7 @@ void array_inner_device(const ElemT *ptr_a, const ElemT *ptr_b, ScalarT *ptr_out
     const int stride_b = byte_stride_b / sizeof(ElemT);
 
     ContextGuard guard(cuda_context_get_current());
-    cudaStream_t stream = static_cast<cudaStream_t>(cuda_stream_get_current());
+    auto stream = static_cast<cudaStream_t>(cuda_stream_get_current());
 
     cub_inner_product_iterator<ElemT, ScalarT> inner_iterator{ptr_a, ptr_b, stride_a, stride_b, type_length};
 
@@ -278,31 +280,31 @@ void array_inner_float_device(uint64_t a, uint64_t b, uint64_t out, int count, i
                               int type_len) {
     void *context = cuda_context_get_current();
 
-    const float *ptr_a = (const float *)(a);
-    const float *ptr_b = (const float *)(b);
-    float *ptr_out = (float *)(out);
+    const auto *ptr_a = (const float *)(a);
+    const auto *ptr_b = (const float *)(b);
+    auto *ptr_out = (float *)(out);
 
     array_inner_device_dispatch(ptr_a, ptr_b, ptr_out, count, byte_stride_a, byte_stride_b, type_len);
 }
 
 void array_inner_double_device(uint64_t a, uint64_t b, uint64_t out, int count, int byte_stride_a, int byte_stride_b,
                                int type_len) {
-    const double *ptr_a = (const double *)(a);
-    const double *ptr_b = (const double *)(b);
-    double *ptr_out = (double *)(out);
+    const auto *ptr_a = (const double *)(a);
+    const auto *ptr_b = (const double *)(b);
+    auto *ptr_out = (double *)(out);
 
     array_inner_device_dispatch(ptr_a, ptr_b, ptr_out, count, byte_stride_a, byte_stride_b, type_len);
 }
 
 void array_sum_float_device(uint64_t a, uint64_t out, int count, int byte_stride, int type_length) {
-    const float *ptr_a = (const float *)(a);
-    float *ptr_out = (float *)(out);
+    const auto *ptr_a = (const float *)(a);
+    auto *ptr_out = (float *)(out);
     array_sum_device_dispatch(ptr_a, ptr_out, count, byte_stride, type_length);
 }
 
 void array_sum_double_device(uint64_t a, uint64_t out, int count, int byte_stride, int type_length) {
-    const double *ptr_a = (const double *)(a);
-    double *ptr_out = (double *)(out);
+    const auto *ptr_a = (const double *)(a);
+    auto *ptr_out = (double *)(out);
     array_sum_device_dispatch(ptr_a, ptr_out, count, byte_stride, type_length);
 }
 

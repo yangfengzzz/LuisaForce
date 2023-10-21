@@ -8,6 +8,9 @@
 #include "cuda_util.h"
 #include "hashgrid.h"
 #include "sort.h"
+#include "cuda_builtin/stl/hashgrid.h"
+
+using namespace wp;
 
 namespace luisa::compute::cuda {
 

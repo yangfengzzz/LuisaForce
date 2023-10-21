@@ -9,7 +9,6 @@ cmake_minimum_required(VERSION 3.16)
 project(cuda-backend LANGUAGES C CXX)
 
 set(COMMON_FILES
-        cuda_builtin/cuda_builtin_kernels.cu
         cuda_bindless_array.cpp
         cuda_buffer.cpp
         cuda_codegen_ast.cpp
@@ -23,11 +22,12 @@ set(COMMON_FILES
         cuda_stream.cpp
         cuda_swapchain.cpp
         cuda_texture.cpp
-        cuda_builtin/cuda_device_resource.h
-        cuda_builtin/cuda_device_math.h
 )
 
 set(BUILTIN_FILES
+        cuda_builtin/cuda_device_math.h
+        cuda_builtin/cuda_device_resource.h
+        #
         cuda_builtin/math/cuda_crt.h
         cuda_builtin/math/cuda_crt.cpp
         cuda_builtin/math/cuda_math_utils.h
@@ -49,6 +49,36 @@ set(BUILTIN_FILES
         cuda_builtin/math/cuda_intersect_tri.h
         cuda_builtin/math/cuda_svd.h
         cuda_builtin/math/cuda_matnn.h
+        #
+        cuda_builtin/stl/hashgrid.h
+)
+
+set(BUILTIN_KERNELS_FILES
+        cuda_builtin_kernels/cuda_builtin_kernels.h
+        cuda_builtin_kernels/cuda_builtin_kernels.cu
+        cuda_builtin_kernels/cuda_util.h
+        cuda_builtin_kernels/cuda_util.cpp
+        cuda_builtin_kernels/cuda_context.h
+        cuda_builtin_kernels/cuda_context.cu
+        cuda_builtin_kernels/cuda_context.cpp
+        # cub
+        cuda_builtin_kernels/sort.h
+        cuda_builtin_kernels/sort.cu
+        cuda_builtin_kernels/scan.h
+        cuda_builtin_kernels/scan.cu
+        cuda_builtin_kernels/hashgrid.h
+        cuda_builtin_kernels/hashgrid.cu
+        cuda_builtin_kernels/hashgrid.cpp
+        cuda_builtin_kernels/reduce.h
+        cuda_builtin_kernels/reduce.cu
+        cuda_builtin_kernels/reduce.cpp
+        cuda_builtin_kernels/marching.h
+        cuda_builtin_kernels/marching.cu
+        cuda_builtin_kernels/runlength_encode.h
+        cuda_builtin_kernels/runlength_encode.cu
+        # cutlass
+        cuda_builtin_kernels/cutlass_gemm.h
+        cuda_builtin_kernels/cutlass_gemm.cu
 )
 
 set(CUB_FILES
@@ -74,53 +104,6 @@ set(CUSTOM_COMMANDS
         cuda_commands/mad_throughput.cu
 )
 
-#set(MATH_FILES
-#        math/cuda_math_utils.h
-#        math/initializer_array.h
-#        math/vec.h
-#        math/mat.h
-#        math/quat.h
-#        math/array.h
-#        math/rand.h
-#        math/noise.h
-#        math/range.h
-#        math/bounds.h
-#        math/solid_angle.h
-#        math/spatial.h
-#        # method
-#        math/svd.h
-#        math/intersect.h
-#        math/intersect_tri.h
-#        math/matnn.h
-#        math/fabric.h
-#)
-#
-#set(STL_FILES
-#        stl/cuda_util.h
-#        stl/cuda_util.cpp
-#        stl/cuda_context.h
-#        stl/cuda_context.cu
-#        stl/cuda_context.cpp
-#        # cub
-#        stl/sort.h
-#        stl/sort.cu
-#        stl/scan.h
-#        stl/scan.cu
-#        stl/hashgrid.h
-#        stl/hashgrid.cu
-#        stl/hashgrid.cpp
-#        stl/reduce.h
-#        stl/reduce.cu
-#        stl/reduce.cpp
-#        stl/marching.h
-#        stl/marching.cu
-#        stl/runlength_encode.h
-#        stl/runlength_encode.cu
-#        # cutlass
-#        stl/cutlass_gemm.h
-#        stl/cutlass_gemm.cu
-#)
-
 if (VULKAN_FOUND)
     set(VULKAN_CUDA_FILES
             cuda_semaphore.cpp
@@ -135,6 +118,7 @@ set(PROJECT_FILES
         ${CUB_FILES}
         ${CUSTOM_COMMANDS}
         ${BUILTIN_FILES}
+        ${BUILTIN_KERNELS_FILES}
 )
 
 #NB: switch this to shared library and things stop working. (there is likely two copies of volk somewhere.

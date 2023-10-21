@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include "cuda/math/vec.h"
+#include "cuda_builtin/math/cuda_vec.h"
 
 namespace luisa::compute::cuda {
 uint64_t marching_cubes_create_device(void *context);
 void marching_cubes_destroy_device(uint64_t id);
 int marching_cubes_surface_device(uint64_t id, const float *field, int nx, int ny, int nz, float threshold,
-                                  vec3 *verts, int *triangles, int max_verts, int max_tris, int *out_num_verts, int *out_num_tris);
+                                  wp::vec3 *verts, int *triangles, int max_verts, int max_tris, int *out_num_verts, int *out_num_tris);
 }// namespace luisa::compute::cuda

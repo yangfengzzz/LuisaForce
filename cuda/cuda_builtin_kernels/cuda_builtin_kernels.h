@@ -6,4 +6,6 @@
 
 #pragma once
 
+#include <cuda.h>
+
 void update_bindless_array(CUstream cuda_stream, CUdeviceptr array, CUdeviceptr mods, uint32_t n);

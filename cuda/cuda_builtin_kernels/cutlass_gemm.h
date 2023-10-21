@@ -6,7 +6,7 @@
 
 #pragma
 
-#include "cuda/math/cuda_math_utils.h"
+#include "cuda_builtin/math/cuda_math_utils.h"
 
 namespace luisa::compute::cuda {
 

@@ -6,7 +6,7 @@
 
 #pragma
 
-#include "cuda/math/cuda_math_utils.h"
+#include "cuda_builtin/math/cuda_math_utils.h"
 
 namespace luisa::compute::cuda {
 void array_inner_float_host(uint64_t a, uint64_t b, uint64_t out, int count, int stride_a, int stride_b, int type_len);

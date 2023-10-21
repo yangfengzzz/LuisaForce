@@ -9,7 +9,7 @@
 #include <cudaTypedefs.h>
 #include <cuda_runtime_api.h>
 
-#include <stdio.h>
+#include <cstdio>
 
 namespace luisa::compute::cuda {
 #define check_cuda(code) (check_cuda_result(code, __FILE__, __LINE__))
@@ -88,12 +88,12 @@ public:
     }
 
 private:
-    CUcontext prev_context;
+    CUcontext prev_context{};
     bool need_restore;
 };
 
 // Pass this value to device functions as the `context` parameter to bypass unnecessary context management.
 // This works in conjuntion with ContextGuards, which do nothing if the given context is NULL.
 // Using this variable instead of passing NULL directly aids readability and makes the intent clear.
-constexpr void *WP_CURRENT_CONTEXT = NULL;
+constexpr void *WP_CURRENT_CONTEXT = nullptr;
 }// namespace luisa::compute::cuda

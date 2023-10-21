@@ -1,6 +1,14 @@
+//  Copyright (c) 2023 Feng Yang
+//
+//  I am making my contributions/submissions to this project solely in my
+//  personal capacity and am not conveying any rights to any intellectual
+//  property of any third parties.
+
 #include "cuda_context.h"
 #include "cuda_util.h"
 #include "scan.h"
+
+using namespace wp;
 
 namespace luisa::compute::cuda {
 
@@ -368,7 +376,7 @@ void marching_cubes_free(MarchingCubes &mc) {
 uint64_t marching_cubes_create_device(void *context) {
     ContextGuard guard(context);
 
-    MarchingCubes *mc = new MarchingCubes();
+    auto *mc = new MarchingCubes();
 
     mc->context = context ? context : cuda_context_get_current();
 
@@ -379,7 +387,7 @@ void marching_cubes_destroy_device(uint64_t id) {
     if (!id)
         return;
 
-    MarchingCubes *mc = (MarchingCubes *)(id);
+    auto *mc = (MarchingCubes *)(id);
     marching_cubes_free(*mc);
     delete mc;
 }
@@ -437,7 +445,7 @@ int marching_cubes_surface_device(
     }
 
     // create vertices
-    wp_launch_device(WP_CURRENT_CONTEXT, create_cell_verts, mc.num_cells, (mc, verts, NULL, field, threshold));
+    wp_launch_device(WP_CURRENT_CONTEXT, create_cell_verts, mc.num_cells, (mc, verts, nullptr, field, threshold));
 
     // create triangles
     wp_launch_device(WP_CURRENT_CONTEXT, count_cell_tris, mc.num_cells, (mc, field, threshold));

@@ -1,16 +1,20 @@
-//  Copyright (c) 2023 Feng Yang
-//
-//  I am making my contributions/submissions to this project solely in my
-//  personal capacity and am not conveying any rights to any intellectual
-//  property of any third parties.
+/** Copyright (c) 2022 NVIDIA CORPORATION.  All rights reserved.
+* NVIDIA CORPORATION and its licensors retain all intellectual property
+* and proprietary rights in and to this software, related documentation
+* and any modifications thereto.  Any use, reproduction, disclosure or
+* distribution of this software and related documentation without an express
+* license agreement from NVIDIA CORPORATION is strictly prohibited.
+*/
 
 #pragma once
 
-namespace luisa::compute::cuda {
+#include "math/cuda_vec.h"
+
+namespace wp {
 
 struct HashGrid {
-    float cell_width;
-    float cell_width_inv;
+    float cell_width{};
+    float cell_width_inv{};
 
     int *point_cells{nullptr};// cell id of a point
     int *point_ids{nullptr};  // index to original point
@@ -18,14 +22,14 @@ struct HashGrid {
     int *cell_starts{nullptr};// start index of a range of indices belonging to a cell, dim_x*dim_y*dim_z in length
     int *cell_ends{nullptr};  // end index of a range of indices belonging to a cell, dim_x*dim_y*dim_z in length
 
-    int dim_x;
-    int dim_y;
-    int dim_z;
+    int dim_x{};
+    int dim_y{};
+    int dim_z{};
 
-    int num_points;
-    int max_points;
+    int num_points{};
+    int max_points{};
 
-    void *context;
+    void *context{};
 };
 
 // convert a virtual (world) cell coordinate to a physical one
@@ -68,31 +72,31 @@ CUDA_CALLABLE inline int hash_grid_index(const HashGrid &grid, const vec3 &p) {
 
 // stores state required to traverse neighboring cells of a point
 struct hash_grid_query_t {
-    CUDA_CALLABLE hash_grid_query_t() {}
+    CUDA_CALLABLE hash_grid_query_t() = default;
     CUDA_CALLABLE hash_grid_query_t(int) {}// for backward pass
 
-    int x_start;
-    int y_start;
-    int z_start;
+    int x_start{};
+    int y_start{};
+    int z_start{};
 
-    int x_end;
-    int y_end;
-    int z_end;
+    int x_end{};
+    int y_end{};
+    int z_end{};
 
-    int x;
-    int y;
-    int z;
+    int x{};
+    int y{};
+    int z{};
 
-    int cell;
-    int cell_index;// offset in the current cell (index into cell_indices)
-    int cell_end;  // index following the end of this cell
+    int cell{};
+    int cell_index{};// offset in the current cell (index into cell_indices)
+    int cell_end{};  // index following the end of this cell
 
-    int current;// index of the current iterator value
+    int current{};// index of the current iterator value
 
     HashGrid grid;
 };
 
-CUDA_CALLABLE inline hash_grid_query_t hash_grid_query(uint64_t id, vec3 pos, float radius) {
+CUDA_CALLABLE inline hash_grid_query_t hash_grid_query(uint64_t id, wp::vec3 pos, float radius) {
     hash_grid_query_t query;
 
     query.grid = *(const HashGrid *)(id);
@@ -123,7 +127,7 @@ CUDA_CALLABLE inline bool hash_grid_query_next(hash_grid_query_t &query, int &in
     if (!grid.point_cells)
         return false;
 
-    while (1) {
+    while (true) {
         if (query.cell_index < query.cell_end) {
             // write output index
             index = grid.point_ids[query.cell_index++];
@@ -169,15 +173,10 @@ CUDA_CALLABLE inline hash_grid_query_t iter_reverse(const hash_grid_query_t &que
 }
 
 CUDA_CALLABLE inline int hash_grid_point_id(uint64_t id, int &index) {
-    const HashGrid *grid = (const HashGrid *)(id);
+    const auto *grid = (const HashGrid *)(id);
     if (grid->point_ids == nullptr)
         return -1;
     return grid->point_ids[index];
 }
 
-uint64_t hash_grid_create_device(void *context, int dim_x, int dim_y, int dim_z);
-void hash_grid_reserve_device(uint64_t id, int num_points);
-void hash_grid_destroy_device(uint64_t id);
-void hash_grid_update_device(uint64_t id, float cell_width, const vec3 *positions, int num_points);
-
-}// namespace luisa::compute::cuda
+}// namespace wp

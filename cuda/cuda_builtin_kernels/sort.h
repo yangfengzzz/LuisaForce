@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <stddef.h>
+#include <cstddef>
 
 namespace luisa::compute::cuda {
-void radix_sort_reserve(void *context, int n, void **mem_out = NULL, size_t *size_out = NULL);
+void radix_sort_reserve(void *context, int n, void **mem_out = nullptr, size_t *size_out = nullptr);
 
 void radix_sort_pairs_device(void *context, int *keys, int *values, int n);
 

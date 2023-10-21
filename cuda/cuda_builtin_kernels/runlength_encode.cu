@@ -17,7 +17,7 @@ void runlength_encode_device(int n,
                              int *run_lengths,
                              int *run_count) {
     ContextGuard guard(cuda_context_get_current());
-    cudaStream_t stream = static_cast<cudaStream_t>(cuda_stream_get_current());
+    auto stream = static_cast<cudaStream_t>(cuda_stream_get_current());
 
     size_t buff_size = 0;
     check_cuda(cub::DeviceRunLengthEncode::Encode(

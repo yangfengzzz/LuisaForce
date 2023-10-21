@@ -8,13 +8,15 @@
 
 #include "cuda_context.h"
 #include "cuda_util.h"
-#include "cuda/math/fabric.h"
+#include "cuda_builtin/math/cuda_fabric.h"
 
 #include <nvrtc.h>
 #include <nvPTXCompiler.h>
 
 #include <map>
 #include <vector>
+
+using namespace wp;
 
 namespace luisa::compute::cuda {
 #define check_nvrtc(code) (check_nvrtc_result(code, __FILE__, __LINE__))

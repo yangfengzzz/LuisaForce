@@ -7,8 +7,10 @@
  */
 
 #include "cuda_context.h"
-#include "stdlib.h"
-#include "cuda/math/fabric.h"
+#include <cstdlib>
+#include "cuda_builtin/math/cuda_fabric.h"
+
+using namespace wp;
 
 namespace luisa::compute::cuda {
 void *alloc_host(size_t s) {
@@ -42,8 +44,8 @@ void memtile_value_host(T *dst, T value, size_t n) {
 }
 
 void memtile_host(void *dst, const void *src, size_t srcsize, size_t n) {
-    size_t dst_addr = reinterpret_cast<size_t>(dst);
-    size_t src_addr = reinterpret_cast<size_t>(src);
+    auto dst_addr = reinterpret_cast<size_t>(dst);
+    auto src_addr = reinterpret_cast<size_t>(src);
 
     // try memtile_value first because it should be faster, but we need to ensure proper alignment
     if (srcsize == 8 && (dst_addr & 7) == 0 && (src_addr & 7) == 0)
@@ -90,13 +92,13 @@ static void array_copy_nd(void *dst, const void *src,
 
 static void array_copy_to_fabric(fabricarray_t<void> &dst, const void *src_data,
                                  int src_stride, const int *src_indices, int elem_size) {
-    const int8_t *src_ptr = static_cast<const int8_t *>(src_data);
+    const auto *src_ptr = static_cast<const int8_t *>(src_data);
 
     if (src_indices) {
         // copy from indexed array
         for (size_t i = 0; i < dst.nbuckets; i++) {
             const fabricbucket_t &bucket = dst.buckets[i];
-            int8_t *dst_ptr = static_cast<int8_t *>(bucket.ptr);
+            auto *dst_ptr = static_cast<int8_t *>(bucket.ptr);
             size_t bucket_size = bucket.index_end - bucket.index_start;
             for (size_t j = 0; j < bucket_size; j++) {
                 int idx = *src_indices;
@@ -118,7 +120,7 @@ static void array_copy_to_fabric(fabricarray_t<void> &dst, const void *src_data,
             // copy from strided array
             for (size_t i = 0; i < dst.nbuckets; i++) {
                 const fabricbucket_t &bucket = dst.buckets[i];
-                int8_t *dst_ptr = static_cast<int8_t *>(bucket.ptr);
+                auto *dst_ptr = static_cast<int8_t *>(bucket.ptr);
                 size_t bucket_size = bucket.index_end - bucket.index_start;
                 for (size_t j = 0; j < bucket_size; j++) {
                     memcpy(dst_ptr, src_ptr, elem_size);
@@ -132,13 +134,13 @@ static void array_copy_to_fabric(fabricarray_t<void> &dst, const void *src_data,
 
 static void array_copy_from_fabric(const fabricarray_t<void> &src, void *dst_data,
                                    int dst_stride, const int *dst_indices, int elem_size) {
-    int8_t *dst_ptr = static_cast<int8_t *>(dst_data);
+    auto *dst_ptr = static_cast<int8_t *>(dst_data);
 
     if (dst_indices) {
         // copy to indexed array
         for (size_t i = 0; i < src.nbuckets; i++) {
             const fabricbucket_t &bucket = src.buckets[i];
-            const int8_t *src_ptr = static_cast<const int8_t *>(bucket.ptr);
+            const auto *src_ptr = static_cast<const int8_t *>(bucket.ptr);
             size_t bucket_size = bucket.index_end - bucket.index_start;
             for (size_t j = 0; j < bucket_size; j++) {
                 int idx = *dst_indices;
@@ -160,7 +162,7 @@ static void array_copy_from_fabric(const fabricarray_t<void> &src, void *dst_dat
             // copy to strided array
             for (size_t i = 0; i < src.nbuckets; i++) {
                 const fabricbucket_t &bucket = src.buckets[i];
-                const int8_t *src_ptr = static_cast<const int8_t *>(bucket.ptr);
+                const auto *src_ptr = static_cast<const int8_t *>(bucket.ptr);
                 size_t bucket_size = bucket.index_end - bucket.index_start;
                 for (size_t j = 0; j < bucket_size; j++) {
                     memcpy(dst_ptr, src_ptr, elem_size);
@@ -175,8 +177,8 @@ static void array_copy_from_fabric(const fabricarray_t<void> &src, void *dst_dat
 static void array_copy_fabric_to_fabric(fabricarray_t<void> &dst, const fabricarray_t<void> &src, int elem_size) {
     fabricbucket_t *dst_bucket = dst.buckets;
     const fabricbucket_t *src_bucket = src.buckets;
-    int8_t *dst_ptr = static_cast<int8_t *>(dst_bucket->ptr);
-    const int8_t *src_ptr = static_cast<const int8_t *>(src_bucket->ptr);
+    auto *dst_ptr = static_cast<int8_t *>(dst_bucket->ptr);
+    const auto *src_ptr = static_cast<const int8_t *>(src_bucket->ptr);
     size_t dst_remaining = dst_bucket->index_end - dst_bucket->index_start;
     size_t src_remaining = src_bucket->index_end - src_bucket->index_start;
     size_t total_copied = 0;
@@ -220,7 +222,7 @@ static void array_copy_fabric_to_fabric(fabricarray_t<void> &dst, const fabricar
 
 static void array_copy_to_fabric_indexed(indexedfabricarray_t<void> &dst, const void *src_data,
                                          int src_stride, const int *src_indices, int elem_size) {
-    const int8_t *src_ptr = static_cast<const int8_t *>(src_data);
+    const auto *src_ptr = static_cast<const int8_t *>(src_data);
 
     if (src_indices) {
         // copy from indexed array
@@ -245,7 +247,7 @@ static void array_copy_to_fabric_indexed(indexedfabricarray_t<void> &dst, const 
 
 static void array_copy_fabric_indexed_to_fabric(fabricarray_t<void> &dst, const indexedfabricarray_t<void> &src, int elem_size) {
     fabricbucket_t *dst_bucket = dst.buckets;
-    int8_t *dst_ptr = static_cast<int8_t *>(dst_bucket->ptr);
+    auto *dst_ptr = static_cast<int8_t *>(dst_bucket->ptr);
     int8_t *dst_end = dst_ptr + elem_size * (dst_bucket->index_end - dst_bucket->index_start);
 
     for (size_t i = 0; i < src.size; i++) {
@@ -279,7 +281,7 @@ static void array_copy_fabric_indexed_to_fabric_indexed(indexedfabricarray_t<voi
 
 static void array_copy_fabric_to_fabric_indexed(indexedfabricarray_t<void> &dst, const fabricarray_t<void> &src, int elem_size) {
     fabricbucket_t *src_bucket = src.buckets;
-    const int8_t *src_ptr = static_cast<const int8_t *>(src_bucket->ptr);
+    const auto *src_ptr = static_cast<const int8_t *>(src_bucket->ptr);
     const int8_t *src_end = src_ptr + elem_size * (src_bucket->index_end - src_bucket->index_start);
 
     for (size_t i = 0; i < dst.size; i++) {
@@ -301,7 +303,7 @@ static void array_copy_fabric_to_fabric_indexed(indexedfabricarray_t<void> &dst,
 
 static void array_copy_from_fabric_indexed(const indexedfabricarray_t<void> &src, void *dst_data,
                                            int dst_stride, const int *dst_indices, int elem_size) {
-    int8_t *dst_ptr = static_cast<int8_t *>(dst_data);
+    auto *dst_ptr = static_cast<int8_t *>(dst_data);
 
     if (dst_indices) {
         // copy to indexed array
@@ -336,26 +338,26 @@ size_t array_copy_host(void *dst, void *src, int dst_type, int src_type, int ele
     if (!src || !dst)
         return 0;
 
-    const void *src_data = NULL;
-    const void *src_grad = NULL;
-    void *dst_data = NULL;
-    void *dst_grad = NULL;
+    const void *src_data = nullptr;
+    const void *src_grad = nullptr;
+    void *dst_data = nullptr;
+    void *dst_grad = nullptr;
     int src_ndim = 0;
     int dst_ndim = 0;
-    const int *src_shape = NULL;
-    const int *dst_shape = NULL;
-    const int *src_strides = NULL;
-    const int *dst_strides = NULL;
-    const int *const *src_indices = NULL;
-    const int *const *dst_indices = NULL;
+    const int *src_shape = nullptr;
+    const int *dst_shape = nullptr;
+    const int *src_strides = nullptr;
+    const int *dst_strides = nullptr;
+    const int *const *src_indices = nullptr;
+    const int *const *dst_indices = nullptr;
 
-    const fabricarray_t<void> *src_fabricarray = NULL;
-    fabricarray_t<void> *dst_fabricarray = NULL;
+    const fabricarray_t<void> *src_fabricarray = nullptr;
+    fabricarray_t<void> *dst_fabricarray = nullptr;
 
-    const indexedfabricarray_t<void> *src_indexedfabricarray = NULL;
-    indexedfabricarray_t<void> *dst_indexedfabricarray = NULL;
+    const indexedfabricarray_t<void> *src_indexedfabricarray = nullptr;
+    indexedfabricarray_t<void> *dst_indexedfabricarray = nullptr;
 
-    const int *null_indices[ARRAY_MAX_DIMS] = {NULL};
+    const int *null_indices[ARRAY_MAX_DIMS] = {nullptr};
 
     if (src_type == ARRAY_TYPE_REGULAR) {
         const array_t<void> &src_arr = *static_cast<const array_t<void> *>(src);
@@ -549,7 +551,7 @@ static void array_fill_fabric(fabricarray_t<void> &fa, const void *value_ptr, in
 
 static void array_fill_fabric_indexed(indexedfabricarray_t<void> &ifa, const void *value_ptr, int value_size) {
     for (size_t i = 0; i < ifa.size; i++) {
-        size_t idx = size_t(ifa.indices[i]);
+        auto idx = size_t(ifa.indices[i]);
         if (idx < ifa.fa.size) {
             void *p = fabricarray_element_ptr(ifa.fa, idx, value_size);
             memcpy(p, value_ptr, value_size);
