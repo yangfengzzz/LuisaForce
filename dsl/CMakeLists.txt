@@ -14,15 +14,20 @@ set(COMMON_FILES
         func.cpp
         local.cpp
         printer.cpp
-        resource.cpp
         soa.cpp
         sugar.cpp
+)
+
+set(RESOURCE_FILES
+        resources/bindless_resource.cpp
+        resources/bindless_resource.h
 )
 
 source_group("common\\" FILES ${COMMON_FILES})
 
 set(PROJECT_FILES
         ${COMMON_FILES}
+        ${RESOURCE_FILES}
 )
 
 #NB: switch this to shared library and things stop working. (there is likely two copies of volk somewhere.

@@ -6,7 +6,7 @@
 
 #include "dsl/builtin.h"
 #include "dsl/stmt.h"
-#include "dsl/resource.h"
+#include "dsl/resources/bindless_resource.h"
 
 namespace luisa::compute::detail {
 
