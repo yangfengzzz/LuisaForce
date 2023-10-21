@@ -4,13 +4,8 @@
 //  personal capacity and am not conveying any rights to any intellectual
 //  property of any third parties.
 
-#include <cstring>
 #include <fstream>
 #include <future>
-#include <thread>
-#include <cstdlib>
-
-#include <nvtx3/nvToolsExtCuda.h>
 
 #include "core/clock.h"
 #include "core/binary_io.h"
