@@ -38,6 +38,17 @@ set(BUILTIN_FILES
         cuda_builtin/math/cuda_array.h
         cuda_builtin/math/cuda_fabric.h
         cuda_builtin/math/cuda_spatial.h
+        #
+        cuda_builtin/math/cuda_bounds.h
+        cuda_builtin/math/cuda_rand.h
+        cuda_builtin/math/cuda_noise.h
+        cuda_builtin/math/cuda_range.h
+        cuda_builtin/math/cuda_solid_angle.h
+        #
+        cuda_builtin/math/cuda_intersect.h
+        cuda_builtin/math/cuda_intersect_tri.h
+        cuda_builtin/math/cuda_svd.h
+        cuda_builtin/math/cuda_matnn.h
 )
 
 set(CUB_FILES

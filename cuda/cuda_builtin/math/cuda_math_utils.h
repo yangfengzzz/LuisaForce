@@ -218,24 +218,24 @@ CUDA_CALLABLE int cast_int(T x) { return (int)(x); }
 #define kEps 0.0f
 
 // basic ops for integer types
-#define DECLARE_INT_OPS(T)                                                                         \
-    inline CUDA_CALLABLE T mul(T a, T b) { return a * b; }                                         \
-    inline CUDA_CALLABLE T div(T a, T b) { return a / b; }                                         \
-    inline CUDA_CALLABLE T add(T a, T b) { return a + b; }                                         \
-    inline CUDA_CALLABLE T sub(T a, T b) { return a - b; }                                         \
-    inline CUDA_CALLABLE T mod(T a, T b) { return a % b; }                                         \
-    inline CUDA_CALLABLE T min(T a, T b) { return a < b ? a : b; }                                 \
-    inline CUDA_CALLABLE T max(T a, T b) { return a > b ? a : b; }                                 \
-    inline CUDA_CALLABLE T clamp(T x, T a, T b) { return min(max(a, x), b); }                      \
-    inline CUDA_CALLABLE T floordiv(T a, T b) { return a / b; }                                    \
-    inline CUDA_CALLABLE T nonzero(T x) { return x == T(0) ? T(0) : T(1); }                        \
-    inline CUDA_CALLABLE T sqrt(T x) { return 0; }                                                 \
-    inline CUDA_CALLABLE T bit_and(T a, T b) { return a & b; }                                     \
-    inline CUDA_CALLABLE T bit_or(T a, T b) { return a | b; }                                      \
-    inline CUDA_CALLABLE T bit_xor(T a, T b) { return a ^ b; }                                     \
-    inline CUDA_CALLABLE T lshift(T a, T b) { return a << b; }                                     \
-    inline CUDA_CALLABLE T rshift(T a, T b) { return a >> b; }                                     \
-    inline CUDA_CALLABLE T invert(T x) { return ~x; }                                              \
+#define DECLARE_INT_OPS(T)                                                    \
+    inline CUDA_CALLABLE T mul(T a, T b) { return a * b; }                    \
+    inline CUDA_CALLABLE T div(T a, T b) { return a / b; }                    \
+    inline CUDA_CALLABLE T add(T a, T b) { return a + b; }                    \
+    inline CUDA_CALLABLE T sub(T a, T b) { return a - b; }                    \
+    inline CUDA_CALLABLE T mod(T a, T b) { return a % b; }                    \
+    inline CUDA_CALLABLE T min(T a, T b) { return a < b ? a : b; }            \
+    inline CUDA_CALLABLE T max(T a, T b) { return a > b ? a : b; }            \
+    inline CUDA_CALLABLE T clamp(T x, T a, T b) { return min(max(a, x), b); } \
+    inline CUDA_CALLABLE T floordiv(T a, T b) { return a / b; }               \
+    inline CUDA_CALLABLE T nonzero(T x) { return x == T(0) ? T(0) : T(1); }   \
+    inline CUDA_CALLABLE T sqrt(T x) { return 0; }                            \
+    inline CUDA_CALLABLE T bit_and(T a, T b) { return a & b; }                \
+    inline CUDA_CALLABLE T bit_or(T a, T b) { return a | b; }                 \
+    inline CUDA_CALLABLE T bit_xor(T a, T b) { return a ^ b; }                \
+    inline CUDA_CALLABLE T lshift(T a, T b) { return a << b; }                \
+    inline CUDA_CALLABLE T rshift(T a, T b) { return a >> b; }                \
+    inline CUDA_CALLABLE T invert(T x) { return ~x; }                         \
     inline CUDA_CALLABLE bool isfinite(T x) { return true; }
 
 inline CUDA_CALLABLE int8 abs(int8 x) { return ::abs(x); }
@@ -297,23 +297,23 @@ inline CUDA_CALLABLE void print(double f) {
 }
 
 // basic ops for float types
-#define DECLARE_FLOAT_OPS(T)                                                                                                                         \
-    inline CUDA_CALLABLE T mul(T a, T b) { return a * b; }                                                                                           \
-    inline CUDA_CALLABLE T add(T a, T b) { return a + b; }                                                                                           \
-    inline CUDA_CALLABLE T sub(T a, T b) { return a - b; }                                                                                           \
-    inline CUDA_CALLABLE T min(T a, T b) { return a < b ? a : b; }                                                                                   \
-    inline CUDA_CALLABLE T max(T a, T b) { return a > b ? a : b; }                                                                                   \
-    inline CUDA_CALLABLE T sign(T x) { return x < T(0) ? -1 : 1; }                                                                                   \
-    inline CUDA_CALLABLE T step(T x) { return x < T(0) ? T(1) : T(0); }                                                                              \
-    inline CUDA_CALLABLE T nonzero(T x) { return x == T(0) ? T(0) : T(1); }                                                                          \
-    inline CUDA_CALLABLE T clamp(T x, T a, T b) { return min(max(a, x), b); }                                                                        \
-    inline CUDA_CALLABLE T div(T a, T b) {                                                                                                           \
-        DO_IF_FPCHECK(                                                                                                                               \
-            if (!isfinite(a) || !isfinite(b) || b == T(0)) {                                                                                         \
-                printf("%s:%d div(%f, %f)\n", __FILE__, __LINE__, float(a), float(b));                                                               \
-                assert(0);                                                                                                                           \
-            })                                                                                                                                       \
-        return a / b;                                                                                                                                \
+#define DECLARE_FLOAT_OPS(T)                                                           \
+    inline CUDA_CALLABLE T mul(T a, T b) { return a * b; }                             \
+    inline CUDA_CALLABLE T add(T a, T b) { return a + b; }                             \
+    inline CUDA_CALLABLE T sub(T a, T b) { return a - b; }                             \
+    inline CUDA_CALLABLE T min(T a, T b) { return a < b ? a : b; }                     \
+    inline CUDA_CALLABLE T max(T a, T b) { return a > b ? a : b; }                     \
+    inline CUDA_CALLABLE T sign(T x) { return x < T(0) ? -1 : 1; }                     \
+    inline CUDA_CALLABLE T step(T x) { return x < T(0) ? T(1) : T(0); }                \
+    inline CUDA_CALLABLE T nonzero(T x) { return x == T(0) ? T(0) : T(1); }            \
+    inline CUDA_CALLABLE T clamp(T x, T a, T b) { return min(max(a, x), b); }          \
+    inline CUDA_CALLABLE T div(T a, T b) {                                             \
+        DO_IF_FPCHECK(                                                                 \
+            if (!isfinite(a) || !isfinite(b) || b == T(0)) {                           \
+                printf("%s:%d div(%f, %f)\n", __FILE__, __LINE__, float(a), float(b)); \
+                assert(0);                                                             \
+            })                                                                         \
+        return a / b;                                                                  \
     }
 
 DECLARE_FLOAT_OPS(float16)
@@ -876,13 +876,13 @@ inline CUDA_CALLABLE int atomic_min(int *address, int val) {
 inline CUDA_CALLABLE float dot(float a, float b) { return mul(a, b); }
 inline CUDA_CALLABLE float tensordot(float a, float b) { return mul(a, b); }
 
-#define DECLARE_INTERP_FUNCS(T)                                                                                        \
-    CUDA_CALLABLE inline T smoothstep(T edge0, T edge1, T x) {                                                         \
-        x = clamp((x - edge0) / (edge1 - edge0), T(0), T(1));                                                          \
-        return x * x * (T(3) - T(2) * x);                                                                              \
-    }                                                                                                                  \
-    CUDA_CALLABLE inline T lerp(const T &a, const T &b, T t) {                                                         \
-        return a * (T(1) - t) + b * t;                                                                                 \
+#define DECLARE_INTERP_FUNCS(T)                                \
+    CUDA_CALLABLE inline T smoothstep(T edge0, T edge1, T x) { \
+        x = clamp((x - edge0) / (edge1 - edge0), T(0), T(1));  \
+        return x * x * (T(3) - T(2) * x);                      \
+    }                                                          \
+    CUDA_CALLABLE inline T lerp(const T &a, const T &b, T t) { \
+        return a * (T(1) - t) + b * t;                         \
     }
 
 DECLARE_INTERP_FUNCS(float16)
