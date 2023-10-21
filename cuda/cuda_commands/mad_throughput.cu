@@ -4,6 +4,7 @@
 //  personal capacity and am not conveying any rights to any intellectual
 //  property of any third parties.
 
+/**
 #include "runtime/ext/cuda/cuda_commands.h"
 #include "cuda/cuda_buffer.h"
 #include "cuda_builtin/math/cuda_vec.h"
@@ -49,3 +50,5 @@ CudaCommand::UCommand CudaCommand::mad_throughput(BufferView<float> src0_buffer,
 }
 
 }// namespace luisa::compute::cuda
+
+ **/

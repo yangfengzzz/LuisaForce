@@ -28,6 +28,8 @@
 #include "cuda_shader_metadata.h"
 #include "cuda_swapchain.h"
 
+#include "cuda_builtin_kernels/hashgrid.h"
+
 #define LUISA_CUDA_KERNEL_DEBUG 1
 
 #ifndef NDEBUG
@@ -827,6 +829,12 @@ void CUDADevice::set_name(luisa::compute::Resource::Tag resource_tag,
             default: break;
         }
     });
+}
+
+ResourceCreationInfo CUDADevice::create_hash_grid(int dim_x, int dim_y, int dim_z) noexcept {
+    auto handle = hash_grid_create_device(this->handle().context(), dim_x, dim_y, dim_y);
+    return {.handle = handle,
+            .native_handle = nullptr};
 }
 
 }// namespace luisa::compute::cuda

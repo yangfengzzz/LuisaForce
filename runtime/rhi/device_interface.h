@@ -112,6 +112,9 @@ public:
     [[nodiscard]] virtual luisa::string query(luisa::string_view property) noexcept { return {}; }
     [[nodiscard]] virtual DeviceExtension *extension(luisa::string_view name) noexcept { return nullptr; }
     virtual void set_name(luisa::compute::Resource::Tag resource_tag, uint64_t resource_handle, luisa::string_view name) noexcept = 0;
+
+    // hash_grid
+    [[nodiscard]] virtual ResourceCreationInfo create_hash_grid(int dim_x, int dim_y, int dim_z) noexcept = 0;
 };
 
 }// namespace luisa::compute

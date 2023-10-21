@@ -90,6 +90,7 @@ private:
         : Resource{device, Tag::BUFFER, info},
           _size{info.total_size_bytes / info.element_stride},
           _element_stride{info.element_stride} {}
+
     Buffer(DeviceInterface *device, size_t size) noexcept
         : Buffer{device, [&] {
                      if (size == 0) [[unlikely]] {

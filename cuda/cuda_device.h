@@ -145,6 +145,8 @@ public:
     void set_name(luisa::compute::Resource::Tag resource_tag, uint64_t resource_handle, luisa::string_view name) noexcept override;
 
     DeviceExtension *extension(luisa::string_view name) noexcept override;
+
+    ResourceCreationInfo create_hash_grid(int dim_x, int dim_y, int dim_z) noexcept override;
 };
 
 }// namespace luisa::compute::cuda

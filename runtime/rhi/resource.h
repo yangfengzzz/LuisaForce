@@ -114,7 +114,8 @@ public:
         STREAM,
         EVENT,
         SHADER,
-        SWAP_CHAIN
+        SWAP_CHAIN,
+        HASH_GRID
     };
 
 private:

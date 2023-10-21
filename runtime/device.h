@@ -16,6 +16,7 @@ class BinaryIO;
 namespace luisa::compute {
 
 class Context;
+class HashGrid;
 class Event;
 class TimelineEvent;
 class Stream;
@@ -105,21 +106,29 @@ public:
     [[nodiscard]] auto compute_warp_size() const noexcept { return _impl->compute_warp_size(); }
     // Is device initialized
     [[nodiscard]] explicit operator bool() const noexcept { return static_cast<bool>(_impl); }
+
     // backend native plugins & extensions interface
     template<device_extension Ext>
     [[nodiscard]] auto extension() const noexcept {
         return static_cast<Ext *>(_impl->extension(Ext::name));
     }
-    // see definition in runtime/stream.cpp
-    [[nodiscard]] Stream create_stream(StreamTag stream_tag = StreamTag::COMPUTE) noexcept;
     // see definition in runtime/event.cpp
     [[nodiscard]] Event create_event() noexcept;
+
+    // see definition in runtime/stream.cpp
+    [[nodiscard]] Stream create_stream(StreamTag stream_tag = StreamTag::COMPUTE) noexcept;
+
+    // see definition in runtime/hash_grid.cpp
+    [[nodiscard]] HashGrid create_hash_grid(int dim_x, int dim_y, int dim_z) noexcept;
+
     // see definition in runtime/event.cpp
     [[nodiscard]] TimelineEvent create_timeline_event() noexcept;
+
     // see definition in runtime/swap_chain.cpp
     [[nodiscard]] Swapchain create_swapchain(
         uint64_t window_handle, const Stream &stream, uint2 resolution,
         bool allow_hdr = true, bool vsync = true, uint back_buffer_count = 1) noexcept;
+
     // see definition in runtime/dispatch_buffer.cpp
     [[nodiscard]] IndirectDispatchBuffer create_indirect_dispatch_buffer(size_t capacity) noexcept;
 

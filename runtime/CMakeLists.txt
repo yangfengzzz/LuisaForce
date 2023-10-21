@@ -22,6 +22,7 @@ set(COMMON_FILES
         swapchain.cpp
         volume.cpp
         context.cpp
+        hash_grid.cpp
         rhi/command_encoder.cpp
         rhi/device_interface.cpp
         rhi/pixel.cpp
