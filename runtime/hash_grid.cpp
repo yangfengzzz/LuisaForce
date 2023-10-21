@@ -25,11 +25,11 @@ HashGrid::~HashGrid() noexcept {
 }
 
 void HashGrid::build(float radius) {
-    device()->build_hash_grid(handle(), radius);
+    // todo
 }
 
 void HashGrid::reserve(int num_points) {
-    device()->reserve_hash_grid(handle(), num_points);
+    // todo
 }
 
 }// namespace luisa::compute

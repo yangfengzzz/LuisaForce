@@ -832,20 +832,13 @@ void CUDADevice::set_name(luisa::compute::Resource::Tag resource_tag,
 }
 
 ResourceCreationInfo CUDADevice::create_hash_grid(int dim_x, int dim_y, int dim_z) noexcept {
-//    auto handle = hash_grid_create_device(this->handle().context(), dim_x, dim_y, dim_y);
-//    return {.handle = handle,
-//            .native_handle = nullptr};
+    auto handle = hash_grid_create_device(this->handle().context(), dim_x, dim_y, dim_y);
+    return {.handle = handle,
+            .native_handle = nullptr};
 }
 
 void CUDADevice::destroy_hash_grid(uint64_t handle) noexcept {
     hash_grid_destroy_device(handle);
-}
-
-void CUDADevice::reserve_hash_grid(uint64_t handle, int num_points) noexcept {
-//    hash_grid_reserve_device(handle, num_points);
-}
-
-void CUDADevice::build_hash_grid(uint64_t handle, float radius) noexcept {
 }
 
 }// namespace luisa::compute::cuda

@@ -41,7 +41,7 @@ void hash_grid_rem_descriptor(uint64_t id) {
 void hash_grid_rebuild_device(const wp::HashGrid &grid, const wp::vec3 *points, int num_points, CUstream stream);
 
 // device methods
-uint64_t hash_grid_create_device(void *context, int dim_x, int dim_y, int dim_z, CUstream stream) {
+uint64_t hash_grid_create_device(void *context, int dim_x, int dim_y, int dim_z) {
     ContextGuard guard(context);
 
     wp::HashGrid grid;
@@ -59,7 +59,7 @@ uint64_t hash_grid_create_device(void *context, int dim_x, int dim_y, int dim_z,
 
     // upload to device
     auto *grid_device = (wp::HashGrid *)(alloc_device(WP_CURRENT_CONTEXT, sizeof(wp::HashGrid)));
-    memcpy_h2d(WP_CURRENT_CONTEXT, grid_device, &grid, sizeof(wp::HashGrid), stream);
+    memcpy_h2d(WP_CURRENT_CONTEXT, grid_device, &grid, sizeof(wp::HashGrid), nullptr);
 
     auto grid_id = (uint64_t)(grid_device);
     hash_grid_add_descriptor(grid_id, grid);

@@ -51,7 +51,7 @@ void hash_grid_rebuild_device(const wp::HashGrid &grid, const wp::vec3 *points, 
 
     wp_launch_device(WP_CURRENT_CONTEXT, compute_cell_indices, stream, num_points, (grid, points, num_points));
 
-    radix_sort_pairs_device(WP_CURRENT_CONTEXT, grid.point_cells, grid.point_ids, num_points, nullptr);
+    radix_sort_pairs_device(WP_CURRENT_CONTEXT, grid.point_cells, grid.point_ids, num_points, stream);
 
     const int num_cells = grid.dim_x * grid.dim_y * grid.dim_z;
 
