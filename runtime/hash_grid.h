@@ -13,9 +13,8 @@
 #include "runtime/buffer.h"
 
 namespace luisa::compute {
-
 class Device;
-
+/// Class representing a hash grid object for accelerated point queries.
 class LC_RUNTIME_API HashGrid final : public Resource {
 private:
     friend class Device;
@@ -33,9 +32,24 @@ public:
     }
     HashGrid &operator=(HashGrid const &) noexcept = delete;
 
-    auto build(BufferView<float3> source, float radius) noexcept;
+    /// Updates the hash grid data structure.
+    //
+    //  This method rebuilds the underlying datastructure and should be called any time the set
+    //  of points changes.
+    /// \param source Array of points of type : float3
+    /// \param radius The cell size to use for bucketing points, cells are cubes with edges of this width.
+    //                For best performance the radius used to construct the grid should match closely to
+    //                the radius used when performing queries.
+    /// \return
+    auto build(BufferView<float3> source, float radius) noexcept {
+        return luisa::make_unique<HashGridBuildCommand>(
+            this->handle(), source.handle(), source.size(), radius);
+    }
 
-    auto reserve(int num_points) noexcept;
+    auto reserve(int num_points) noexcept {
+        return luisa::make_unique<HashGridReserveCommand>(
+            this->handle(), num_points);
+    }
 };
 
 }// namespace luisa::compute

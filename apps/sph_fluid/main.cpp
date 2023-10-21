@@ -225,7 +225,9 @@ int main(int argc, char *argv[]) {
         display->write(make_uint2(coord.x, n_grid - 1 - coord.y), make_float4(value, 0.f, 0.f, 1.f));
     });
 
-    stream << init_grid().dispatch(n_grid, n_grid) << synchronize();
+    stream << init_grid().dispatch(n_grid, n_grid)
+           << hash_grid.reserve(100)
+           << synchronize();
     while (!window.should_close()) {
         CommandList cmd_list;
         for (uint i = 0u; i < sim_substeps; i++) { substep(cmd_list); }

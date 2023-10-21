@@ -24,14 +24,4 @@ HashGrid::~HashGrid() noexcept {
     if (*this) { device()->destroy_hash_grid(handle()); }
 }
 
-auto HashGrid::build(BufferView<float3> source, float radius) noexcept {
-    return luisa::make_unique<HashGridBuildCommand>(
-        this->handle(), source.handle(), source.size(), radius);
-}
-
-auto HashGrid::reserve(int num_points) noexcept {
-    return luisa::make_unique<HashGridReserveCommand>(
-        this->handle(), num_points);
-}
-
 }// namespace luisa::compute
