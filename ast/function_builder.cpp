@@ -434,6 +434,11 @@ const RefExpr *FunctionBuilder::bindless_array_binding(uint64_t handle) noexcept
     return _ref(v);
 }
 
+const RefExpr *FunctionBuilder::hash_grid_binding(uint64_t handle) noexcept {
+    // todo
+    return nullptr;
+}
+
 const RefExpr *FunctionBuilder::bindless_array() noexcept {
     Variable v{Type::of<BindlessArray>(), Variable::Tag::BINDLESS_ARRAY, _next_variable_uid()};
     _arguments.emplace_back(v);

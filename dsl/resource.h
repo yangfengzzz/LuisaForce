@@ -533,3 +533,4 @@ template<class T>
 }// namespace luisa::compute
 
 #include "resources/bindless_resource.h"
+#include "resources/hash_grid_resource.h"

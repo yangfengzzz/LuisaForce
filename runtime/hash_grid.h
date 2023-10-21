@@ -13,6 +13,10 @@
 #include "runtime/buffer.h"
 
 namespace luisa::compute {
+namespace detail {
+class HashGridExprProxy;
+}// namespace detail
+
 class Device;
 /// Class representing a hash grid object for accelerated point queries.
 class LC_RUNTIME_API HashGrid final : public Resource {
@@ -49,6 +53,11 @@ public:
     auto reserve(int num_points) noexcept {
         return luisa::make_unique<HashGridReserveCommand>(
             this->handle(), num_points);
+    }
+
+    // DSL interface
+    [[nodiscard]] auto operator->() const noexcept {
+        return reinterpret_cast<const detail::HashGridExprProxy *>(this);
     }
 };
 

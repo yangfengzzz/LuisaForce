@@ -257,8 +257,10 @@ public:
     [[nodiscard]] const RefExpr *buffer_binding(const Type *type, uint64_t handle, size_t offset_bytes, size_t size_bytes) noexcept;
     /// Add binding of texture. Will check for already bound arguments.
     [[nodiscard]] const RefExpr *texture_binding(const Type *type, uint64_t handle, uint32_t level) noexcept;
-    /// Add binding of bidnless array. Will check for already bound arguments.
+    /// Add binding of bindless array. Will check for already bound arguments.
     [[nodiscard]] const RefExpr *bindless_array_binding(uint64_t handle) noexcept;
+    /// Add binding of hashgrid. Will check for already bound arguments.
+    [[nodiscard]] const RefExpr *hash_grid_binding(uint64_t handle) noexcept;
 
     // explicit arguments
     /// Add argument of type
@@ -368,7 +370,7 @@ public:
     void push_scope(ScopeStmt *) noexcept;
     /// Pop a scope
     void pop_scope(const ScopeStmt *) noexcept;
-    /// Mark variable uasge
+    /// Mark variable usage
     void mark_variable_usage(uint32_t uid, Usage usage) noexcept;
     /// separate arguments and bindings, make command need no bindings info, only work with kernel.
     void sort_bindings() noexcept;

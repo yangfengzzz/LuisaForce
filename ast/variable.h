@@ -24,7 +24,6 @@ class LC_AST_API Variable {
 public:
     /// Variable tags
     enum struct Tag : uint32_t {
-
         // data
         LOCAL,
         SHARED,
@@ -36,6 +35,7 @@ public:
         BUFFER,
         TEXTURE,
         BINDLESS_ARRAY,
+        HASH_GRID,
 
         // builtins
         THREAD_ID,
