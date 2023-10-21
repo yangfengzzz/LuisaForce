@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "vec.h"
+#include "math/cuda_vec.h"
 
 namespace wp {
 

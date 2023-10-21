@@ -10,7 +10,7 @@
 // this header must be independently compilable (i.e.: without external SDK headers)
 // to achieve this we redefine a subset of CRT functions (printf, pow, sin, cos, etc)
 
-#include "crt.h"
+#include "math/cuda_crt.h"
 
 #ifdef _WIN32
 #define __restrict__ __restrict

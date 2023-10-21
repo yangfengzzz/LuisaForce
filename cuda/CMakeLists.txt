@@ -28,16 +28,16 @@ set(COMMON_FILES
 )
 
 set(BUILTIN_FILES
-        cuda_builtin/math/crt.h
-        cuda_builtin/math/crt.cpp
-        cuda_builtin/math/math_utils.h
-        cuda_builtin/math/initializer_array.h
-        cuda_builtin/math/vec.h
-        cuda_builtin/math/mat.h
-        cuda_builtin/math/quat.h
-        cuda_builtin/math/array.h
-        cuda_builtin/math/fabric.h
-        cuda_builtin/math/spatial.h
+        cuda_builtin/math/cuda_crt.h
+        cuda_builtin/math/cuda_crt.cpp
+        cuda_builtin/math/cuda_math_utils.h
+        cuda_builtin/math/cuda_initializer_array.h
+        cuda_builtin/math/cuda_vec.h
+        cuda_builtin/math/cuda_mat.h
+        cuda_builtin/math/cuda_quat.h
+        cuda_builtin/math/cuda_array.h
+        cuda_builtin/math/cuda_fabric.h
+        cuda_builtin/math/cuda_spatial.h
 )
 
 set(CUB_FILES
@@ -63,52 +63,52 @@ set(CUSTOM_COMMANDS
         cuda_commands/mad_throughput.cu
 )
 
-set(MATH_FILES
-        math/cuda_math_utils.h
-        math/initializer_array.h
-        math/vec.h
-        math/mat.h
-        math/quat.h
-        math/array.h
-        math/rand.h
-        math/noise.h
-        math/range.h
-        math/bounds.h
-        math/solid_angle.h
-        math/spatial.h
-        # method
-        math/svd.h
-        math/intersect.h
-        math/intersect_tri.h
-        math/matnn.h
-        math/fabric.h
-)
-
-set(STL_FILES
-        stl/cuda_util.h
-        stl/cuda_util.cpp
-        stl/cuda_context.h
-        stl/cuda_context.cu
-        stl/cuda_context.cpp
-        # cub
-        stl/sort.h
-        stl/sort.cu
-        stl/scan.h
-        stl/scan.cu
-        stl/hashgrid.h
-        stl/hashgrid.cu
-        stl/hashgrid.cpp
-        stl/reduce.h
-        stl/reduce.cu
-        stl/reduce.cpp
-        stl/marching.h
-        stl/marching.cu
-        stl/runlength_encode.h
-        stl/runlength_encode.cu
-        # cutlass
-        stl/cutlass_gemm.h
-        stl/cutlass_gemm.cu
-)
+#set(MATH_FILES
+#        math/cuda_math_utils.h
+#        math/initializer_array.h
+#        math/vec.h
+#        math/mat.h
+#        math/quat.h
+#        math/array.h
+#        math/rand.h
+#        math/noise.h
+#        math/range.h
+#        math/bounds.h
+#        math/solid_angle.h
+#        math/spatial.h
+#        # method
+#        math/svd.h
+#        math/intersect.h
+#        math/intersect_tri.h
+#        math/matnn.h
+#        math/fabric.h
+#)
+#
+#set(STL_FILES
+#        stl/cuda_util.h
+#        stl/cuda_util.cpp
+#        stl/cuda_context.h
+#        stl/cuda_context.cu
+#        stl/cuda_context.cpp
+#        # cub
+#        stl/sort.h
+#        stl/sort.cu
+#        stl/scan.h
+#        stl/scan.cu
+#        stl/hashgrid.h
+#        stl/hashgrid.cu
+#        stl/hashgrid.cpp
+#        stl/reduce.h
+#        stl/reduce.cu
+#        stl/reduce.cpp
+#        stl/marching.h
+#        stl/marching.cu
+#        stl/runlength_encode.h
+#        stl/runlength_encode.cu
+#        # cutlass
+#        stl/cutlass_gemm.h
+#        stl/cutlass_gemm.cu
+#)
 
 if (VULKAN_FOUND)
     set(VULKAN_CUDA_FILES
@@ -123,8 +123,6 @@ set(PROJECT_FILES
         ${VULKAN_CUDA_FILES}
         ${CUB_FILES}
         ${CUSTOM_COMMANDS}
-        ${MATH_FILES}
-        ${STL_FILES}
         ${BUILTIN_FILES}
 )
 
@@ -138,7 +136,10 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     target_compile_options(${PROJECT_NAME} PRIVATE /W3 /WX)
 endif ()
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ../)
+target_include_directories(${PROJECT_NAME} PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR} .
+        ${CMAKE_CURRENT_SOURCE_DIR}/cuda_builtin
+        ./)
 
 # Link third party libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC

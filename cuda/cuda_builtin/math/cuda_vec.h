@@ -6,7 +6,8 @@
 
 #pragma once
 
-#include "initializer_array.h"
+#include "math/cuda_initializer_array.h"
+#include "math/cuda_math_utils.h"
 
 namespace wp {
 

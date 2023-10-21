@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "quat.h"
+#include "math/cuda_quat.h"
 
 namespace wp {
 

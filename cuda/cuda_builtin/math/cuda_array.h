@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "math_utils.h"
+#include "math/cuda_math_utils.h"
 
 namespace wp {
 
@@ -608,5 +608,3 @@ template<typename T>
 CUDA_CALLABLE inline void atomic_add(array_t<T> *, array_t<T>) {}
 
 }// namespace wp
-
-#include "fabric.h"

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "mat.h"
+#include "math/cuda_mat.h"
 
 namespace wp {
 
