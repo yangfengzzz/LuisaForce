@@ -1,3 +1,11 @@
+//  Copyright (c) 2023 Feng Yang
+//
+//  I am making my contributions/submissions to this project solely in my
+//  personal capacity and am not conveying any rights to any intellectual
+//  property of any third parties.
+
+#include <cuda.h>
+
 // built-in update kernel for BindlessArray
 struct alignas(16u) BindlessSlot {
     unsigned long long buffer;
@@ -27,9 +35,9 @@ struct alignas(16) SlotModification {
 
 static_assert(sizeof(SlotModification) == 64u, "");
 
-extern "C" __global__ void update_bindless_array(BindlessSlot *__restrict__ array,
-                                                 const SlotModification *__restrict__ mods,
-                                                 unsigned int n) {
+__global__ void update_bindless_array(BindlessSlot *__restrict__ array,
+                                      const SlotModification *__restrict__ mods,
+                                      unsigned int n) {
     constexpr auto op_update = 1u;
     constexpr auto op_remove = 2u;
     auto tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -56,4 +64,11 @@ extern "C" __global__ void update_bindless_array(BindlessSlot *__restrict__ arra
         }
         array[slot_id] = slot;
     }
+}
+
+void update_bindless_array(CUstream cuda_stream, CUdeviceptr array, CUdeviceptr mods, uint32_t n) {
+    update_bindless_array<<<dim3((n + 255u) / 256u, 1u, 1u),
+                            dim3(256u, 1u, 1u), 0, cuda_stream>>>(
+        reinterpret_cast<BindlessSlot *>(array),
+        reinterpret_cast<SlotModification *>(mods), n);
 }

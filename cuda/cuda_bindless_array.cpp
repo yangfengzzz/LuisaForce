@@ -13,6 +13,7 @@
 #include "cuda_device.h"
 #include "cuda_command_encoder.h"
 #include "cuda_bindless_array.h"
+#include "cuda_builtin/cuda_builtin_kernels.h"
 
 namespace luisa::compute::cuda {
 
@@ -159,13 +160,9 @@ void CUDABindlessArray::update(CUDACommandEncoder &encoder,
             update_buffer, host_update_buffer->address(),
             size_bytes, cuda_stream));
     });
-    auto update_kernel = encoder.stream()->device()->bindless_array_update_function();
+
     auto n = static_cast<uint32_t>(mods.size());
-    std::array<void *, 3u> args{&_handle, &update_buffer, &n};
-    LUISA_CHECK_CUDA(cuLaunchKernel(
-        update_kernel,
-        (n + 255u) / 256u, 1u, 1u, 256u, 1u, 1u,
-        0u, cuda_stream, args.data(), nullptr));
+    update_bindless_array(cuda_stream, _handle, update_buffer, n);
     LUISA_CHECK_CUDA(cuMemFreeAsync(update_buffer, cuda_stream));
 
     if (!_name.empty()) { nvtxRangePop(); }

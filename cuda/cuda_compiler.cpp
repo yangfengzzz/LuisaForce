@@ -10,7 +10,6 @@
 #include "core/binary_io.h"
 #include "cuda_error.h"
 #include "cuda_device.h"
-#include "cuda_builtin_embedded.h"
 #include "cuda_compiler.h"
 
 namespace luisa::compute::cuda {
@@ -75,25 +74,8 @@ CUDACompiler::CUDACompiler(const CUDADevice *device) noexcept
           LUISA_CHECK_NVRTC(nvrtcVersion(&ver_major, &ver_minor));
           return static_cast<uint>(ver_major * 10000 + ver_minor * 100);
       }()},
-      _device_library{[] {
-          luisa::string device_library;
-          auto device_math = luisa::string_view{
-              luisa_cuda_builtin_cuda_device_math,
-              sizeof(luisa_cuda_builtin_cuda_device_math)};
-          auto device_resource = luisa::string_view{
-              luisa_cuda_builtin_cuda_device_resource,
-              sizeof(luisa_cuda_builtin_cuda_device_resource)};
-
-          device_library.resize(device_math.size() + device_resource.size());
-          std::memcpy(device_library.data(),
-                      device_math.data(), device_math.size());
-          std::memcpy(device_library.data() + device_math.size(),
-                      device_resource.data(), device_resource.size());
-          return device_library;
-      }()},
       _cache{Cache::create(max_cache_item_count)} {
     LUISA_VERBOSE("CUDA NVRTC version: {}.", _nvrtc_version);
-    LUISA_VERBOSE("CUDA device library size = {} bytes.", _device_library.size());
 }
 
 uint64_t CUDACompiler::compute_hash(const string &src, luisa::span<const char *const> options) const noexcept {

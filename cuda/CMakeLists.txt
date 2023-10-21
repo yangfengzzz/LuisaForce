@@ -12,7 +12,6 @@ set(COMMON_FILES
         cuda_builtin/cuda_builtin_kernels.cu
         cuda_bindless_array.cpp
         cuda_buffer.cpp
-        cuda_builtin_embedded.cpp
         cuda_codegen_ast.cpp
         cuda_command_encoder.cpp
         cuda_compiler.cpp

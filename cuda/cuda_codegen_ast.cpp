@@ -588,14 +588,14 @@ void CUDACodegenAST::visit(const AssignStmt *stmt) {
 }
 
 void CUDACodegenAST::emit(Function f,
-                          luisa::string_view device_lib,
                           luisa::string_view native_include) {
     _scratch << "#define LC_BLOCK_SIZE lc_make_uint3("
              << f.block_size().x << ", "
              << f.block_size().y << ", "
              << f.block_size().z << ")\n"
              << "\n/* built-in device library begin */\n"
-             << device_lib
+             << "#include \"cuda_device_math.h\" \n"
+             << "#include \"cuda_device_resource.h\" \n"
              << "\n/* built-in device library end */\n\n";
 
     _emit_type_decl(f);

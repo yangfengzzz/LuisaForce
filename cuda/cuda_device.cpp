@@ -27,7 +27,6 @@
 #include "cuda_shader_native.h"
 #include "cuda_shader_metadata.h"
 #include "cuda_swapchain.h"
-#include "cuda_builtin_embedded.h"
 
 #define LUISA_CUDA_KERNEL_DEBUG 1
 
@@ -96,41 +95,6 @@ CUDADevice::CUDADevice(Context &&ctx,
         _io = _default_io.get();
     }
     _compiler = luisa::make_unique<CUDACompiler>(this);
-    auto sm_option = fmt::format("-arch=compute_{}", handle().compute_capability());
-    std::array options{sm_option.c_str(),
-                       "--std=c++17",
-                       "--use_fast_math",
-                       "-default-device",
-                       "-restrict",
-                       "-extra-device-vectorization",
-                       "-dw",
-                       "-w",
-                       "-ewp"};
-    luisa::string builtin_kernel_src{
-        luisa_cuda_builtin_cuda_builtin_kernels,
-        sizeof(luisa_cuda_builtin_cuda_builtin_kernels)};
-    auto builtin_kernel_ptx = _compiler->compile(builtin_kernel_src, "luisa_builtin.cu", options);
-
-    // prepare default shaders
-    with_handle([&] {
-        auto error = cuModuleLoadData(&_builtin_kernel_module, builtin_kernel_ptx.data());
-        if (error != CUDA_SUCCESS) {
-            const char *error_string = nullptr;
-            cuGetErrorString(error, &error_string);
-            LUISA_WARNING_WITH_LOCATION(
-                "Failed to load built-in kernels: {}. "
-                "Re-trying with lower compute capability...",
-                error_string ? error_string : "Unknown error");
-            _handle.force_compute_capability(60u);
-            options.front() = "-arch=compute_60";
-            builtin_kernel_ptx = _compiler->compile(builtin_kernel_src, "luisa_builtin.cu", options);
-            error = cuModuleLoadData(&_builtin_kernel_module, builtin_kernel_ptx.data());
-        }
-        LUISA_CHECK_CUDA(error);
-        LUISA_CHECK_CUDA(cuModuleGetFunction(
-            &_bindless_array_update_function, _builtin_kernel_module,
-            "update_bindless_array"));
-    });
 
     // load cudadevrt
 #ifdef LUISA_PLATFORM_WINDOWS
@@ -156,7 +120,6 @@ CUDADevice::CUDADevice(Context &&ctx,
 CUDADevice::~CUDADevice() noexcept {
     with_handle([this] {
         LUISA_CHECK_CUDA(cuCtxSynchronize());
-        LUISA_CHECK_CUDA(cuModuleUnload(_builtin_kernel_module));
     });
 }
 
@@ -515,7 +478,7 @@ ShaderCreationInfo CUDADevice::create_shader(const ShaderOption &option, Functio
     Clock clk;
     StringScratch scratch;
     CUDACodegenAST codegen{scratch, !_cudadevrt_library.empty()};
-    codegen.emit(kernel, _compiler->device_library(), option.native_include);
+    codegen.emit(kernel, option.native_include);
     LUISA_VERBOSE("Generated CUDA source in {} ms.", clk.toc());
 
     // process bound arguments
@@ -571,6 +534,20 @@ ShaderCreationInfo CUDADevice::create_shader(const ShaderOption &option, Functio
     }
     if (option.enable_fast_math) {
         nvrtc_options.emplace_back("-use_fast_math");
+    }
+
+    // include path
+    {
+        auto include_dir = std::filesystem::current_path().string() + "/../../../../cuda/cuda_builtin";
+        const int max_path = 4096 + 16;
+        if (strlen(include_dir.c_str()) > max_path) {
+            fprintf(stderr, "Warp error: Include path too long\n");
+        }
+
+        char include_opt[max_path];
+        strcpy(include_opt, "--include-path=");
+        strcat(include_opt, include_dir.c_str());
+        nvrtc_options.push_back(include_opt);
     }
 
     // compute hash

@@ -76,8 +76,6 @@ public:
 
 private:
     Handle _handle;
-    CUmodule _builtin_kernel_module{nullptr};
-    CUfunction _bindless_array_update_function{nullptr};
     luisa::unique_ptr<CUDACompiler> _compiler;
     luisa::unique_ptr<DefaultBinaryIO> _default_io;
     luisa::unique_ptr<CUDASemaphoreManager> _semaphore_manager;
@@ -104,7 +102,6 @@ public:
     [[nodiscard]] uint compute_warp_size() const noexcept override { return 32u; }
 
 public:
-    [[nodiscard]] auto bindless_array_update_function() const noexcept { return _bindless_array_update_function; }
     [[nodiscard]] auto cudadevrt_library() const noexcept { return luisa::string_view{_cudadevrt_library}; }
     [[nodiscard]] auto compiler() const noexcept { return _compiler.get(); }
     [[nodiscard]] auto io() const noexcept { return _io; }
