@@ -115,6 +115,9 @@ public:
 
     // hash_grid
     [[nodiscard]] virtual ResourceCreationInfo create_hash_grid(int dim_x, int dim_y, int dim_z) noexcept = 0;
+    virtual void destroy_hash_grid(uint64_t handle) noexcept = 0;
+    virtual void reserve_hash_grid(uint64_t handle, int num_points) noexcept = 0;
+    virtual void build_hash_grid(uint64_t handle, float radius) noexcept = 0;
 };
 
 }// namespace luisa::compute

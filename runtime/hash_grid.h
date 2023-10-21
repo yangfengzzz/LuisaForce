@@ -16,8 +16,25 @@ namespace luisa::compute {
 class Device;
 
 class LC_RUNTIME_API HashGrid final : public Resource {
-public:
+private:
+    friend class Device;
     HashGrid(DeviceInterface *device, int dim_x, int dim_y, int dim_z) noexcept;
+
+public:
+    HashGrid() noexcept = default;
+    ~HashGrid() noexcept override;
+    using Resource::operator bool;
+    HashGrid(HashGrid &&) noexcept;
+    HashGrid(HashGrid const &) noexcept = delete;
+    HashGrid &operator=(HashGrid &&rhs) noexcept {
+        _move_from(std::move(rhs));
+        return *this;
+    }
+    HashGrid &operator=(HashGrid const &) noexcept = delete;
+
+    void build(float radius);
+
+    void reserve(int num_points);
 };
 
 }// namespace luisa::compute

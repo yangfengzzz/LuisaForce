@@ -17,4 +17,19 @@ HashGrid::HashGrid(DeviceInterface *device, int dim_x, int dim_y, int dim_z) noe
     : Resource{device, Tag::HASH_GRID, device->create_hash_grid(dim_x, dim_y, dim_z)} {
 }
 
+HashGrid::HashGrid(HashGrid &&rhs) noexcept
+    : Resource{std::move(rhs)} {}
+
+HashGrid::~HashGrid() noexcept {
+    if (*this) { device()->destroy_hash_grid(handle()); }
+}
+
+void HashGrid::build(float radius) {
+    device()->build_hash_grid(handle(), radius);
+}
+
+void HashGrid::reserve(int num_points) {
+    device()->reserve_hash_grid(handle(), num_points);
+}
+
 }// namespace luisa::compute
