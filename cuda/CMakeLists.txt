@@ -27,6 +27,19 @@ set(COMMON_FILES
         cuda_builtin/cuda_device_math.h
 )
 
+set(BUILTIN_FILES
+        cuda_builtin/math/crt.h
+        cuda_builtin/math/crt.cpp
+        cuda_builtin/math/math_utils.h
+        cuda_builtin/math/initializer_array.h
+        cuda_builtin/math/vec.h
+        cuda_builtin/math/mat.h
+        cuda_builtin/math/quat.h
+        cuda_builtin/math/array.h
+        cuda_builtin/math/fabric.h
+        cuda_builtin/math/spatial.h
+)
+
 set(CUB_FILES
         lcub/device_merge_sort.cpp
         lcub/device_partition.cpp
@@ -112,6 +125,7 @@ set(PROJECT_FILES
         ${CUSTOM_COMMANDS}
         ${MATH_FILES}
         ${STL_FILES}
+        ${BUILTIN_FILES}
 )
 
 #NB: switch this to shared library and things stop working. (there is likely two copies of volk somewhere.
