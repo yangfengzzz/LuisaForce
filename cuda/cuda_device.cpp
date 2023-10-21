@@ -537,18 +537,9 @@ ShaderCreationInfo CUDADevice::create_shader(const ShaderOption &option, Functio
     }
 
     // include path
-    {
-        auto include_dir = std::filesystem::current_path().string() + "/../../../../cuda/cuda_builtin";
-        const int max_path = 4096 + 16;
-        if (strlen(include_dir.c_str()) > max_path) {
-            fprintf(stderr, "Warp error: Include path too long\n");
-        }
-
-        char include_opt[max_path];
-        strcpy(include_opt, "--include-path=");
-        strcat(include_opt, include_dir.c_str());
-        nvrtc_options.push_back(include_opt);
-    }
+    auto include_dir = std::filesystem::current_path().string() + "/../../../../cuda/cuda_builtin";
+    auto include_opt = fmt::format("--include-path={}", include_dir);
+    nvrtc_options.push_back(include_opt.c_str());
 
     // compute hash
     auto src_hash = _compiler->compute_hash(scratch.string(), nvrtc_options);
