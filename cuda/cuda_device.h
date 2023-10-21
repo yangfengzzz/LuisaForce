@@ -77,8 +77,6 @@ public:
 private:
     Handle _handle;
     CUmodule _builtin_kernel_module{nullptr};
-    CUfunction _accel_update_function{nullptr};
-    CUfunction _instance_handle_update_function{nullptr};
     CUfunction _bindless_array_update_function{nullptr};
     luisa::unique_ptr<CUDACompiler> _compiler;
     luisa::unique_ptr<DefaultBinaryIO> _default_io;
@@ -106,8 +104,6 @@ public:
     [[nodiscard]] uint compute_warp_size() const noexcept override { return 32u; }
 
 public:
-    [[nodiscard]] auto accel_update_function() const noexcept { return _accel_update_function; }
-    [[nodiscard]] auto instance_handle_update_function() const noexcept { return _instance_handle_update_function; }
     [[nodiscard]] auto bindless_array_update_function() const noexcept { return _bindless_array_update_function; }
     [[nodiscard]] auto cudadevrt_library() const noexcept { return luisa::string_view{_cudadevrt_library}; }
     [[nodiscard]] auto compiler() const noexcept { return _compiler.get(); }
@@ -117,29 +113,40 @@ public:
 public:
     BufferCreationInfo create_buffer(const Type *element, size_t elem_count) noexcept override;
     void destroy_buffer(uint64_t handle) noexcept override;
-    ResourceCreationInfo create_texture(PixelFormat format, uint dimension, uint width, uint height, uint depth, uint mipmap_levels, bool simultaneous_access) noexcept override;
+
+    ResourceCreationInfo create_texture(PixelFormat format, uint dimension, uint width, uint height, uint depth,
+                                        uint mipmap_levels, bool simultaneous_access) noexcept override;
     void destroy_texture(uint64_t handle) noexcept override;
+
     ResourceCreationInfo create_bindless_array(size_t size) noexcept override;
     void destroy_bindless_array(uint64_t handle) noexcept override;
+
     ResourceCreationInfo create_stream(StreamTag stream_tag) noexcept override;
     void destroy_stream(uint64_t handle) noexcept override;
     void synchronize_stream(uint64_t stream_handle) noexcept override;
     void dispatch(uint64_t stream_handle, CommandList &&list) noexcept override;
-    SwapchainCreationInfo create_swapchain(uint64_t window_handle, uint64_t stream_handle, uint width, uint height, bool allow_hdr, bool vsync, uint back_buffer_size) noexcept override;
+
+    SwapchainCreationInfo create_swapchain(uint64_t window_handle, uint64_t stream_handle, uint width, uint height,
+                                           bool allow_hdr, bool vsync, uint back_buffer_size) noexcept override;
     void destroy_swap_chain(uint64_t handle) noexcept override;
     void present_display_in_stream(uint64_t stream_handle, uint64_t swapchain_handle, uint64_t image_handle) noexcept override;
+
     ShaderCreationInfo create_shader(const ShaderOption &option, Function kernel) noexcept override;
     ShaderCreationInfo load_shader(luisa::string_view name, luisa::span<const Type *const> arg_types) noexcept override;
     Usage shader_argument_usage(uint64_t handle, size_t index) noexcept override;
     void destroy_shader(uint64_t handle) noexcept override;
+
     ResourceCreationInfo create_event() noexcept override;
     void destroy_event(uint64_t handle) noexcept override;
     void signal_event(uint64_t handle, uint64_t stream_handle, uint64_t value) noexcept override;
     void wait_event(uint64_t handle, uint64_t stream_handle, uint64_t value) noexcept override;
     bool is_event_completed(uint64_t handle, uint64_t value) const noexcept override;
     void synchronize_event(uint64_t handle, uint64_t value) noexcept override;
+
     string query(luisa::string_view property) noexcept override;
+
     void set_name(luisa::compute::Resource::Tag resource_tag, uint64_t resource_handle, luisa::string_view name) noexcept override;
+
     DeviceExtension *extension(luisa::string_view name) noexcept override;
 };
 
