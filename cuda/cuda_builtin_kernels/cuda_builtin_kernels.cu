@@ -4,6 +4,8 @@
 //  personal capacity and am not conveying any rights to any intellectual
 //  property of any third parties.
 
+#include "cuda_builtin_kernels.h"
+
 // built-in update kernel for BindlessArray
 struct alignas(16u) BindlessSlot {
     unsigned long long buffer;

@@ -8,8 +8,6 @@
 #include "cuda_util.h"
 #include "scan.h"
 
-using namespace wp;
-
 namespace luisa::compute::cuda {
 
 //  point numbering
@@ -229,7 +227,7 @@ __global__ void count_cell_verts(MarchingCubes mc, const float *density, float t
 }
 
 // -----------------------------------------------------------------------------------
-__global__ void create_cell_verts(MarchingCubes mc, vec3 *__restrict__ vertices, vec3 *normals, const float *__restrict__ density, float threshold) {
+__global__ void create_cell_verts(MarchingCubes mc, wp::vec3 *__restrict__ vertices, wp::vec3 *normals, const float *__restrict__ density, float threshold) {
     int cell_index = blockIdx.x * blockDim.x + threadIdx.x;
     if (cell_index >= mc.num_cells)
         return;
@@ -239,7 +237,7 @@ __global__ void create_cell_verts(MarchingCubes mc, vec3 *__restrict__ vertices,
     if (xi >= mc.nx - 1 || yi >= mc.ny - 1 || zi >= mc.nz - 1)
         return;
 
-    vec3 p = vec3(xi + 0.5f, yi + 0.5f, zi + 0.5f);
+    wp::vec3 p = wp::vec3(xi + 0.5f, yi + 0.5f, zi + 0.5f);
 
     float d0 = density[cell_index];
     float ds[3];
@@ -260,10 +258,10 @@ __global__ void create_cell_verts(MarchingCubes mc, vec3 *__restrict__ vertices,
         mc.cell_verts[3 * cell_index + dim] = 0;
 
         if ((d0 <= threshold && d >= threshold) || (d <= threshold && d0 >= threshold)) {
-            float t = (d != d0) ? clamp((threshold - d0) / (d - d0), 0.0f, 1.0f) : 0.5f;
+            float t = (d != d0) ? wp::clamp((threshold - d0) / (d - d0), 0.0f, 1.0f) : 0.5f;
             int id = first++;
 
-            vec3 off;
+            wp::vec3 off;
             off[dim] = t;
             vertices[id] = p + off;
 
@@ -399,7 +397,7 @@ int marching_cubes_surface_device(
     int ny,
     int nz,
     float threshold,
-    vec3 *verts,
+    wp::vec3 *verts,
     int *triangles,
     int max_verts,
     int max_tris,

@@ -13,16 +13,14 @@
 #include <cstring>
 #include <map>
 
-using namespace wp;
-
 namespace luisa::compute::cuda {
 namespace {
 // host-side copy of mesh descriptors, maps GPU mesh address (id) to a CPU desc
-std::map<uint64_t, HashGrid> g_hash_grid_descriptors;
+std::map<uint64_t, wp::HashGrid> g_hash_grid_descriptors;
 
 }// anonymous namespace
 
-bool hash_grid_get_descriptor(uint64_t id, HashGrid &grid) {
+bool hash_grid_get_descriptor(uint64_t id, wp::HashGrid &grid) {
     const auto &iter = g_hash_grid_descriptors.find(id);
     if (iter == g_hash_grid_descriptors.end())
         return false;
@@ -31,7 +29,7 @@ bool hash_grid_get_descriptor(uint64_t id, HashGrid &grid) {
     return true;
 }
 
-void hash_grid_add_descriptor(uint64_t id, const HashGrid &grid) {
+void hash_grid_add_descriptor(uint64_t id, const wp::HashGrid &grid) {
     g_hash_grid_descriptors[id] = grid;
 }
 
@@ -40,14 +38,14 @@ void hash_grid_rem_descriptor(uint64_t id) {
 }
 
 // implemented in hashgrid.cu
-void hash_grid_rebuild_device(const HashGrid &grid, const vec3 *points, int num_points);
+void hash_grid_rebuild_device(const wp::HashGrid &grid, const wp::vec3 *points, int num_points);
 
 // device methods
 uint64_t hash_grid_create_device(void *context, int dim_x, int dim_y, int dim_z) {
     ContextGuard guard(context);
 
-    HashGrid grid;
-    memset(&grid, 0, sizeof(HashGrid));
+    wp::HashGrid grid;
+    memset(&grid, 0, sizeof(wp::HashGrid));
 
     grid.context = context ? context : cuda_context_get_current();
 
@@ -60,8 +58,8 @@ uint64_t hash_grid_create_device(void *context, int dim_x, int dim_y, int dim_z)
     grid.cell_ends = (int *)alloc_device(WP_CURRENT_CONTEXT, num_cells * sizeof(int));
 
     // upload to device
-    auto *grid_device = (HashGrid *)(alloc_device(WP_CURRENT_CONTEXT, sizeof(HashGrid)));
-    memcpy_h2d(WP_CURRENT_CONTEXT, grid_device, &grid, sizeof(HashGrid));
+    auto *grid_device = (wp::HashGrid *)(alloc_device(WP_CURRENT_CONTEXT, sizeof(wp::HashGrid)));
+    memcpy_h2d(WP_CURRENT_CONTEXT, grid_device, &grid, sizeof(wp::HashGrid));
 
     auto grid_id = (uint64_t)(grid_device);
     hash_grid_add_descriptor(grid_id, grid);
@@ -70,7 +68,7 @@ uint64_t hash_grid_create_device(void *context, int dim_x, int dim_y, int dim_z)
 }
 
 void hash_grid_destroy_device(uint64_t id) {
-    HashGrid grid;
+    wp::HashGrid grid;
     if (hash_grid_get_descriptor(id, grid)) {
         ContextGuard guard(grid.context);
 
@@ -79,14 +77,14 @@ void hash_grid_destroy_device(uint64_t id) {
         free_device(WP_CURRENT_CONTEXT, grid.cell_starts);
         free_device(WP_CURRENT_CONTEXT, grid.cell_ends);
 
-        free_device(WP_CURRENT_CONTEXT, (HashGrid *)id);
+        free_device(WP_CURRENT_CONTEXT, (wp::HashGrid *)id);
 
         hash_grid_rem_descriptor(id);
     }
 }
 
 void hash_grid_reserve_device(uint64_t id, int num_points) {
-    HashGrid grid;
+    wp::HashGrid grid;
 
     if (hash_grid_get_descriptor(id, grid)) {
         if (num_points > grid.max_points) {
@@ -109,7 +107,7 @@ void hash_grid_reserve_device(uint64_t id, int num_points) {
             // inside hash_grid_update_device(), but since
             // reserve can be called from Python we need to make
             // sure it is consistent
-            memcpy_h2d(WP_CURRENT_CONTEXT, (HashGrid *)id, &grid, sizeof(HashGrid));
+            memcpy_h2d(WP_CURRENT_CONTEXT, (wp::HashGrid *)id, &grid, sizeof(wp::HashGrid));
 
             // update host side grid descriptor
             hash_grid_add_descriptor(id, grid);
@@ -117,7 +115,7 @@ void hash_grid_reserve_device(uint64_t id, int num_points) {
     }
 }
 
-void hash_grid_update_device(uint64_t id, float cell_width, const vec3 *points, int num_points) {
+void hash_grid_update_device(uint64_t id, float cell_width, const wp::vec3 *points, int num_points) {
 
     // ensure we have enough memory reserved for update
     // this must be done before retrieving the descriptor
@@ -127,7 +125,7 @@ void hash_grid_update_device(uint64_t id, float cell_width, const vec3 *points, 
     // host grid must be static so that we can
     // perform host->device memcpy from this variable
     // and have it safely recorded inside CUDA graphs
-    static HashGrid grid;
+    static wp::HashGrid grid;
 
     if (hash_grid_get_descriptor(id, grid)) {
         ContextGuard guard(grid.context);
@@ -139,7 +137,7 @@ void hash_grid_update_device(uint64_t id, float cell_width, const vec3 *points, 
         hash_grid_rebuild_device(grid, points, num_points);
 
         // update device side grid descriptor
-        memcpy_h2d(WP_CURRENT_CONTEXT, (HashGrid *)id, &grid, sizeof(HashGrid));
+        memcpy_h2d(WP_CURRENT_CONTEXT, (wp::HashGrid *)id, &grid, sizeof(wp::HashGrid));
 
         // update host side grid descriptor
         hash_grid_add_descriptor(id, grid);

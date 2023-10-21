@@ -10,8 +10,6 @@
 #include <cstdlib>
 #include "cuda_builtin/math/cuda_fabric.h"
 
-using namespace wp;
-
 namespace luisa::compute::cuda {
 void *alloc_host(size_t s) {
     return malloc(s);
@@ -90,14 +88,14 @@ static void array_copy_nd(void *dst, const void *src,
     }
 }
 
-static void array_copy_to_fabric(fabricarray_t<void> &dst, const void *src_data,
+static void array_copy_to_fabric(wp::fabricarray_t<void> &dst, const void *src_data,
                                  int src_stride, const int *src_indices, int elem_size) {
     const auto *src_ptr = static_cast<const int8_t *>(src_data);
 
     if (src_indices) {
         // copy from indexed array
         for (size_t i = 0; i < dst.nbuckets; i++) {
-            const fabricbucket_t &bucket = dst.buckets[i];
+            const wp::fabricbucket_t &bucket = dst.buckets[i];
             auto *dst_ptr = static_cast<int8_t *>(bucket.ptr);
             size_t bucket_size = bucket.index_end - bucket.index_start;
             for (size_t j = 0; j < bucket_size; j++) {
@@ -111,7 +109,7 @@ static void array_copy_to_fabric(fabricarray_t<void> &dst, const void *src_data,
         if (src_stride == elem_size) {
             // copy from contiguous array
             for (size_t i = 0; i < dst.nbuckets; i++) {
-                const fabricbucket_t &bucket = dst.buckets[i];
+                const wp::fabricbucket_t &bucket = dst.buckets[i];
                 size_t num_bytes = (bucket.index_end - bucket.index_start) * elem_size;
                 memcpy(bucket.ptr, src_ptr, num_bytes);
                 src_ptr += num_bytes;
@@ -119,7 +117,7 @@ static void array_copy_to_fabric(fabricarray_t<void> &dst, const void *src_data,
         } else {
             // copy from strided array
             for (size_t i = 0; i < dst.nbuckets; i++) {
-                const fabricbucket_t &bucket = dst.buckets[i];
+                const wp::fabricbucket_t &bucket = dst.buckets[i];
                 auto *dst_ptr = static_cast<int8_t *>(bucket.ptr);
                 size_t bucket_size = bucket.index_end - bucket.index_start;
                 for (size_t j = 0; j < bucket_size; j++) {
@@ -132,14 +130,14 @@ static void array_copy_to_fabric(fabricarray_t<void> &dst, const void *src_data,
     }
 }
 
-static void array_copy_from_fabric(const fabricarray_t<void> &src, void *dst_data,
+static void array_copy_from_fabric(const wp::fabricarray_t<void> &src, void *dst_data,
                                    int dst_stride, const int *dst_indices, int elem_size) {
     auto *dst_ptr = static_cast<int8_t *>(dst_data);
 
     if (dst_indices) {
         // copy to indexed array
         for (size_t i = 0; i < src.nbuckets; i++) {
-            const fabricbucket_t &bucket = src.buckets[i];
+            const wp::fabricbucket_t &bucket = src.buckets[i];
             const auto *src_ptr = static_cast<const int8_t *>(bucket.ptr);
             size_t bucket_size = bucket.index_end - bucket.index_start;
             for (size_t j = 0; j < bucket_size; j++) {
@@ -153,7 +151,7 @@ static void array_copy_from_fabric(const fabricarray_t<void> &src, void *dst_dat
         if (dst_stride == elem_size) {
             // copy to contiguous array
             for (size_t i = 0; i < src.nbuckets; i++) {
-                const fabricbucket_t &bucket = src.buckets[i];
+                const wp::fabricbucket_t &bucket = src.buckets[i];
                 size_t num_bytes = (bucket.index_end - bucket.index_start) * elem_size;
                 memcpy(dst_ptr, bucket.ptr, num_bytes);
                 dst_ptr += num_bytes;
@@ -161,7 +159,7 @@ static void array_copy_from_fabric(const fabricarray_t<void> &src, void *dst_dat
         } else {
             // copy to strided array
             for (size_t i = 0; i < src.nbuckets; i++) {
-                const fabricbucket_t &bucket = src.buckets[i];
+                const wp::fabricbucket_t &bucket = src.buckets[i];
                 const auto *src_ptr = static_cast<const int8_t *>(bucket.ptr);
                 size_t bucket_size = bucket.index_end - bucket.index_start;
                 for (size_t j = 0; j < bucket_size; j++) {
@@ -174,9 +172,9 @@ static void array_copy_from_fabric(const fabricarray_t<void> &src, void *dst_dat
     }
 }
 
-static void array_copy_fabric_to_fabric(fabricarray_t<void> &dst, const fabricarray_t<void> &src, int elem_size) {
-    fabricbucket_t *dst_bucket = dst.buckets;
-    const fabricbucket_t *src_bucket = src.buckets;
+static void array_copy_fabric_to_fabric(wp::fabricarray_t<void> &dst, const wp::fabricarray_t<void> &src, int elem_size) {
+    wp::fabricbucket_t *dst_bucket = dst.buckets;
+    const wp::fabricbucket_t *src_bucket = src.buckets;
     auto *dst_ptr = static_cast<int8_t *>(dst_bucket->ptr);
     const auto *src_ptr = static_cast<const int8_t *>(src_bucket->ptr);
     size_t dst_remaining = dst_bucket->index_end - dst_bucket->index_start;
@@ -220,7 +218,7 @@ static void array_copy_fabric_to_fabric(fabricarray_t<void> &dst, const fabricar
     }
 }
 
-static void array_copy_to_fabric_indexed(indexedfabricarray_t<void> &dst, const void *src_data,
+static void array_copy_to_fabric_indexed(wp::indexedfabricarray_t<void> &dst, const void *src_data,
                                          int src_stride, const int *src_indices, int elem_size) {
     const auto *src_ptr = static_cast<const int8_t *>(src_data);
 
@@ -245,8 +243,8 @@ static void array_copy_to_fabric_indexed(indexedfabricarray_t<void> &dst, const 
     }
 }
 
-static void array_copy_fabric_indexed_to_fabric(fabricarray_t<void> &dst, const indexedfabricarray_t<void> &src, int elem_size) {
-    fabricbucket_t *dst_bucket = dst.buckets;
+static void array_copy_fabric_indexed_to_fabric(wp::fabricarray_t<void> &dst, const wp::indexedfabricarray_t<void> &src, int elem_size) {
+    wp::fabricbucket_t *dst_bucket = dst.buckets;
     auto *dst_ptr = static_cast<int8_t *>(dst_bucket->ptr);
     int8_t *dst_end = dst_ptr + elem_size * (dst_bucket->index_end - dst_bucket->index_start);
 
@@ -267,7 +265,7 @@ static void array_copy_fabric_indexed_to_fabric(fabricarray_t<void> &dst, const 
     }
 }
 
-static void array_copy_fabric_indexed_to_fabric_indexed(indexedfabricarray_t<void> &dst, const indexedfabricarray_t<void> &src, int elem_size) {
+static void array_copy_fabric_indexed_to_fabric_indexed(wp::indexedfabricarray_t<void> &dst, const wp::indexedfabricarray_t<void> &src, int elem_size) {
     for (size_t i = 0; i < src.size; i++) {
         size_t src_idx = src.indices[i];
         size_t dst_idx = dst.indices[i];
@@ -279,8 +277,8 @@ static void array_copy_fabric_indexed_to_fabric_indexed(indexedfabricarray_t<voi
     }
 }
 
-static void array_copy_fabric_to_fabric_indexed(indexedfabricarray_t<void> &dst, const fabricarray_t<void> &src, int elem_size) {
-    fabricbucket_t *src_bucket = src.buckets;
+static void array_copy_fabric_to_fabric_indexed(wp::indexedfabricarray_t<void> &dst, const wp::fabricarray_t<void> &src, int elem_size) {
+    wp::fabricbucket_t *src_bucket = src.buckets;
     const auto *src_ptr = static_cast<const int8_t *>(src_bucket->ptr);
     const int8_t *src_end = src_ptr + elem_size * (src_bucket->index_end - src_bucket->index_start);
 
@@ -301,7 +299,7 @@ static void array_copy_fabric_to_fabric_indexed(indexedfabricarray_t<void> &dst,
     }
 }
 
-static void array_copy_from_fabric_indexed(const indexedfabricarray_t<void> &src, void *dst_data,
+static void array_copy_from_fabric_indexed(const wp::indexedfabricarray_t<void> &src, void *dst_data,
                                            int dst_stride, const int *dst_indices, int elem_size) {
     auto *dst_ptr = static_cast<int8_t *>(dst_data);
 
@@ -351,60 +349,60 @@ size_t array_copy_host(void *dst, void *src, int dst_type, int src_type, int ele
     const int *const *src_indices = nullptr;
     const int *const *dst_indices = nullptr;
 
-    const fabricarray_t<void> *src_fabricarray = nullptr;
-    fabricarray_t<void> *dst_fabricarray = nullptr;
+    const wp::fabricarray_t<void> *src_fabricarray = nullptr;
+    wp::fabricarray_t<void> *dst_fabricarray = nullptr;
 
-    const indexedfabricarray_t<void> *src_indexedfabricarray = nullptr;
-    indexedfabricarray_t<void> *dst_indexedfabricarray = nullptr;
+    const wp::indexedfabricarray_t<void> *src_indexedfabricarray = nullptr;
+    wp::indexedfabricarray_t<void> *dst_indexedfabricarray = nullptr;
 
-    const int *null_indices[ARRAY_MAX_DIMS] = {nullptr};
+    const int *null_indices[wp::ARRAY_MAX_DIMS] = {nullptr};
 
-    if (src_type == ARRAY_TYPE_REGULAR) {
-        const array_t<void> &src_arr = *static_cast<const array_t<void> *>(src);
+    if (src_type == wp::ARRAY_TYPE_REGULAR) {
+        const wp::array_t<void> &src_arr = *static_cast<const wp::array_t<void> *>(src);
         src_data = src_arr.data;
         src_grad = src_arr.grad;
         src_ndim = src_arr.ndim;
         src_shape = src_arr.shape.dims;
         src_strides = src_arr.strides;
         src_indices = null_indices;
-    } else if (src_type == ARRAY_TYPE_INDEXED) {
-        const indexedarray_t<void> &src_arr = *static_cast<const indexedarray_t<void> *>(src);
+    } else if (src_type == wp::ARRAY_TYPE_INDEXED) {
+        const wp::indexedarray_t<void> &src_arr = *static_cast<const wp::indexedarray_t<void> *>(src);
         src_data = src_arr.arr.data;
         src_ndim = src_arr.arr.ndim;
         src_shape = src_arr.shape.dims;
         src_strides = src_arr.arr.strides;
         src_indices = src_arr.indices;
-    } else if (src_type == ARRAY_TYPE_FABRIC) {
-        src_fabricarray = static_cast<const fabricarray_t<void> *>(src);
+    } else if (src_type == wp::ARRAY_TYPE_FABRIC) {
+        src_fabricarray = static_cast<const wp::fabricarray_t<void> *>(src);
         src_ndim = 1;
-    } else if (src_type == ARRAY_TYPE_FABRIC_INDEXED) {
-        src_indexedfabricarray = static_cast<const indexedfabricarray_t<void> *>(src);
+    } else if (src_type == wp::ARRAY_TYPE_FABRIC_INDEXED) {
+        src_indexedfabricarray = static_cast<const wp::indexedfabricarray_t<void> *>(src);
         src_ndim = 1;
     } else {
         fprintf(stderr, "Warp copy error: Invalid source array type (%d)\n", src_type);
         return 0;
     }
 
-    if (dst_type == ARRAY_TYPE_REGULAR) {
-        const array_t<void> &dst_arr = *static_cast<const array_t<void> *>(dst);
+    if (dst_type == wp::ARRAY_TYPE_REGULAR) {
+        const wp::array_t<void> &dst_arr = *static_cast<const wp::array_t<void> *>(dst);
         dst_data = dst_arr.data;
         dst_grad = dst_arr.grad;
         dst_ndim = dst_arr.ndim;
         dst_shape = dst_arr.shape.dims;
         dst_strides = dst_arr.strides;
         dst_indices = null_indices;
-    } else if (dst_type == ARRAY_TYPE_INDEXED) {
-        const indexedarray_t<void> &dst_arr = *static_cast<const indexedarray_t<void> *>(dst);
+    } else if (dst_type == wp::ARRAY_TYPE_INDEXED) {
+        const wp::indexedarray_t<void> &dst_arr = *static_cast<const wp::indexedarray_t<void> *>(dst);
         dst_data = dst_arr.arr.data;
         dst_ndim = dst_arr.arr.ndim;
         dst_shape = dst_arr.shape.dims;
         dst_strides = dst_arr.arr.strides;
         dst_indices = dst_arr.indices;
-    } else if (dst_type == ARRAY_TYPE_FABRIC) {
-        dst_fabricarray = static_cast<fabricarray_t<void> *>(dst);
+    } else if (dst_type == wp::ARRAY_TYPE_FABRIC) {
+        dst_fabricarray = static_cast<wp::fabricarray_t<void> *>(dst);
         dst_ndim = 1;
-    } else if (dst_type == ARRAY_TYPE_FABRIC_INDEXED) {
-        dst_indexedfabricarray = static_cast<indexedfabricarray_t<void> *>(dst);
+    } else if (dst_type == wp::ARRAY_TYPE_FABRIC_INDEXED) {
+        dst_indexedfabricarray = static_cast<wp::indexedfabricarray_t<void> *>(dst);
         dst_ndim = 1;
     } else {
         fprintf(stderr, "Warp copy error: Invalid destination array type (%d)\n", dst_type);
@@ -541,15 +539,15 @@ static void array_fill_indexed(void *data, const int *shape, const int *strides,
     }
 }
 
-static void array_fill_fabric(fabricarray_t<void> &fa, const void *value_ptr, int value_size) {
+static void array_fill_fabric(wp::fabricarray_t<void> &fa, const void *value_ptr, int value_size) {
     for (size_t i = 0; i < fa.nbuckets; i++) {
-        const fabricbucket_t &bucket = fa.buckets[i];
+        const wp::fabricbucket_t &bucket = fa.buckets[i];
         size_t bucket_size = bucket.index_end - bucket.index_start;
         memtile_host(bucket.ptr, value_ptr, value_size, bucket_size);
     }
 }
 
-static void array_fill_fabric_indexed(indexedfabricarray_t<void> &ifa, const void *value_ptr, int value_size) {
+static void array_fill_fabric_indexed(wp::indexedfabricarray_t<void> &ifa, const void *value_ptr, int value_size) {
     for (size_t i = 0; i < ifa.size; i++) {
         auto idx = size_t(ifa.indices[i]);
         if (idx < ifa.fa.size) {
@@ -563,17 +561,17 @@ void array_fill_host(void *arr_ptr, int arr_type, const void *value_ptr, int val
     if (!arr_ptr || !value_ptr)
         return;
 
-    if (arr_type == ARRAY_TYPE_REGULAR) {
-        array_t<void> &arr = *static_cast<array_t<void> *>(arr_ptr);
+    if (arr_type == wp::ARRAY_TYPE_REGULAR) {
+        wp::array_t<void> &arr = *static_cast<wp::array_t<void> *>(arr_ptr);
         array_fill_strided(arr.data, arr.shape.dims, arr.strides, arr.ndim, value_ptr, value_size);
-    } else if (arr_type == ARRAY_TYPE_INDEXED) {
-        indexedarray_t<void> &ia = *static_cast<indexedarray_t<void> *>(arr_ptr);
+    } else if (arr_type == wp::ARRAY_TYPE_INDEXED) {
+        wp::indexedarray_t<void> &ia = *static_cast<wp::indexedarray_t<void> *>(arr_ptr);
         array_fill_indexed(ia.arr.data, ia.shape.dims, ia.arr.strides, ia.indices, ia.arr.ndim, value_ptr, value_size);
-    } else if (arr_type == ARRAY_TYPE_FABRIC) {
-        fabricarray_t<void> &fa = *static_cast<fabricarray_t<void> *>(arr_ptr);
+    } else if (arr_type == wp::ARRAY_TYPE_FABRIC) {
+        wp::fabricarray_t<void> &fa = *static_cast<wp::fabricarray_t<void> *>(arr_ptr);
         array_fill_fabric(fa, value_ptr, value_size);
-    } else if (arr_type == ARRAY_TYPE_FABRIC_INDEXED) {
-        indexedfabricarray_t<void> &ifa = *static_cast<indexedfabricarray_t<void> *>(arr_ptr);
+    } else if (arr_type == wp::ARRAY_TYPE_FABRIC_INDEXED) {
+        wp::indexedfabricarray_t<void> &ifa = *static_cast<wp::indexedfabricarray_t<void> *>(arr_ptr);
         array_fill_fabric_indexed(ifa, value_ptr, value_size);
     } else {
         fprintf(stderr, "Warp fill error: Invalid array type id %d\n", arr_type);

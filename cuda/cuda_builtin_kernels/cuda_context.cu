@@ -10,62 +10,12 @@
 #include "cuda_util.h"
 #include "cuda_builtin/math/cuda_fabric.h"
 
-#include <nvrtc.h>
-#include <nvPTXCompiler.h>
-
 #include <map>
 #include <vector>
-
-using namespace wp;
 
 namespace luisa::compute::cuda {
 #define check_nvrtc(code) (check_nvrtc_result(code, __FILE__, __LINE__))
 #define check_nvptx(code) (check_nvptx_result(code, __FILE__, __LINE__))
-
-bool check_nvrtc_result(nvrtcResult result, const char *file, int line) {
-    if (result == NVRTC_SUCCESS)
-        return true;
-
-    const char *error_string = nvrtcGetErrorString(result);
-    fprintf(stderr, "Warp NVRTC compilation error %u: %s (%s:%d)\n", unsigned(result), error_string, file, line);
-    return false;
-}
-
-bool check_nvptx_result(nvPTXCompileResult result, const char *file, int line) {
-    if (result == NVPTXCOMPILE_SUCCESS)
-        return true;
-
-    const char *error_string;
-    switch (result) {
-        case NVPTXCOMPILE_ERROR_INVALID_COMPILER_HANDLE:
-            error_string = "Invalid compiler handle";
-            break;
-        case NVPTXCOMPILE_ERROR_INVALID_INPUT:
-            error_string = "Invalid input";
-            break;
-        case NVPTXCOMPILE_ERROR_COMPILATION_FAILURE:
-            error_string = "Compilation failure";
-            break;
-        case NVPTXCOMPILE_ERROR_INTERNAL:
-            error_string = "Internal error";
-            break;
-        case NVPTXCOMPILE_ERROR_OUT_OF_MEMORY:
-            error_string = "Out of memory";
-            break;
-        case NVPTXCOMPILE_ERROR_COMPILER_INVOCATION_INCOMPLETE:
-            error_string = "Incomplete compiler invocation";
-            break;
-        case NVPTXCOMPILE_ERROR_UNSUPPORTED_PTX_VERSION:
-            error_string = "Unsupported PTX version";
-            break;
-        default:
-            error_string = "Unknown error";
-            break;
-    }
-
-    fprintf(stderr, "Warp PTX compilation error %u: %s (%s:%d)\n", unsigned(result), error_string, file, line);
-    return false;
-}
 
 struct DeviceInfo {
     static constexpr int kNameLen = 128;
@@ -214,7 +164,7 @@ void memcpy_peer(void *context, void *dest, void *src, size_t n) {
 }
 
 __global__ void memset_kernel(int *dest, int value, size_t n) {
-    const size_t tid = grid_index();
+    const size_t tid = wp::grid_index();
 
     if (tid < n) {
         dest[tid] = value;
@@ -236,7 +186,7 @@ void memset_device(void *context, void *dest, int value, size_t n) {
 
 // fill memory buffer with a value: generic memtile kernel using memcpy for each element
 __global__ void memtile_kernel(void *dst, const void *src, size_t srcsize, size_t n) {
-    size_t tid = grid_index();
+    size_t tid = wp::grid_index();
     if (tid < n) {
         memcpy((int8_t *)dst + srcsize * tid, src, srcsize);
     }
@@ -245,7 +195,7 @@ __global__ void memtile_kernel(void *dst, const void *src, size_t srcsize, size_
 // this should be faster than memtile_kernel, but requires proper alignment of dst
 template<typename T>
 __global__ void memtile_value_kernel(T *dst, T value, size_t n) {
-    size_t tid = grid_index();
+    size_t tid = wp::grid_index();
     if (tid < n) {
         dst[tid] = value;
     }
@@ -282,7 +232,7 @@ void memtile_device(void *context, void *dst, const void *src, size_t srcsize, s
 
         wp_launch_device(WP_CURRENT_CONTEXT, memtile_kernel, n, (dst, src_device, srcsize, n))
 
-        check_cuda(cudaFree(src_device));
+            check_cuda(cudaFree(src_device));
     }
 }
 
@@ -301,9 +251,9 @@ static __global__ void array_copy_1d_kernel(void *dst, const void *src,
 }
 
 static __global__ void array_copy_2d_kernel(void *dst, const void *src,
-                                            vec_t<2, int> dst_strides, vec_t<2, int> src_strides,
-                                            vec_t<2, const int *> dst_indices, vec_t<2, const int *> src_indices,
-                                            vec_t<2, int> shape, int elem_size) {
+                                            wp::vec_t<2, int> dst_strides, wp::vec_t<2, int> src_strides,
+                                            wp::vec_t<2, const int *> dst_indices, wp::vec_t<2, const int *> src_indices,
+                                            wp::vec_t<2, int> shape, int elem_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
     int n = shape[1];
     int i = tid / n;
@@ -320,9 +270,9 @@ static __global__ void array_copy_2d_kernel(void *dst, const void *src,
 }
 
 static __global__ void array_copy_3d_kernel(void *dst, const void *src,
-                                            vec_t<3, int> dst_strides, vec_t<3, int> src_strides,
-                                            vec_t<3, const int *> dst_indices, vec_t<3, const int *> src_indices,
-                                            vec_t<3, int> shape, int elem_size) {
+                                            wp::vec_t<3, int> dst_strides, wp::vec_t<3, int> src_strides,
+                                            wp::vec_t<3, const int *> dst_indices, wp::vec_t<3, const int *> src_indices,
+                                            wp::vec_t<3, int> shape, int elem_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
     int n = shape[1];
     int o = shape[2];
@@ -343,9 +293,9 @@ static __global__ void array_copy_3d_kernel(void *dst, const void *src,
 }
 
 static __global__ void array_copy_4d_kernel(void *dst, const void *src,
-                                            vec_t<4, int> dst_strides, vec_t<4, int> src_strides,
-                                            vec_t<4, const int *> dst_indices, vec_t<4, const int *> src_indices,
-                                            vec_t<4, int> shape, int elem_size) {
+                                            wp::vec_t<4, int> dst_strides, wp::vec_t<4, int> src_strides,
+                                            wp::vec_t<4, const int *> dst_indices, wp::vec_t<4, const int *> src_indices,
+                                            wp::vec_t<4, int> shape, int elem_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
     int n = shape[1];
     int o = shape[2];
@@ -369,7 +319,7 @@ static __global__ void array_copy_4d_kernel(void *dst, const void *src,
     }
 }
 
-static __global__ void array_copy_from_fabric_kernel(fabricarray_t<void> src,
+static __global__ void array_copy_from_fabric_kernel(wp::fabricarray_t<void> src,
                                                      void *dst_data, int dst_stride, const int *dst_indices,
                                                      int elem_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -382,7 +332,7 @@ static __global__ void array_copy_from_fabric_kernel(fabricarray_t<void> src,
     }
 }
 
-static __global__ void array_copy_from_fabric_indexed_kernel(indexedfabricarray_t<void> src,
+static __global__ void array_copy_from_fabric_indexed_kernel(wp::indexedfabricarray_t<void> src,
                                                              void *dst_data, int dst_stride, const int *dst_indices,
                                                              int elem_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -396,7 +346,7 @@ static __global__ void array_copy_from_fabric_indexed_kernel(indexedfabricarray_
     }
 }
 
-static __global__ void array_copy_to_fabric_kernel(fabricarray_t<void> dst,
+static __global__ void array_copy_to_fabric_kernel(wp::fabricarray_t<void> dst,
                                                    const void *src_data, int src_stride, const int *src_indices,
                                                    int elem_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -409,7 +359,7 @@ static __global__ void array_copy_to_fabric_kernel(fabricarray_t<void> dst,
     }
 }
 
-static __global__ void array_copy_to_fabric_indexed_kernel(indexedfabricarray_t<void> dst,
+static __global__ void array_copy_to_fabric_indexed_kernel(wp::indexedfabricarray_t<void> dst,
                                                            const void *src_data, int src_stride, const int *src_indices,
                                                            int elem_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -423,7 +373,7 @@ static __global__ void array_copy_to_fabric_indexed_kernel(indexedfabricarray_t<
     }
 }
 
-static __global__ void array_copy_fabric_to_fabric_kernel(fabricarray_t<void> dst, fabricarray_t<void> src, int elem_size) {
+static __global__ void array_copy_fabric_to_fabric_kernel(wp::fabricarray_t<void> dst, wp::fabricarray_t<void> src, int elem_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (tid < dst.size) {
@@ -433,7 +383,7 @@ static __global__ void array_copy_fabric_to_fabric_kernel(fabricarray_t<void> ds
     }
 }
 
-static __global__ void array_copy_fabric_to_fabric_indexed_kernel(indexedfabricarray_t<void> dst, fabricarray_t<void> src, int elem_size) {
+static __global__ void array_copy_fabric_to_fabric_indexed_kernel(wp::indexedfabricarray_t<void> dst, wp::fabricarray_t<void> src, int elem_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (tid < dst.size) {
@@ -444,7 +394,7 @@ static __global__ void array_copy_fabric_to_fabric_indexed_kernel(indexedfabrica
     }
 }
 
-static __global__ void array_copy_fabric_indexed_to_fabric_kernel(fabricarray_t<void> dst, indexedfabricarray_t<void> src, int elem_size) {
+static __global__ void array_copy_fabric_indexed_to_fabric_kernel(wp::fabricarray_t<void> dst, wp::indexedfabricarray_t<void> src, int elem_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (tid < dst.size) {
@@ -455,7 +405,7 @@ static __global__ void array_copy_fabric_indexed_to_fabric_kernel(fabricarray_t<
     }
 }
 
-static __global__ void array_copy_fabric_indexed_to_fabric_indexed_kernel(indexedfabricarray_t<void> dst, indexedfabricarray_t<void> src, int elem_size) {
+static __global__ void array_copy_fabric_indexed_to_fabric_indexed_kernel(wp::indexedfabricarray_t<void> dst, wp::indexedfabricarray_t<void> src, int elem_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (tid < dst.size) {
@@ -472,9 +422,7 @@ size_t array_copy_device(void *context, void *dst, void *src, int dst_type, int 
         return 0;
 
     const void *src_data = nullptr;
-    const void *src_grad = nullptr;
     void *dst_data = nullptr;
-    void *dst_grad = nullptr;
     int src_ndim = 0;
     int dst_ndim = 0;
     const int *src_shape = nullptr;
@@ -484,60 +432,58 @@ size_t array_copy_device(void *context, void *dst, void *src, int dst_type, int 
     const int *const *src_indices = nullptr;
     const int *const *dst_indices = nullptr;
 
-    const fabricarray_t<void> *src_fabricarray = nullptr;
-    fabricarray_t<void> *dst_fabricarray = nullptr;
+    const wp::fabricarray_t<void> *src_fabricarray = nullptr;
+    wp::fabricarray_t<void> *dst_fabricarray = nullptr;
 
-    const indexedfabricarray_t<void> *src_indexedfabricarray = nullptr;
-    indexedfabricarray_t<void> *dst_indexedfabricarray = nullptr;
+    const wp::indexedfabricarray_t<void> *src_indexedfabricarray = nullptr;
+    wp::indexedfabricarray_t<void> *dst_indexedfabricarray = nullptr;
 
-    const int *null_indices[ARRAY_MAX_DIMS] = {nullptr};
+    const int *null_indices[wp::ARRAY_MAX_DIMS] = {nullptr};
 
-    if (src_type == ARRAY_TYPE_REGULAR) {
-        const array_t<void> &src_arr = *static_cast<const array_t<void> *>(src);
+    if (src_type == wp::ARRAY_TYPE_REGULAR) {
+        const wp::array_t<void> &src_arr = *static_cast<const wp::array_t<void> *>(src);
         src_data = src_arr.data;
-        src_grad = src_arr.grad;
         src_ndim = src_arr.ndim;
         src_shape = src_arr.shape.dims;
         src_strides = src_arr.strides;
         src_indices = null_indices;
-    } else if (src_type == ARRAY_TYPE_INDEXED) {
-        const indexedarray_t<void> &src_arr = *static_cast<const indexedarray_t<void> *>(src);
+    } else if (src_type == wp::ARRAY_TYPE_INDEXED) {
+        const wp::indexedarray_t<void> &src_arr = *static_cast<const wp::indexedarray_t<void> *>(src);
         src_data = src_arr.arr.data;
         src_ndim = src_arr.arr.ndim;
         src_shape = src_arr.shape.dims;
         src_strides = src_arr.arr.strides;
         src_indices = src_arr.indices;
-    } else if (src_type == ARRAY_TYPE_FABRIC) {
-        src_fabricarray = static_cast<const fabricarray_t<void> *>(src);
+    } else if (src_type == wp::ARRAY_TYPE_FABRIC) {
+        src_fabricarray = static_cast<const wp::fabricarray_t<void> *>(src);
         src_ndim = 1;
-    } else if (src_type == ARRAY_TYPE_FABRIC_INDEXED) {
-        src_indexedfabricarray = static_cast<const indexedfabricarray_t<void> *>(src);
+    } else if (src_type == wp::ARRAY_TYPE_FABRIC_INDEXED) {
+        src_indexedfabricarray = static_cast<const wp::indexedfabricarray_t<void> *>(src);
         src_ndim = 1;
     } else {
         fprintf(stderr, "Warp copy error: Invalid array type (%d)\n", src_type);
         return 0;
     }
 
-    if (dst_type == ARRAY_TYPE_REGULAR) {
-        const array_t<void> &dst_arr = *static_cast<const array_t<void> *>(dst);
+    if (dst_type == wp::ARRAY_TYPE_REGULAR) {
+        const wp::array_t<void> &dst_arr = *static_cast<const wp::array_t<void> *>(dst);
         dst_data = dst_arr.data;
-        dst_grad = dst_arr.grad;
         dst_ndim = dst_arr.ndim;
         dst_shape = dst_arr.shape.dims;
         dst_strides = dst_arr.strides;
         dst_indices = null_indices;
-    } else if (dst_type == ARRAY_TYPE_INDEXED) {
-        const indexedarray_t<void> &dst_arr = *static_cast<const indexedarray_t<void> *>(dst);
+    } else if (dst_type == wp::ARRAY_TYPE_INDEXED) {
+        const wp::indexedarray_t<void> &dst_arr = *static_cast<const wp::indexedarray_t<void> *>(dst);
         dst_data = dst_arr.arr.data;
         dst_ndim = dst_arr.arr.ndim;
         dst_shape = dst_arr.shape.dims;
         dst_strides = dst_arr.arr.strides;
         dst_indices = dst_arr.indices;
-    } else if (dst_type == ARRAY_TYPE_FABRIC) {
-        dst_fabricarray = static_cast<fabricarray_t<void> *>(dst);
+    } else if (dst_type == wp::ARRAY_TYPE_FABRIC) {
+        dst_fabricarray = static_cast<wp::fabricarray_t<void> *>(dst);
         dst_ndim = 1;
-    } else if (dst_type == ARRAY_TYPE_FABRIC_INDEXED) {
-        dst_indexedfabricarray = static_cast<indexedfabricarray_t<void> *>(dst);
+    } else if (dst_type == wp::ARRAY_TYPE_FABRIC_INDEXED) {
+        dst_indexedfabricarray = static_cast<wp::indexedfabricarray_t<void> *>(dst);
         dst_ndim = 1;
     } else {
         fprintf(stderr, "Warp copy error: Invalid array type (%d)\n", dst_type);
@@ -561,8 +507,7 @@ size_t array_copy_device(void *context, void *dst, void *src, int dst_type, int 
                 return 0;
             }
             wp_launch_device(WP_CURRENT_CONTEXT, array_copy_fabric_to_fabric_kernel, n,
-                             (*dst_fabricarray, *src_fabricarray, elem_size))
-            return n;
+                             (*dst_fabricarray, *src_fabricarray, elem_size)) return n;
         } else if (src_indexedfabricarray) {
             // copy from fabric indexed to fabric
             if (src_indexedfabricarray->size != n) {
@@ -570,8 +515,7 @@ size_t array_copy_device(void *context, void *dst, void *src, int dst_type, int 
                 return 0;
             }
             wp_launch_device(WP_CURRENT_CONTEXT, array_copy_fabric_indexed_to_fabric_kernel, n,
-                             (*dst_fabricarray, *src_indexedfabricarray, elem_size))
-            return n;
+                             (*dst_fabricarray, *src_indexedfabricarray, elem_size)) return n;
         } else {
             // copy to fabric
             if (size_t(src_shape[0]) != n) {
@@ -579,8 +523,7 @@ size_t array_copy_device(void *context, void *dst, void *src, int dst_type, int 
                 return 0;
             }
             wp_launch_device(WP_CURRENT_CONTEXT, array_copy_to_fabric_kernel, n,
-                             (*dst_fabricarray, src_data, src_strides[0], src_indices[0], elem_size))
-            return n;
+                             (*dst_fabricarray, src_data, src_strides[0], src_indices[0], elem_size)) return n;
         }
     }
     if (dst_indexedfabricarray) {
@@ -592,8 +535,7 @@ size_t array_copy_device(void *context, void *dst, void *src, int dst_type, int 
                 return 0;
             }
             wp_launch_device(WP_CURRENT_CONTEXT, array_copy_fabric_to_fabric_indexed_kernel, n,
-                             (*dst_indexedfabricarray, *src_fabricarray, elem_size))
-            return n;
+                             (*dst_indexedfabricarray, *src_fabricarray, elem_size)) return n;
         } else if (src_indexedfabricarray) {
             // copy from fabric indexed to fabric indexed
             if (src_indexedfabricarray->size != n) {
@@ -601,8 +543,7 @@ size_t array_copy_device(void *context, void *dst, void *src, int dst_type, int 
                 return 0;
             }
             wp_launch_device(WP_CURRENT_CONTEXT, array_copy_fabric_indexed_to_fabric_indexed_kernel, n,
-                             (*dst_indexedfabricarray, *src_indexedfabricarray, elem_size))
-            return n;
+                             (*dst_indexedfabricarray, *src_indexedfabricarray, elem_size)) return n;
         } else {
             // copy to fabric indexed
             if (size_t(src_shape[0]) != n) {
@@ -610,8 +551,7 @@ size_t array_copy_device(void *context, void *dst, void *src, int dst_type, int 
                 return 0;
             }
             wp_launch_device(WP_CURRENT_CONTEXT, array_copy_to_fabric_indexed_kernel, n,
-                             (*dst_indexedfabricarray, src_data, src_strides[0], src_indices[0], elem_size))
-            return n;
+                             (*dst_indexedfabricarray, src_data, src_strides[0], src_indices[0], elem_size)) return n;
         }
     } else if (src_fabricarray) {
         // copy from fabric
@@ -621,8 +561,7 @@ size_t array_copy_device(void *context, void *dst, void *src, int dst_type, int 
             return 0;
         }
         wp_launch_device(WP_CURRENT_CONTEXT, array_copy_from_fabric_kernel, n,
-                         (*src_fabricarray, dst_data, dst_strides[0], dst_indices[0], elem_size))
-        return n;
+                         (*src_fabricarray, dst_data, dst_strides[0], dst_indices[0], elem_size)) return n;
     } else if (src_indexedfabricarray) {
         // copy from fabric indexed
         size_t n = src_indexedfabricarray->size;
@@ -650,31 +589,31 @@ size_t array_copy_device(void *context, void *dst, void *src, int dst_type, int 
             break;
         }
         case 2: {
-            vec_t<2, int> shape_v(src_shape[0], src_shape[1]);
-            vec_t<2, int> src_strides_v(src_strides[0], src_strides[1]);
-            vec_t<2, int> dst_strides_v(dst_strides[0], dst_strides[1]);
-            vec_t<2, const int *> src_indices_v(src_indices[0], src_indices[1]);
-            vec_t<2, const int *> dst_indices_v(dst_indices[0], dst_indices[1]);
+            wp::vec_t<2, int> shape_v(src_shape[0], src_shape[1]);
+            wp::vec_t<2, int> src_strides_v(src_strides[0], src_strides[1]);
+            wp::vec_t<2, int> dst_strides_v(dst_strides[0], dst_strides[1]);
+            wp::vec_t<2, const int *> src_indices_v(src_indices[0], src_indices[1]);
+            wp::vec_t<2, const int *> dst_indices_v(dst_indices[0], dst_indices[1]);
 
             wp_launch_device(WP_CURRENT_CONTEXT, array_copy_2d_kernel, n, (dst_data, src_data, dst_strides_v, src_strides_v, dst_indices_v, src_indices_v, shape_v, elem_size));
             break;
         }
         case 3: {
-            vec_t<3, int> shape_v(src_shape[0], src_shape[1], src_shape[2]);
-            vec_t<3, int> src_strides_v(src_strides[0], src_strides[1], src_strides[2]);
-            vec_t<3, int> dst_strides_v(dst_strides[0], dst_strides[1], dst_strides[2]);
-            vec_t<3, const int *> src_indices_v(src_indices[0], src_indices[1], src_indices[2]);
-            vec_t<3, const int *> dst_indices_v(dst_indices[0], dst_indices[1], dst_indices[2]);
+            wp::vec_t<3, int> shape_v(src_shape[0], src_shape[1], src_shape[2]);
+            wp::vec_t<3, int> src_strides_v(src_strides[0], src_strides[1], src_strides[2]);
+            wp::vec_t<3, int> dst_strides_v(dst_strides[0], dst_strides[1], dst_strides[2]);
+            wp::vec_t<3, const int *> src_indices_v(src_indices[0], src_indices[1], src_indices[2]);
+            wp::vec_t<3, const int *> dst_indices_v(dst_indices[0], dst_indices[1], dst_indices[2]);
 
             wp_launch_device(WP_CURRENT_CONTEXT, array_copy_3d_kernel, n, (dst_data, src_data, dst_strides_v, src_strides_v, dst_indices_v, src_indices_v, shape_v, elem_size));
             break;
         }
         case 4: {
-            vec_t<4, int> shape_v(src_shape[0], src_shape[1], src_shape[2], src_shape[3]);
-            vec_t<4, int> src_strides_v(src_strides[0], src_strides[1], src_strides[2], src_strides[3]);
-            vec_t<4, int> dst_strides_v(dst_strides[0], dst_strides[1], dst_strides[2], dst_strides[3]);
-            vec_t<4, const int *> src_indices_v(src_indices[0], src_indices[1], src_indices[2], src_indices[3]);
-            vec_t<4, const int *> dst_indices_v(dst_indices[0], dst_indices[1], dst_indices[2], dst_indices[3]);
+            wp::vec_t<4, int> shape_v(src_shape[0], src_shape[1], src_shape[2], src_shape[3]);
+            wp::vec_t<4, int> src_strides_v(src_strides[0], src_strides[1], src_strides[2], src_strides[3]);
+            wp::vec_t<4, int> dst_strides_v(dst_strides[0], dst_strides[1], dst_strides[2], dst_strides[3]);
+            wp::vec_t<4, const int *> src_indices_v(src_indices[0], src_indices[1], src_indices[2], src_indices[3]);
+            wp::vec_t<4, const int *> dst_indices_v(dst_indices[0], dst_indices[1], dst_indices[2], dst_indices[3]);
 
             wp_launch_device(WP_CURRENT_CONTEXT, array_copy_4d_kernel, n, (dst_data, src_data, dst_strides_v, src_strides_v, dst_indices_v, src_indices_v, shape_v, elem_size));
             break;
@@ -705,9 +644,9 @@ static __global__ void array_fill_1d_kernel(void *data,
 }
 
 static __global__ void array_fill_2d_kernel(void *data,
-                                            vec_t<2, int> shape,
-                                            vec_t<2, int> strides,
-                                            vec_t<2, const int *> indices,
+                                            wp::vec_t<2, int> shape,
+                                            wp::vec_t<2, int> strides,
+                                            wp::vec_t<2, const int *> indices,
                                             const void *value,
                                             int value_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -723,9 +662,9 @@ static __global__ void array_fill_2d_kernel(void *data,
 }
 
 static __global__ void array_fill_3d_kernel(void *data,
-                                            vec_t<3, int> shape,
-                                            vec_t<3, int> strides,
-                                            vec_t<3, const int *> indices,
+                                            wp::vec_t<3, int> shape,
+                                            wp::vec_t<3, int> strides,
+                                            wp::vec_t<3, const int *> indices,
                                             const void *value,
                                             int value_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -744,9 +683,9 @@ static __global__ void array_fill_3d_kernel(void *data,
 }
 
 static __global__ void array_fill_4d_kernel(void *data,
-                                            vec_t<4, int> shape,
-                                            vec_t<4, int> strides,
-                                            vec_t<4, const int *> indices,
+                                            wp::vec_t<4, int> shape,
+                                            wp::vec_t<4, int> strides,
+                                            wp::vec_t<4, const int *> indices,
                                             const void *value,
                                             int value_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -767,7 +706,7 @@ static __global__ void array_fill_4d_kernel(void *data,
     }
 }
 
-static __global__ void array_fill_fabric_kernel(fabricarray_t<void> fa, const void *value, int value_size) {
+static __global__ void array_fill_fabric_kernel(wp::fabricarray_t<void> fa, const void *value, int value_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
     if (tid < fa.size) {
         void *dst_ptr = fabricarray_element_ptr(fa, tid, value_size);
@@ -775,7 +714,7 @@ static __global__ void array_fill_fabric_kernel(fabricarray_t<void> fa, const vo
     }
 }
 
-static __global__ void array_fill_fabric_indexed_kernel(indexedfabricarray_t<void> ifa, const void *value, int value_size) {
+static __global__ void array_fill_fabric_indexed_kernel(wp::indexedfabricarray_t<void> ifa, const void *value, int value_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
     if (tid < ifa.size) {
         auto idx = size_t(ifa.indices[tid]);
@@ -796,29 +735,29 @@ void array_fill_device(void *context, void *arr_ptr, int arr_type, const void *v
     const int *strides = nullptr;
     const int *const *indices = nullptr;
 
-    fabricarray_t<void> *fa = nullptr;
-    indexedfabricarray_t<void> *ifa = nullptr;
+    wp::fabricarray_t<void> *fa = nullptr;
+    wp::indexedfabricarray_t<void> *ifa = nullptr;
 
-    const int *null_indices[ARRAY_MAX_DIMS] = {nullptr};
+    const int *null_indices[wp::ARRAY_MAX_DIMS] = {nullptr};
 
-    if (arr_type == ARRAY_TYPE_REGULAR) {
-        array_t<void> &arr = *static_cast<array_t<void> *>(arr_ptr);
+    if (arr_type == wp::ARRAY_TYPE_REGULAR) {
+        wp::array_t<void> &arr = *static_cast<wp::array_t<void> *>(arr_ptr);
         data = arr.data;
         ndim = arr.ndim;
         shape = arr.shape.dims;
         strides = arr.strides;
         indices = null_indices;
-    } else if (arr_type == ARRAY_TYPE_INDEXED) {
-        indexedarray_t<void> &ia = *static_cast<indexedarray_t<void> *>(arr_ptr);
+    } else if (arr_type == wp::ARRAY_TYPE_INDEXED) {
+        wp::indexedarray_t<void> &ia = *static_cast<wp::indexedarray_t<void> *>(arr_ptr);
         data = ia.arr.data;
         ndim = ia.arr.ndim;
         shape = ia.shape.dims;
         strides = ia.arr.strides;
         indices = ia.indices;
-    } else if (arr_type == ARRAY_TYPE_FABRIC) {
-        fa = static_cast<fabricarray_t<void> *>(arr_ptr);
-    } else if (arr_type == ARRAY_TYPE_FABRIC_INDEXED) {
-        ifa = static_cast<indexedfabricarray_t<void> *>(arr_ptr);
+    } else if (arr_type == wp::ARRAY_TYPE_FABRIC) {
+        fa = static_cast<wp::fabricarray_t<void> *>(arr_ptr);
+    } else if (arr_type == wp::ARRAY_TYPE_FABRIC_INDEXED) {
+        ifa = static_cast<wp::indexedfabricarray_t<void> *>(arr_ptr);
     } else {
         fprintf(stderr, "Warp fill error: Invalid array type id %d\n", arr_type);
         return;
@@ -854,25 +793,25 @@ void array_fill_device(void *context, void *arr_ptr, int arr_type, const void *v
             break;
         }
         case 2: {
-            vec_t<2, int> shape_v(shape[0], shape[1]);
-            vec_t<2, int> strides_v(strides[0], strides[1]);
-            vec_t<2, const int *> indices_v(indices[0], indices[1]);
+            wp::vec_t<2, int> shape_v(shape[0], shape[1]);
+            wp::vec_t<2, int> strides_v(strides[0], strides[1]);
+            wp::vec_t<2, const int *> indices_v(indices[0], indices[1]);
             wp_launch_device(WP_CURRENT_CONTEXT, array_fill_2d_kernel, n,
                              (data, shape_v, strides_v, indices_v, value_devptr, value_size));
             break;
         }
         case 3: {
-            vec_t<3, int> shape_v(shape[0], shape[1], shape[2]);
-            vec_t<3, int> strides_v(strides[0], strides[1], strides[2]);
-            vec_t<3, const int *> indices_v(indices[0], indices[1], indices[2]);
+            wp::vec_t<3, int> shape_v(shape[0], shape[1], shape[2]);
+            wp::vec_t<3, int> strides_v(strides[0], strides[1], strides[2]);
+            wp::vec_t<3, const int *> indices_v(indices[0], indices[1], indices[2]);
             wp_launch_device(WP_CURRENT_CONTEXT, array_fill_3d_kernel, n,
                              (data, shape_v, strides_v, indices_v, value_devptr, value_size));
             break;
         }
         case 4: {
-            vec_t<4, int> shape_v(shape[0], shape[1], shape[2], shape[3]);
-            vec_t<4, int> strides_v(strides[0], strides[1], strides[2], strides[3]);
-            vec_t<4, const int *> indices_v(indices[0], indices[1], indices[2], indices[3]);
+            wp::vec_t<4, int> shape_v(shape[0], shape[1], shape[2], shape[3]);
+            wp::vec_t<4, int> strides_v(strides[0], strides[1], strides[2], strides[3]);
+            wp::vec_t<4, const int *> indices_v(indices[0], indices[1], indices[2], indices[3]);
             wp_launch_device(WP_CURRENT_CONTEXT, array_fill_4d_kernel, n,
                              (data, shape_v, strides_v, indices_v, value_devptr, value_size));
             break;
@@ -893,20 +832,6 @@ int cuda_driver_version() {
 
 int cuda_toolkit_version() {
     return CUDA_VERSION;
-}
-
-int nvrtc_supported_arch_count() {
-    int count;
-    if (check_nvrtc(nvrtcGetNumSupportedArchs(&count)))
-        return count;
-    else
-        return 0;
-}
-
-void nvrtc_supported_archs(int *archs) {
-    if (archs) {
-        check_nvrtc(nvrtcGetSupportedArchs(archs));
-    }
 }
 
 int cuda_device_get_count() {
@@ -1252,236 +1177,6 @@ void cuda_graph_destroy(void *context, void *graph_exec) {
     ContextGuard guard(context);
 
     check_cuda(cudaGraphExecDestroy((cudaGraphExec_t)graph_exec));
-}
-
-size_t cuda_compile_program(const char *cuda_src, int arch, const char *include_dir, bool debug, bool verbose, bool verify_fp, bool fast_math, const char *output_path) {
-    // use file extension to determine whether to output PTX or CUBIN
-    const char *output_ext = strrchr(output_path, '.');
-    bool use_ptx = output_ext && strcmp(output_ext + 1, "ptx") == 0;
-
-    // check include dir path len (path + option)
-    const int max_path = 4096 + 16;
-    if (strlen(include_dir) > max_path) {
-        fprintf(stderr, "Warp error: Include path too long\n");
-        return size_t(-1);
-    }
-
-    char include_opt[max_path];
-    strcpy(include_opt, "--include-path=");
-    strcat(include_opt, include_dir);
-
-    const int max_arch = 128;
-    char arch_opt[max_arch];
-
-    if (use_ptx)
-        snprintf(arch_opt, max_arch, "--gpu-architecture=compute_%d", arch);
-    else
-        snprintf(arch_opt, max_arch, "--gpu-architecture=sm_%d", arch);
-
-    std::vector<const char *> opts;
-    opts.push_back(arch_opt);
-    opts.push_back(include_opt);
-    opts.push_back("--std=c++11");
-
-    if (debug) {
-        opts.push_back("--define-macro=_DEBUG");
-        opts.push_back("--generate-line-info");
-        // disabling since it causes issues with `Unresolved extern function 'cudaGetParameterBufferV2'
-        //opts.push_back("--device-debug");
-    } else
-        opts.push_back("--define-macro=NDEBUG");
-
-    if (verify_fp)
-        opts.push_back("--define-macro=WP_VERIFY_FP");
-    else
-        opts.push_back("--undefine-macro=WP_VERIFY_FP");
-
-    if (fast_math)
-        opts.push_back("--use_fast_math");
-
-    nvrtcProgram prog;
-    nvrtcResult res;
-
-    res = nvrtcCreateProgram(
-        &prog,   // prog
-        cuda_src,// buffer
-        nullptr,    // name
-        0,       // numHeaders
-        nullptr,    // headers
-        nullptr);   // includeNames
-
-    if (!check_nvrtc(res))
-        return size_t(res);
-
-    res = nvrtcCompileProgram(prog, int(opts.size()), opts.data());
-
-    if (!check_nvrtc(res) || verbose) {
-        // get program log
-        size_t log_size;
-        if (check_nvrtc(nvrtcGetProgramLogSize(prog, &log_size))) {
-            std::vector<char> log(log_size);
-            if (check_nvrtc(nvrtcGetProgramLog(prog, log.data()))) {
-                // todo: figure out better way to return this to python
-                if (res != NVRTC_SUCCESS)
-                    fprintf(stderr, "%s", log.data());
-                else
-                    fprintf(stdout, "%s", log.data());
-            }
-        }
-
-        if (res != NVRTC_SUCCESS) {
-            nvrtcDestroyProgram(&prog);
-            return size_t(res);
-        }
-    }
-
-    nvrtcResult (*get_output_size)(nvrtcProgram, size_t *);
-    nvrtcResult (*get_output_data)(nvrtcProgram, char *);
-    const char *output_mode;
-    if (use_ptx) {
-        get_output_size = nvrtcGetPTXSize;
-        get_output_data = nvrtcGetPTX;
-        output_mode = "wt";
-    } else {
-        get_output_size = nvrtcGetCUBINSize;
-        get_output_data = nvrtcGetCUBIN;
-        output_mode = "wb";
-    }
-
-    // save output
-    size_t output_size;
-    res = get_output_size(prog, &output_size);
-    if (check_nvrtc(res)) {
-        std::vector<char> output(output_size);
-        res = get_output_data(prog, output.data());
-        if (check_nvrtc(res)) {
-            FILE *file = fopen(output_path, output_mode);
-            if (file) {
-                if (fwrite(output.data(), 1, output_size, file) != output_size) {
-                    fprintf(stderr, "Warp error: Failed to write output file '%s'\n", output_path);
-                    res = nvrtcResult(-1);
-                }
-                fclose(file);
-            } else {
-                fprintf(stderr, "Warp error: Failed to open output file '%s'\n", output_path);
-                res = nvrtcResult(-1);
-            }
-        }
-    }
-
-    check_nvrtc(nvrtcDestroyProgram(&prog));
-
-    return res;
-}
-
-void *cuda_load_module(void *context, const char *path) {
-    ContextGuard guard(context);
-
-    // use file extension to determine whether to load PTX or CUBIN
-    const char *input_ext = strrchr(path, '.');
-    bool load_ptx = input_ext && strcmp(input_ext + 1, "ptx") == 0;
-
-    std::vector<char> input;
-
-    FILE *file = fopen(path, "rb");
-    if (file) {
-        fseek(file, 0, SEEK_END);
-        size_t length = ftell(file);
-        fseek(file, 0, SEEK_SET);
-
-        input.resize(length + 1);
-        if (fread(input.data(), 1, length, file) != length) {
-            fprintf(stderr, "Warp error: Failed to read input file '%s'\n", path);
-            fclose(file);
-            return nullptr;
-        }
-        fclose(file);
-
-        input[length] = '\0';
-    } else {
-        fprintf(stderr, "Warp error: Failed to open input file '%s'\n", path);
-        return nullptr;
-    }
-
-    int driver_cuda_version = 0;
-    CUmodule module = nullptr;
-
-    if (load_ptx) {
-        if (check_cu(cuDriverGetVersion(&driver_cuda_version)) && driver_cuda_version >= CUDA_VERSION) {
-            // let the driver compile the PTX
-
-            CUjit_option options[2];
-            void *option_vals[2];
-            char error_log[8192] = "";
-            unsigned int log_size = 8192;
-            // Set up loader options
-            // Pass a buffer for error message
-            options[0] = CU_JIT_ERROR_LOG_BUFFER;
-            option_vals[0] = (void *)error_log;
-            // Pass the size of the error buffer
-            options[1] = CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES;
-            option_vals[1] = (void *)(size_t)log_size;
-
-            if (!check_cu(cuModuleLoadDataEx(&module, input.data(), 2, options, option_vals))) {
-                fprintf(stderr, "Warp error: Loading PTX module failed\n");
-                // print error log if not empty
-                if (*error_log)
-                    fprintf(stderr, "PTX loader error:\n%s\n", error_log);
-                return nullptr;
-            }
-        } else {
-            // manually compile the PTX and load as CUBIN
-
-            ContextInfo *context_info = get_context_info(static_cast<CUcontext>(context));
-            if (!context_info || !context_info->device_info) {
-                fprintf(stderr, "Warp error: Failed to determine target architecture\n");
-                return nullptr;
-            }
-
-            int arch = context_info->device_info->arch;
-
-            char arch_opt[128];
-            sprintf(arch_opt, "--gpu-name=sm_%d", arch);
-
-            const char *compiler_options[] = {arch_opt};
-
-            nvPTXCompilerHandle compiler = nullptr;
-            if (!check_nvptx(nvPTXCompilerCreate(&compiler, input.size(), input.data())))
-                return nullptr;
-
-            if (!check_nvptx(nvPTXCompilerCompile(compiler, sizeof(compiler_options) / sizeof(*compiler_options), compiler_options)))
-                return nullptr;
-
-            size_t cubin_size = 0;
-            if (!check_nvptx(nvPTXCompilerGetCompiledProgramSize(compiler, &cubin_size)))
-                return nullptr;
-
-            std::vector<char> cubin(cubin_size);
-            if (!check_nvptx(nvPTXCompilerGetCompiledProgram(compiler, cubin.data())))
-                return nullptr;
-
-            check_nvptx(nvPTXCompilerDestroy(&compiler));
-
-            if (!check_cu(cuModuleLoadDataEx(&module, cubin.data(), 0, nullptr, nullptr))) {
-                fprintf(stderr, "Warp CUDA error: Loading module failed\n");
-                return nullptr;
-            }
-        }
-    } else {
-        // load CUBIN
-        if (!check_cu(cuModuleLoadDataEx(&module, input.data(), 0, nullptr, nullptr))) {
-            fprintf(stderr, "Warp CUDA error: Loading module failed\n");
-            return nullptr;
-        }
-    }
-
-    return module;
-}
-
-void cuda_unload_module(void *context, void *module) {
-    ContextGuard guard(context);
-
-    check_cu(cuModuleUnload((CUmodule)module));
 }
 
 void *cuda_get_kernel(void *context, void *module, const char *name) {

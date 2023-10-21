@@ -10,11 +10,9 @@
 #include "sort.h"
 #include "cuda_builtin/stl/hashgrid.h"
 
-using namespace wp;
-
 namespace luisa::compute::cuda {
 
-__global__ void compute_cell_indices(HashGrid grid, const vec3 *points, int num_points) {
+__global__ void compute_cell_indices(wp::HashGrid grid, const wp::vec3 *points, int num_points) {
     const int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (tid < num_points) {
@@ -48,7 +46,7 @@ __global__ void compute_cell_offsets(int *cell_starts, int *cell_ends, const int
     }
 }
 
-void hash_grid_rebuild_device(const HashGrid &grid, const vec3 *points, int num_points) {
+void hash_grid_rebuild_device(const wp::HashGrid &grid, const wp::vec3 *points, int num_points) {
     ContextGuard guard(grid.context);
 
     wp_launch_device(WP_CURRENT_CONTEXT, compute_cell_indices, num_points, (grid, points, num_points));

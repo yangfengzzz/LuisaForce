@@ -9,8 +9,6 @@
 
 #include <cub/device/device_reduce.cuh>
 
-using namespace wp;
-
 namespace luisa::compute::cuda {
 namespace {
 template<typename T>
@@ -111,9 +109,9 @@ void array_sum_device(const T *ptr_a, T *ptr_out, int count, int byte_stride, in
 
 template<typename T>
 void array_sum_device_dispatch(const T *ptr_a, T *ptr_out, int count, int byte_stride, int type_length) {
-    using vec2 = vec_t<2, T>;
-    using vec3 = vec_t<3, T>;
-    using vec4 = vec_t<4, T>;
+    using vec2 = wp::vec_t<2, T>;
+    using vec3 = wp::vec_t<3, T>;
+    using vec4 = wp::vec_t<4, T>;
 
     // specialized calls for common vector types
 
@@ -141,7 +139,7 @@ CUDA_CALLABLE T element_inner_product(const T &a, const T &b) {
 }
 
 template<unsigned Length, typename T>
-CUDA_CALLABLE T element_inner_product(const vec_t<Length, T> &a, const vec_t<Length, T> &b) {
+CUDA_CALLABLE T element_inner_product(const wp::vec_t<Length, T> &a, const wp::vec_t<Length, T> &b) {
     return dot(a, b);
 }
 
@@ -250,9 +248,9 @@ void array_inner_device(const ElemT *ptr_a, const ElemT *ptr_b, ScalarT *ptr_out
 template<typename T>
 void array_inner_device_dispatch(const T *ptr_a, const T *ptr_b, T *ptr_out, int count, int byte_stride_a,
                                  int byte_stride_b, int type_length) {
-    using vec2 = vec_t<2, T>;
-    using vec3 = vec_t<3, T>;
-    using vec4 = vec_t<4, T>;
+    using vec2 = wp::vec_t<2, T>;
+    using vec3 = wp::vec_t<3, T>;
+    using vec4 = wp::vec_t<4, T>;
 
     // specialized calls for common vector types
 

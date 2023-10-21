@@ -13,7 +13,7 @@
 #include "cuda_device.h"
 #include "cuda_command_encoder.h"
 #include "cuda_bindless_array.h"
-#include "cuda_builtin/cuda_builtin_kernels.h"
+#include "cuda_builtin_kernels/cuda_builtin_kernels.h"
 
 namespace luisa::compute::cuda {
 
