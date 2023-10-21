@@ -19,6 +19,8 @@
 #include "runtime/ext/registry.h"
 #include "runtime/ext/cuda/lcub/cuda_lcub_command.h"
 
+#include "cuda_builtin_kernels/hashgrid.h"
+
 namespace luisa::compute::cuda {
 
 class UserCallbackContext : public CUDACallbackContext {
@@ -250,6 +252,16 @@ void CUDACommandEncoder::visit(CustomCommand *command) noexcept {
                                       "is not supported on CUDA.",
                                       command->uuid());
     }
+}
+
+void CUDACommandEncoder::visit(HashGridReserveCommand *command) noexcept {
+    hash_grid_reserve_device(command->handle(), command->num_points(), _stream->handle());
+}
+
+void CUDACommandEncoder::visit(HashGridBuildCommand *command) noexcept {
+    auto points = reinterpret_cast<const CUDABuffer *>(command->points())->handle();
+    hash_grid_update_device(command->handle(), command->radius(), reinterpret_cast<wp::vec3 *>(points),
+                            command->num_points(), _stream->handle());
 }
 
 }// namespace luisa::compute::cuda

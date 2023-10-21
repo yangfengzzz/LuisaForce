@@ -10,6 +10,7 @@
 #include "runtime/rhi/command.h"
 #include "runtime/rhi/resource.h"
 #include "runtime/rhi/stream_tag.h"
+#include "runtime/buffer.h"
 
 namespace luisa::compute {
 
@@ -32,9 +33,9 @@ public:
     }
     HashGrid &operator=(HashGrid const &) noexcept = delete;
 
-    void build(float radius);
+    auto build(BufferView<float3> source, float radius) noexcept;
 
-    void reserve(int num_points);
+    auto reserve(int num_points) noexcept;
 };
 
 }// namespace luisa::compute

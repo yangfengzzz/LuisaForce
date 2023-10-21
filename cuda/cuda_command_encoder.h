@@ -35,16 +35,29 @@ public:
     [[nodiscard]] auto stream() const noexcept { return _stream; }
     void add_callback(CUDACallbackContext *cb) noexcept { _callbacks.emplace_back(cb); }
 
+    // Buffer
     void visit(BufferUploadCommand *command) noexcept override;
     void visit(BufferDownloadCommand *command) noexcept override;
     void visit(BufferCopyCommand *command) noexcept override;
     void visit(BufferToTextureCopyCommand *command) noexcept override;
+
+    // Shader
     void visit(ShaderDispatchCommand *command) noexcept override;
+
+    // Texture
     void visit(TextureUploadCommand *command) noexcept override;
     void visit(TextureDownloadCommand *command) noexcept override;
     void visit(TextureCopyCommand *command) noexcept override;
     void visit(TextureToBufferCopyCommand *command) noexcept override;
+
+    // Bindless
     void visit(BindlessArrayUpdateCommand *command) noexcept override;
+
+    // Hash Grid
+    void visit(HashGridReserveCommand *command) noexcept override;
+    void visit(HashGridBuildCommand *command) noexcept override;
+
+    // Custom
     void visit(CustomCommand *command) noexcept override;
 
     void commit(CommandList::CallbackContainer &&user_callbacks) noexcept;

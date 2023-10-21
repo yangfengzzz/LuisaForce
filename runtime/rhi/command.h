@@ -30,17 +30,19 @@ struct IndirectDispatchArg {
     uint32_t max_dispatch_size;
 };
 
-#define LUISA_COMPUTE_RUNTIME_COMMANDS   \
-    BufferUploadCommand,                 \
-        BufferDownloadCommand,           \
-        BufferCopyCommand,               \
-        BufferToTextureCopyCommand,      \
-        ShaderDispatchCommand,           \
-        TextureUploadCommand,            \
-        TextureDownloadCommand,          \
-        TextureCopyCommand,              \
-        TextureToBufferCopyCommand,      \
-        BindlessArrayUpdateCommand,      \
+#define LUISA_COMPUTE_RUNTIME_COMMANDS \
+    BufferUploadCommand,               \
+        BufferDownloadCommand,         \
+        BufferCopyCommand,             \
+        BufferToTextureCopyCommand,    \
+        ShaderDispatchCommand,         \
+        TextureUploadCommand,          \
+        TextureDownloadCommand,        \
+        TextureCopyCommand,            \
+        TextureToBufferCopyCommand,    \
+        BindlessArrayUpdateCommand,    \
+        HashGridReserveCommand,        \
+        HashGridBuildCommand,          \
         CustomCommand
 
 #define LUISA_MAKE_COMMAND_FWD_DECL(CMD) class CMD;
@@ -147,6 +149,40 @@ public:
     [[nodiscard]] auto is_indirect() const noexcept { return luisa::holds_alternative<IndirectDispatchArg>(_dispatch_size); }
     [[nodiscard]] auto dispatch_size() const noexcept { return luisa::get<uint3>(_dispatch_size); }
     [[nodiscard]] auto indirect_dispatch() const noexcept { return luisa::get<IndirectDispatchArg>(_dispatch_size); }
+    LUISA_MAKE_COMMAND_COMMON(StreamTag::COMPUTE)
+};
+
+class HashGridReserveCommand final : public Command {
+private:
+    uint64_t _handle{};
+    uint32_t _num_points{};
+
+public:
+    HashGridReserveCommand(uint64_t handle, uint32_t num_points) noexcept
+        : Command(Command::Tag::EHashGridBuildCommand),
+          _handle{handle}, _num_points{num_points} {}
+
+    [[nodiscard]] auto handle() const noexcept { return _handle; }
+    [[nodiscard]] auto num_points() const noexcept { return _num_points; }
+    LUISA_MAKE_COMMAND_COMMON(StreamTag::COMPUTE)
+};
+
+class HashGridBuildCommand final : public Command {
+private:
+    uint64_t _handle{};
+    uint64_t _points{};
+    uint32_t _num_points{};
+    float _radius{};
+
+public:
+    HashGridBuildCommand(uint64_t handle, uint64_t points, uint32_t num_points, float radius) noexcept
+        : Command(Command::Tag::EHashGridBuildCommand),
+          _handle{handle}, _points{points}, _num_points{num_points}, _radius{radius} {}
+
+    [[nodiscard]] auto handle() const noexcept { return _handle; }
+    [[nodiscard]] auto points() const noexcept { return _points; }
+    [[nodiscard]] auto num_points() const noexcept { return _num_points; }
+    [[nodiscard]] auto radius() const noexcept { return _radius; }
     LUISA_MAKE_COMMAND_COMMON(StreamTag::COMPUTE)
 };
 
