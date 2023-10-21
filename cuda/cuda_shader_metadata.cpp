@@ -16,10 +16,7 @@ luisa::string serialize_cuda_shader_metadata(const CUDAShaderMetadata &metadata)
     luisa::string result;
     result.append(fmt::format("CHECKSUM {:016x} ", metadata.checksum));
     result.append(fmt::format("KIND {} ", metadata.kind == CUDAShaderMetadata::Kind::UNKNOWN ?
-                                                "UNKNOWN" :
-                                            metadata.kind == CUDAShaderMetadata::Kind::COMPUTE ?
-                                                "COMPUTE" :
-                                                "RAY_TRACING"));
+                                                "UNKNOWN" : "COMPUTE"));
     result.append(metadata.enable_debug ? "DEBUG TRUE " : "DEBUG FALSE ");
     result.append(fmt::format("BLOCK_SIZE {} {} {} ", metadata.block_size.x, metadata.block_size.y, metadata.block_size.z));
     result.append(fmt::format("ARGUMENT_TYPES {} ", metadata.argument_types.size()));
@@ -77,9 +74,6 @@ luisa::optional<CUDAShaderMetadata> deserialize_cuda_shader_metadata(luisa::stri
     luisa::optional<uint3> block_size;
     auto kind = CUDAShaderMetadata::Kind::UNKNOWN;
     luisa::optional<bool> enable_debug;
-    luisa::optional<bool> requires_trace_closest;
-    luisa::optional<bool> requires_trace_any;
-    luisa::optional<bool> requires_ray_query;
     luisa::optional<luisa::vector<luisa::string>> argument_types;
     luisa::optional<luisa::vector<Usage>> argument_usages;
 
@@ -124,54 +118,6 @@ luisa::optional<CUDAShaderMetadata> deserialize_cuda_shader_metadata(luisa::stri
             } else {
                 LUISA_WARNING_WITH_LOCATION(
                     "Invalid debug flag '{}' in shader metadata.", x);
-                return luisa::nullopt;
-            }
-        } else if (token == "TRACE_CLOSEST") {
-            if (requires_trace_closest.has_value()) {
-                LUISA_WARNING_WITH_LOCATION(
-                    "Duplicate requires_trace_closest flag in shader metadata.");
-                return luisa::nullopt;
-            }
-            auto x = read_token();
-            if (x == "TRUE") {
-                requires_trace_closest.emplace(true);
-            } else if (x == "FALSE") {
-                requires_trace_closest.emplace(false);
-            } else {
-                LUISA_WARNING_WITH_LOCATION(
-                    "Invalid requires_trace_closest flag '{}' in shader metadata.", x);
-                return luisa::nullopt;
-            }
-        } else if (token == "TRACE_ANY") {
-            if (requires_trace_any.has_value()) {
-                LUISA_WARNING_WITH_LOCATION(
-                    "Duplicate requires_trace_any flag in shader metadata.");
-                return luisa::nullopt;
-            }
-            auto x = read_token();
-            if (x == "TRUE") {
-                requires_trace_any.emplace(true);
-            } else if (x == "FALSE") {
-                requires_trace_any.emplace(false);
-            } else {
-                LUISA_WARNING_WITH_LOCATION(
-                    "Invalid requires_trace_any flag '{}' in shader metadata.", x);
-                return luisa::nullopt;
-            }
-        } else if (token == "RAY_QUERY") {
-            if (requires_ray_query.has_value()) {
-                LUISA_WARNING_WITH_LOCATION(
-                    "Duplicate requires_ray_query flag in shader metadata.");
-                return luisa::nullopt;
-            }
-            auto x = read_token();
-            if (x == "TRUE") {
-                requires_ray_query.emplace(true);
-            } else if (x == "FALSE") {
-                requires_ray_query.emplace(false);
-            } else {
-                LUISA_WARNING_WITH_LOCATION(
-                    "Invalid requires_ray_query flag '{}' in shader metadata.", x);
                 return luisa::nullopt;
             }
         } else if (token == "BLOCK_SIZE") {
@@ -275,21 +221,6 @@ luisa::optional<CUDAShaderMetadata> deserialize_cuda_shader_metadata(luisa::stri
     if (!enable_debug.has_value()) {
         LUISA_WARNING_WITH_LOCATION(
             "Missing debug flag in shader metadata.");
-        return luisa::nullopt;
-    }
-    if (!requires_trace_closest.has_value()) {
-        LUISA_WARNING_WITH_LOCATION(
-            "Missing requires_trace_closest flag in shader metadata.");
-        return luisa::nullopt;
-    }
-    if (!requires_trace_any.has_value()) {
-        LUISA_WARNING_WITH_LOCATION(
-            "Missing requires_trace_any flag in shader metadata.");
-        return luisa::nullopt;
-    }
-    if (!requires_ray_query.has_value()) {
-        LUISA_WARNING_WITH_LOCATION(
-            "Missing requires_ray_query flag in shader metadata.");
         return luisa::nullopt;
     }
     if (!checksum.has_value()) {

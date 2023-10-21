@@ -24,6 +24,8 @@ set(COMMON_FILES
         cuda_stream.cpp
         cuda_swapchain.cpp
         cuda_texture.cpp
+        cuda_builtin/cuda_device_resource.h
+        cuda_builtin/cuda_device_math.h
 )
 
 set(CUB_FILES

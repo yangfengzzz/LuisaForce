@@ -4836,41 +4836,6 @@ public:
     return v;
 }
 
-__device__ inline void lc_accumulate_grad(lc_float *dst, lc_float grad) noexcept { *dst += lc_remove_nan(grad); }
-__device__ inline void lc_accumulate_grad(lc_float2x2 *dst, lc_float2x2 grad) noexcept { *dst += lc_remove_nan(grad); }
-__device__ inline void lc_accumulate_grad(lc_float3x3 *dst, lc_float3x3 grad) noexcept { *dst += lc_remove_nan(grad); }
-__device__ inline void lc_accumulate_grad(lc_float4x4 *dst, lc_float4x4 grad) noexcept { *dst += lc_remove_nan(grad); }
-__device__ inline void lc_accumulate_grad(lc_float2 *dst, lc_float2 grad) noexcept { *dst += lc_remove_nan(grad); }
-__device__ inline void lc_accumulate_grad(lc_float3 *dst, lc_float3 grad) noexcept { *dst += lc_remove_nan(grad); }
-__device__ inline void lc_accumulate_grad(lc_float4 *dst, lc_float4 grad) noexcept { *dst += lc_remove_nan(grad); }
-__device__ inline void lc_accumulate_grad(lc_short *dst, lc_short grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_ushort *dst, lc_ushort grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_int *dst, lc_int grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_uint *dst, lc_uint grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_long *dst, lc_long grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_ulong *dst, lc_ulong grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_bool *dst, lc_bool grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_short2 *dst, lc_short2 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_short3 *dst, lc_short3 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_short4 *dst, lc_short4 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_ushort2 *dst, lc_ushort2 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_ushort3 *dst, lc_ushort3 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_ushort4 *dst, lc_ushort4 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_int2 *dst, lc_int2 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_int3 *dst, lc_int3 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_int4 *dst, lc_int4 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_uint2 *dst, lc_uint2 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_uint3 *dst, lc_uint3 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_uint4 *dst, lc_uint4 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_long2 *dst, lc_long2 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_long3 *dst, lc_long3 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_long4 *dst, lc_long4 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_ulong2 *dst, lc_ulong2 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_ulong3 *dst, lc_ulong3 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_ulong4 *dst, lc_ulong4 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_bool2 *dst, lc_bool2 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_bool3 *dst, lc_bool3 grad) noexcept {}
-__device__ inline void lc_accumulate_grad(lc_bool4 *dst, lc_bool4 grad) noexcept {}
 struct lc_user_data_t {};
 constexpr lc_user_data_t _lc_user_data{};
 template<class T>
@@ -4964,12 +4929,6 @@ template<>
 struct element_type_<lc_ulong4> {
     using type = lc_ulong;
 };
-
-template<typename T, size_t N>
-__device__ inline void lc_accumulate_grad(lc_array<T, N> *dst, lc_array<T, N> grad) noexcept {
-#pragma unroll
-    for (auto i = 0u; i < N; i++) { lc_accumulate_grad(&(*dst)[i], grad[i]); }
-}
 
 template<typename T, size_t N>
 [[nodiscard]] __device__ inline lc_array<T, N> operator+(lc_array<T, N> arg) noexcept {
