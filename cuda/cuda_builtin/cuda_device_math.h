@@ -1,3 +1,6 @@
+#define WP_NO_CRT
+#include "math/cuda_spatial.h"
+
 using lc_short = short;
 using lc_ushort = unsigned short;
 using lc_int = int;
