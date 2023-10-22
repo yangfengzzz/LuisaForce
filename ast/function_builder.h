@@ -342,6 +342,8 @@ public:
     /// Add for statement
     [[nodiscard]] ForStmt *for_(const Expression *var, const Expression *condition, const Expression *update) noexcept;
 
+    [[nodiscard]] HashGridQueryStmt *hash_grid_query_(const RefExpr *query) noexcept;
+
     /// Run body function in given scope s
     template<typename Body>
     decltype(auto) with(ScopeStmt *s, Body &&body) {

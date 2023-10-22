@@ -387,7 +387,13 @@ void CUDACodegenAST::visit(const CallExpr *expr) {
         case CallOp::WARP_PREFIX_PRODUCT: _scratch << "lc_warp_prefix_product"; break;
         case CallOp::WARP_READ_LANE: _scratch << "lc_warp_read_lane"; break;
         case CallOp::WARP_READ_FIRST_ACTIVE_LANE: _scratch << "lc_warp_read_first_active_lane"; break;
-        case CallOp::SHADER_EXECUTION_REORDER: _scratch << "lc_shader_execution_reorder"; break;
+        case CallOp::SHADER_EXECUTION_REORDER:
+            _scratch << "lc_shader_execution_reorder";
+            break;
+            // todo
+        case CallOp::HASH_GRID_QUERY: break;
+        case CallOp::HASH_GRID_POINT_ID: break;
+        case CallOp::HASH_GRID_QUERY_NEIGHBOR: break;
     }
     _scratch << "(";
     if (auto op = expr->op(); is_atomic_operation(op)) {
@@ -926,7 +932,7 @@ void CUDACodegenAST::_emit_type_name(const Type *type) noexcept {
             _scratch << type->dimension() << ">";
             break;
         case Type::Tag::STRUCTURE: {
-                _scratch << "S" << hash_to_string(type->hash());
+            _scratch << "S" << hash_to_string(type->hash());
             break;
         }
         case Type::Tag::CUSTOM: {
@@ -1167,6 +1173,10 @@ void CUDACodegenAST::visit(const CpuCustomOpExpr *expr) {
 void CUDACodegenAST::visit(const GpuCustomOpExpr *expr) {
     LUISA_ERROR_WITH_LOCATION(
         "CudaCodegen: GpuCustomOpExpr is not supported in CUDA backend.");
+}
+
+void CUDACodegenAST::visit(const HashGridQueryStmt *) {
+    // todo
 }
 
 CUDACodegenAST::CUDACodegenAST(StringScratch &scratch, bool allow_indirect) noexcept

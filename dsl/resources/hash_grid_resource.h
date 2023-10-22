@@ -7,9 +7,7 @@
 #pragma once
 
 #include "runtime/hash_grid.h"
-#include "dsl/expr.h"
-#include "dsl/var.h"
-#include "dsl/atomic.h"
+#include "dsl/resources/hash_grid_query.h"
 
 namespace luisa::compute {
 template<>
@@ -30,11 +28,15 @@ public:
     [[nodiscard]] const RefExpr *expression() const noexcept { return _expression; }
 
     [[nodiscard]] auto point_id(Expr<uint2> tid) const noexcept {
+        auto f = detail::FunctionBuilder::current();
+        return def<Vector<uint, 2>>(
+            f->call(Type::of<Vector<uint, 2>>(), CallOp::HASH_GRID_POINT_ID,
+                    {_expression, tid.expression()}));
     }
 
     /// Read buffer at index
-    template<typename I>
-    [[nodiscard]] auto query(I &&x, float smoothing_length) const noexcept {
+    [[nodiscard]] HashGridQuery query(Expr<float3> x, Expr<float> smoothing_length) const noexcept {
+        return {_expression, x.expression(), smoothing_length.expression()};
     }
 };
 

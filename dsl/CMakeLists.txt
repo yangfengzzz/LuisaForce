@@ -21,6 +21,9 @@ set(COMMON_FILES
 set(RESOURCE_FILES
         resources/bindless_resource.cpp
         resources/bindless_resource.h
+        resources/hash_grid_query.h
+        resources/hash_grid_query.cpp
+        resources/hash_grid_resource.h
 )
 
 source_group("common\\" FILES ${COMMON_FILES})

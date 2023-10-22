@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
     auto divergence = device.compile<2>([&](BufferVar<float2> u, BufferVar<float> div) noexcept {
         UInt2 coord = dispatch_id().xy();
         // todo
-        hash_grid->point_id(coord);
+        auto i = hash_grid->point_id(coord);
 
         $if((coord.x < n_grid - 1) & (coord.y < n_grid - 1)) {
             auto dx = (u.read(index(make_uint2(coord.x + 1, coord.y)))[0] - u.read(index(coord))[0]) * 0.5f;

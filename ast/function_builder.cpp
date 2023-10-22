@@ -102,6 +102,10 @@ void FunctionBuilder::return_(const Expression *expr) noexcept {
     }
 }
 
+HashGridQueryStmt *FunctionBuilder::hash_grid_query_(const RefExpr *query) noexcept {
+    return _create_and_append_statement<HashGridQueryStmt>(query);
+}
+
 IfStmt *FunctionBuilder::if_(const Expression *cond) noexcept {
     return _create_and_append_statement<IfStmt>(cond);
 }

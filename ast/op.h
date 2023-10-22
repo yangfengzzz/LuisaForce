@@ -188,6 +188,10 @@ enum struct CallOp : uint32_t {
     TEXTURE_WRITE,/// [(texture, coord, value) -> void]
     TEXTURE_SIZE, /// [(texture) -> Vector<uint, dim>]
 
+    HASH_GRID_QUERY, /// (grid, coord, smooth_length) -> index
+    HASH_GRID_QUERY_NEIGHBOR,
+    HASH_GRID_POINT_ID, // (grid, coord) -> index
+
     BINDLESS_TEXTURE2D_SAMPLE,           // (bindless_array, index: uint, uv: float2): float4
     BINDLESS_TEXTURE2D_SAMPLE_LEVEL,     // (bindless_array, index: uint, uv: float2, level: float): float4
     BINDLESS_TEXTURE2D_SAMPLE_GRAD,      // (bindless_array, index: uint, uv: float2, ddx: float2, ddy: float2): float4

@@ -64,6 +64,7 @@ private:
     void visit(const CommentStmt *stmt) override;
     void visit(const CpuCustomOpExpr *expr) override;
     void visit(const GpuCustomOpExpr *expr) override;
+    void visit(const HashGridQueryStmt *) override;
 
 private:
     void _emit_type_decl(Function f) noexcept;

@@ -36,7 +36,8 @@ public:
         SWITCH_DEFAULT,
         ASSIGN,
         FOR,
-        COMMENT
+        COMMENT,
+        HASH_GRID_QUERY
     };
 
 private:
@@ -73,6 +74,7 @@ class SwitchDefaultStmt;
 class AssignStmt;
 class ForStmt;
 class CommentStmt;
+class HashGridQueryStmt;
 
 struct LC_AST_API StmtVisitor {
     virtual void visit(const BreakStmt *) = 0;
@@ -88,6 +90,7 @@ struct LC_AST_API StmtVisitor {
     virtual void visit(const AssignStmt *) = 0;
     virtual void visit(const ForStmt *) = 0;
     virtual void visit(const CommentStmt *) = 0;
+    virtual void visit(const HashGridQueryStmt *) = 0;
     virtual ~StmtVisitor() noexcept = default;
 };
 
@@ -399,6 +402,76 @@ public:
     LUISA_STATEMENT_COMMON()
 };
 
+// Example:
+// auto q = accel->trace_all(ray, mask)
+//   .on_triangle_candidate([](auto &candidate) {
+//     << triangle candidate handling >>
+//   })
+//   .on_procedural_candidate([](auto &candidate) {
+//     << procedural candidate handling >>
+//   })
+//   .query();
+// auto hit = q.committed_hit();
+//
+// On inline RT, translates to
+// auto q = lc_accel_trace_all(accel, ray, mask);
+// while (lc_ray_query_next(q)) {
+//   if (lc_ray_query_is_triangle(q)) {
+//     auto candidate = lc_ray_query_triangle_candidate(q);
+//     << triangle candidate handling >>
+//   } else {
+//     auto candidate = lc_ray_query_procedural_candidate(q);
+//     << procedural candidate handling >>
+//   }
+// }
+// auto hit = lc_ray_query_committed_hit(q);
+//
+// On RT-pipelines, translates to
+// in caller:
+// auto q = lc_accel_trace_all(accel, ray, mask);
+// auto hit = lc_ray_query_committed_hit(q);
+//
+// anyhit shader for triangle:
+// __global__ void__ __anyhit__ray_query() {
+//   auto committed = false;
+//   auto candidate = lc_ray_query_triangle_candidate();
+//   << triangle candidate handling >>
+//   if (!committed) { lc_ignore_intersection(); }
+// }
+//
+// intersection shader for procedural geometry:
+// __global__ void __intersection__ray_query() {
+//   auto candidate = lc_ray_query_procedural_candidate();
+//   << procedural candidate handling >>
+// }
+//
+// closest hit shader
+// __global__ void __closesthit__ray_query() {
+//   ...
+// }
+
+class HashGridQueryStmt : public Statement {
+    friend class CallableLibrary;
+
+private:
+    const RefExpr *_query;
+    ScopeStmt _on_triangle_candidate;
+
+private:
+    [[nodiscard]] uint64_t _compute_hash() const noexcept override;
+    HashGridQueryStmt() noexcept = default;
+
+public:
+    explicit HashGridQueryStmt(const RefExpr *query) noexcept
+        : Statement{Tag::HASH_GRID_QUERY}, _query{query} {
+        _query->mark(Usage::READ_WRITE);
+    }
+    [[nodiscard]] auto query() const noexcept { return _query; }
+    [[nodiscard]] auto on_triangle_candidate() noexcept { return &_on_triangle_candidate; }
+    [[nodiscard]] auto on_triangle_candidate() const noexcept { return &_on_triangle_candidate; }
+    LUISA_STATEMENT_COMMON()
+};
+
 #undef LUISA_STATEMENT_COMMON
 
 // helper function for easy traversal over the ASTs
@@ -491,6 +564,13 @@ void traverse_expressions(
             break;
         }
         case Statement::Tag::COMMENT: break;
+        case Statement::Tag::HASH_GRID_QUERY: {
+            auto rq_stmt = static_cast<const HashGridQueryStmt *>(stmt);
+            do_visit(rq_stmt->query());
+            traverse_expressions<recurse_subexpr>(
+                rq_stmt->on_triangle_candidate(), visit, enter_stmt, exit_stmt);
+            break;
+        }
     }
     exit_stmt(stmt);
 }
