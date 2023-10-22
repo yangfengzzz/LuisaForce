@@ -15,7 +15,8 @@ struct Argument {
         BUFFER,
         TEXTURE,
         UNIFORM,
-        BINDLESS_ARRAY
+        BINDLESS_ARRAY,
+        HASH_GRID
     };
 
     struct Buffer {
@@ -48,6 +49,7 @@ struct Argument {
         Texture texture;
         Uniform uniform;
         BindlessArray bindless_array;
+        HashGrid hash_grid;
     };
 };
 

@@ -502,6 +502,9 @@ ShaderCreationInfo CUDADevice::create_shader(const ShaderOption &option, Functio
                 } else if constexpr (std::is_same_v<T, Function::BindlessArrayBinding>) {
                     argument.tag = ShaderDispatchCommand::Argument::Tag::BINDLESS_ARRAY;
                     argument.bindless_array.handle = binding.handle;
+                } else if constexpr (std::is_same_v<T, Function::HashGridBinding>) {
+                    argument.tag = ShaderDispatchCommand::Argument::Tag::HASH_GRID;
+                    argument.hash_grid.handle = binding.handle;
                 } else {
                     LUISA_ERROR_WITH_LOCATION("Unsupported binding type.");
                 }
@@ -825,6 +828,9 @@ void CUDADevice::set_name(luisa::compute::Resource::Tag resource_tag,
 #ifdef LUISA_BACKEND_ENABLE_VULKAN_SWAPCHAIN
                 reinterpret_cast<CUDASwapchain *>(handle)->set_name(std::move(name));
 #endif
+                break;
+            case Resource::Tag::HASH_GRID:
+                // todo
                 break;
             default: break;
         }

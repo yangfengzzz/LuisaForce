@@ -142,6 +142,10 @@ void CUDAShaderNative::_launch(CUDACommandEncoder &encoder, ShaderDispatchComman
                 std::memcpy(ptr, &binding, sizeof(binding));
                 break;
             }
+            case Tag::HASH_GRID: {
+                // todo
+                break;
+            }
         }
     };
     for (auto &&arg : _bound_arguments) { encode_argument(arg); }
