@@ -455,7 +455,7 @@ class HashGridQueryStmt : public Statement {
 
 private:
     const RefExpr *_query;
-    ScopeStmt _on_triangle_candidate;
+    ScopeStmt _on_neighbor_candidate;
 
 private:
     [[nodiscard]] uint64_t _compute_hash() const noexcept override;
@@ -467,8 +467,8 @@ public:
         _query->mark(Usage::READ_WRITE);
     }
     [[nodiscard]] auto query() const noexcept { return _query; }
-    [[nodiscard]] auto on_triangle_candidate() noexcept { return &_on_triangle_candidate; }
-    [[nodiscard]] auto on_triangle_candidate() const noexcept { return &_on_triangle_candidate; }
+    [[nodiscard]] auto on_neighbor_candidate() noexcept { return &_on_neighbor_candidate; }
+    [[nodiscard]] auto on_neighbor_candidate() const noexcept { return &_on_neighbor_candidate; }
     LUISA_STATEMENT_COMMON()
 };
 
@@ -568,7 +568,7 @@ void traverse_expressions(
             auto rq_stmt = static_cast<const HashGridQueryStmt *>(stmt);
             do_visit(rq_stmt->query());
             traverse_expressions<recurse_subexpr>(
-                rq_stmt->on_triangle_candidate(), visit, enter_stmt, exit_stmt);
+                rq_stmt->on_neighbor_candidate(), visit, enter_stmt, exit_stmt);
             break;
         }
     }

@@ -92,7 +92,7 @@ uint64_t CommentStmt::_compute_hash() const noexcept {
 
 uint64_t HashGridQueryStmt::_compute_hash() const noexcept {
     return hash_combine({_query->hash(),
-                         _on_triangle_candidate.hash()});
+                         _on_neighbor_candidate.hash()});
 }
 
 }// namespace luisa::compute
