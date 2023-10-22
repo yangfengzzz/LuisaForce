@@ -27,6 +27,12 @@ uint64_t Function::BindlessArrayBinding::hash() const noexcept {
     return hash_value(handle, seed);
 }
 
+uint64_t Function::HashGridBinding::hash() const noexcept {
+    using namespace std::string_view_literals;
+    static auto seed = hash_value("__hash_hash_grid_binding"sv);
+    return hash_value(handle, seed);
+}
+
 luisa::span<const Variable> Function::builtin_variables() const noexcept {
     return _builder->builtin_variables();
 }

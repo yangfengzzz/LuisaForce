@@ -38,6 +38,10 @@ struct Argument {
         uint64_t handle;
     };
 
+    struct HashGrid {
+        uint64_t handle;
+    };
+
     Tag tag;
     union {
         Buffer buffer;

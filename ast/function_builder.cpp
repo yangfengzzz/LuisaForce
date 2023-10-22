@@ -439,8 +439,30 @@ const RefExpr *FunctionBuilder::bindless_array_binding(uint64_t handle) noexcept
 }
 
 const RefExpr *FunctionBuilder::hash_grid_binding(uint64_t handle) noexcept {
-    // todo
-    return nullptr;
+    for (auto i = 0u; i < _arguments.size(); i++) {
+        if (luisa::visit(
+                [&]<typename T>(T binding) noexcept {
+                    if constexpr (std::is_same_v<T, Function::HashGridBinding>) {
+                        return binding.handle == handle;
+                    } else {
+                        return false;
+                    }
+                },
+                _bound_arguments[i])) {
+            return _ref(_arguments[i]);
+        }
+    }
+    Variable v{Type::of<HashGrid>(), Variable::Tag::HASH_GRID, _next_variable_uid()};
+    _arguments.emplace_back(v);
+    _bound_arguments.emplace_back(Function::HashGridBinding{handle});
+    return _ref(v);
+}
+
+const RefExpr *FunctionBuilder::hash_grid() noexcept {
+    Variable v{Type::of<HashGrid>(), Variable::Tag::HASH_GRID, _next_variable_uid()};
+    _arguments.emplace_back(v);
+    _bound_arguments.emplace_back();
+    return _ref(v);
 }
 
 const RefExpr *FunctionBuilder::bindless_array() noexcept {

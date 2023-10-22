@@ -32,6 +32,7 @@ template<typename T>
 class VolumeView;
 
 class BindlessArray;
+class HashGrid;
 class ByteBuffer;
 
 namespace detail {
@@ -193,6 +194,13 @@ template<>
 struct TypeDesc<BindlessArray> {
     static constexpr luisa::string_view description() noexcept {
         return "bindless_array";
+    }
+};
+
+template<>
+struct TypeDesc<HashGrid> {
+    static constexpr luisa::string_view description() noexcept {
+        return "hash_grid";
     }
 };
 

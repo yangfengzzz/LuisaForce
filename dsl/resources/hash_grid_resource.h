@@ -40,6 +40,21 @@ public:
     }
 };
 
+Expr(const HashGrid &) noexcept -> Expr<HashGrid>;
+
+template<>
+struct Var<HashGrid> : public Expr<HashGrid> {
+    explicit Var(detail::ArgumentCreation) noexcept
+        : Expr<HashGrid> { detail::FunctionBuilder::current()->hash_grid() }
+    {}
+    Var(Var &&) noexcept = default;
+    Var(const Var &) noexcept = delete;
+    Var &operator=(Var &&) noexcept = delete;
+    Var &operator=(const Var &) noexcept = delete;
+};
+
+using HashGridVar = Var<HashGrid>;
+
 namespace detail {
 
 class HashGridExprProxy {

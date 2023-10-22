@@ -79,6 +79,18 @@ public:
     };
 
     /**
+     * @brief HashGrid structure binding.
+     *
+     * Bind accel handle.
+     */
+    struct HashGridBinding : public Argument::HashGrid {
+        HashGridBinding() noexcept = default;
+        explicit HashGridBinding(uint64_t handle) noexcept
+            : Argument::HashGrid{.handle = handle} {}
+        [[nodiscard]] uint64_t hash() const noexcept;
+    };
+
+    /**
      * @brief CPU extension callback.
      *
      * Extension callback for CPU backends.
@@ -92,7 +104,8 @@ public:
         luisa::monostate,// not bound
         BufferBinding,
         TextureBinding,
-        BindlessArrayBinding>;
+        BindlessArrayBinding,
+        HashGridBinding>;
 
 private:
     const detail::FunctionBuilder *_builder{nullptr};

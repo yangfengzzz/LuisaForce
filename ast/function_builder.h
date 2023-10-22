@@ -273,6 +273,8 @@ public:
     [[nodiscard]] const RefExpr *texture(const Type *type) noexcept;
     /// Add bindless array argument
     [[nodiscard]] const RefExpr *bindless_array() noexcept;
+    /// Add hash grid structure argument
+    [[nodiscard]] const RefExpr *hash_grid() noexcept;
 
     // expressions
     /// Create literal expression
