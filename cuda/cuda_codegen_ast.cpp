@@ -11,6 +11,7 @@
 #include "ast/constant_data.h"
 #include "ast/function_builder.h"
 #include "runtime/dispatch_buffer.h"
+#include "dsl/resources/hash_grid_query.h"
 
 #include "cuda_texture.h"
 #include "cuda_codegen_ast.h"
@@ -391,8 +392,8 @@ void CUDACodegenAST::visit(const CallExpr *expr) {
             _scratch << "lc_shader_execution_reorder";
             break;
             // todo
-        case CallOp::HASH_GRID_QUERY: break;
-        case CallOp::HASH_GRID_POINT_ID: break;
+        case CallOp::HASH_GRID_QUERY: _scratch << "wp::hash_grid_query"; break;
+        case CallOp::HASH_GRID_POINT_ID: _scratch << "wp::hash_grid_point_id"; break;
         case CallOp::HASH_GRID_QUERY_NEIGHBOR: break;
     }
     _scratch << "(";
@@ -857,7 +858,8 @@ void CUDACodegenAST::_emit_type_decl(Function kernel) noexcept {
 }
 
 void CUDACodegenAST::visit(const Type *type) noexcept {
-    if (type->is_structure()) {
+    if (type->is_structure() &&
+        type != _hash_grid_query_type) {
         _scratch << "struct alignas(" << type->alignment() << ") ";
         _emit_type_name(type);
         _scratch << " {\n";
@@ -937,7 +939,9 @@ void CUDACodegenAST::_emit_type_name(const Type *type) noexcept {
             break;
         }
         case Type::Tag::CUSTOM: {
-            if (type == _indirect_buffer_type) {
+            if (type == _hash_grid_query_type) {
+                _scratch << "wp::hash_grid_query_t";
+            } else if (type == _indirect_buffer_type) {
                 _scratch << "LCIndirectBuffer";
             } else {
                 LUISA_ERROR_WITH_LOCATION(
@@ -1002,9 +1006,8 @@ void CUDACodegenAST::_emit_variable_decl(Function f, Variable v, bool force_cons
             _emit_variable_name(v);
             break;
         case Variable::Tag::HASH_GRID:
-            // todo
-            // _scratch << "const LCAccel ";
-            // _emit_variable_name(v);
+            _scratch << "const uint64_t ";
+            _emit_variable_name(v);
             break;
         default:
             _emit_type_name(v.type());
@@ -1188,7 +1191,8 @@ void CUDACodegenAST::visit(const HashGridQueryStmt *) {
 CUDACodegenAST::CUDACodegenAST(StringScratch &scratch, bool allow_indirect) noexcept
     : _scratch{scratch},
       _allow_indirect_dispatch{allow_indirect},
-      _indirect_buffer_type{Type::of<IndirectDispatchBuffer>()} {}
+      _indirect_buffer_type{Type::of<IndirectDispatchBuffer>()},
+      _hash_grid_query_type{Type::of<HashGridQuery>()} {}
 
 CUDACodegenAST::~CUDACodegenAST() noexcept = default;
 

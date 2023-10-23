@@ -8,6 +8,7 @@
 
 #include "core/stl/functional.h"
 #include "ast/statement.h"
+#include "dsl/var.h"
 
 namespace luisa::compute {
 class HashGridQuery;

@@ -170,7 +170,7 @@ CUDA_CALLABLE inline hash_grid_query_t iter_reverse(const hash_grid_query_t &que
     return query;
 }
 
-CUDA_CALLABLE inline int hash_grid_point_id(uint64_t id, int &index) {
+CUDA_CALLABLE inline int hash_grid_point_id(uint64_t id, unsigned int &index) {
     const auto *grid = (const HashGrid *)(id);
     if (grid->point_ids == nullptr)
         return -1;

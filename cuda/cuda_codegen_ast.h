@@ -35,6 +35,7 @@ private:
 
 private:
     const Type *_indirect_buffer_type;
+    const Type *_hash_grid_query_type;
 
 private:
     void visit(const Type *type) noexcept override;

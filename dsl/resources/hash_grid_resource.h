@@ -27,10 +27,10 @@ public:
     /// Return RefExpr
     [[nodiscard]] const RefExpr *expression() const noexcept { return _expression; }
 
-    [[nodiscard]] auto point_id(Expr<uint2> tid) const noexcept {
+    [[nodiscard]] auto point_id(Expr<uint> tid) const noexcept {
         auto f = detail::FunctionBuilder::current();
-        return def<Vector<uint, 2>>(
-            f->call(Type::of<Vector<uint, 2>>(), CallOp::HASH_GRID_POINT_ID,
+        return def<int>(
+            f->call(Type::of<int>(), CallOp::HASH_GRID_POINT_ID,
                     {_expression, tid.expression()}));
     }
 
@@ -65,7 +65,7 @@ private:
 public:
     LUISA_RESOURCE_PROXY_AVOID_CONSTRUCTION(HashGridExprProxy)
 
-    [[nodiscard]] auto point_id(Expr<uint2> tid) const noexcept {
+    [[nodiscard]] auto point_id(Expr<uint> tid) const noexcept {
         return Expr<HashGrid>{_grid}.point_id(tid);
     }
 
