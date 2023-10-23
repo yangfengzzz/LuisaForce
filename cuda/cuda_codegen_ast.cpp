@@ -601,7 +601,7 @@ void CUDACodegenAST::emit(Function f,
              << f.block_size().y << ", "
              << f.block_size().z << ")\n"
              << "\n/* built-in device library begin */\n"
-             << "#include \"cuda_device_resource.h\" \n"
+             << "#include \"cuda_builtin.h\" \n"
              << "\n/* built-in device library end */\n\n";
 
     _emit_type_decl(f);

@@ -45,6 +45,7 @@ int main(int argc, char *argv[]) {
         hash_grid->query(x, 2.0);
     };
     Shader2D<> shader = device.compile(kernel);
-    stream << shader().dispatch(resolution)
+    stream << hash_grid.reserve(n)
+           << shader().dispatch(resolution)
            << synchronize();
 }
