@@ -72,6 +72,12 @@ void ShaderDispatchCmdEncoder::_encode_bindless_array(uint64_t handle) noexcept 
     arg.bindless_array = Argument::BindlessArray{handle};
 }
 
+void ShaderDispatchCmdEncoder::_encode_hash_grid(uint64_t handle) noexcept {
+    auto &&arg = _create_argument();
+    arg.tag = Argument::Tag::HASH_GRID;
+    arg.hash_grid = Argument::HashGrid{handle};
+}
+
 size_t ShaderDispatchCmdEncoder::compute_uniform_size(luisa::span<const Variable> arguments) noexcept {
     return std::accumulate(
         arguments.cbegin(), arguments.cend(),
@@ -109,6 +115,10 @@ void ComputeDispatchCmdEncoder::encode_uniform(const void *data, size_t size) no
 
 void ComputeDispatchCmdEncoder::encode_bindless_array(uint64_t handle) noexcept {
     _encode_bindless_array(handle);
+}
+
+void ComputeDispatchCmdEncoder::encode_hash_grid(uint64_t handle) noexcept {
+    _encode_hash_grid(handle);
 }
 
 luisa::unique_ptr<ShaderDispatchCommand> ComputeDispatchCmdEncoder::build() && noexcept {

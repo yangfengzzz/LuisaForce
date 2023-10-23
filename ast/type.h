@@ -301,6 +301,7 @@ public:
         BUFFER,
         TEXTURE,
         BINDLESS_ARRAY,
+        HASH_GRID,
 
         CUSTOM
     };
@@ -439,6 +440,7 @@ public:
     [[nodiscard]] bool is_buffer() const noexcept;
     [[nodiscard]] bool is_texture() const noexcept;
     [[nodiscard]] bool is_bindless_array() const noexcept;
+    [[nodiscard]] bool is_hash_grid() const noexcept;
     [[nodiscard]] bool is_custom() const noexcept;
     [[nodiscard]] bool is_resource() const noexcept;
 };

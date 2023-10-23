@@ -143,7 +143,9 @@ void CUDAShaderNative::_launch(CUDACommandEncoder &encoder, ShaderDispatchComman
                 break;
             }
             case Tag::HASH_GRID: {
-                // todo
+                auto binding = arg.hash_grid.handle;
+                auto ptr = allocate_argument(sizeof(binding));
+                std::memcpy(ptr, &binding, sizeof(binding));
                 break;
             }
         }

@@ -129,6 +129,9 @@ public:
         return *this;
     }
 
+    // see definition in runtime/hash_grid.cpp
+    ShaderInvokeBase &operator<<(const HashGrid &hash_grid) noexcept;
+
     // see definition in runtime/bindless_array.cpp
     ShaderInvokeBase &operator<<(const BindlessArray &array) noexcept;
 

@@ -6,8 +6,19 @@
 
 #include "runtime/hash_grid.h"
 #include "runtime/device.h"
+#include "runtime/shader.h"
 
 namespace luisa::compute {
+namespace detail {
+
+ShaderInvokeBase &ShaderInvokeBase::operator<<(const HashGrid &accel) noexcept {
+    accel._check_is_valid();
+    _encoder.encode_hash_grid(accel.handle());
+    return *this;
+}
+
+}// namespace detail
+
 // counting event
 HashGrid Device::create_hash_grid(int dim_x, int dim_y, int dim_z) noexcept {
     return _create<HashGrid>(dim_x, dim_y, dim_z);

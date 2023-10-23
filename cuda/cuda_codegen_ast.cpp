@@ -769,6 +769,7 @@ void CUDACodegenAST::_emit_variable_name(Variable v) noexcept {
         case Variable::Tag::BUFFER: _scratch << "b" << v.uid(); break;
         case Variable::Tag::TEXTURE: _scratch << "i" << v.uid(); break;
         case Variable::Tag::BINDLESS_ARRAY: _scratch << "h" << v.uid(); break;
+        case Variable::Tag::HASH_GRID: _scratch << "hash_grid" << v.uid(); break;
         case Variable::Tag::THREAD_ID: _scratch << "tid"; break;
         case Variable::Tag::BLOCK_ID: _scratch << "bid"; break;
         case Variable::Tag::DISPATCH_ID: _scratch << "did"; break;
@@ -999,6 +1000,11 @@ void CUDACodegenAST::_emit_variable_decl(Function f, Variable v, bool force_cons
         case Variable::Tag::BINDLESS_ARRAY:
             _scratch << "const LCBindlessArray ";
             _emit_variable_name(v);
+            break;
+        case Variable::Tag::HASH_GRID:
+            // todo
+            // _scratch << "const LCAccel ";
+            // _emit_variable_name(v);
             break;
         default:
             _emit_type_name(v.type());
