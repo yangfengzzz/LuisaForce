@@ -212,8 +212,8 @@ void CUDACodegenAST::visit(const CallExpr *expr) {
         }
         case CallOp::CUSTOM: _scratch << "custom_" << hash_to_string(expr->custom().hash()); break;
         case CallOp::EXTERNAL: _scratch << expr->external()->name(); break;
-        case CallOp::ALL: _scratch << "lc_all"; break;
-        case CallOp::ANY: _scratch << "lc_any"; break;
+        case CallOp::ALL: _scratch << "wp::all"; break;
+        case CallOp::ANY: _scratch << "wp::any"; break;
         case CallOp::SELECT: _scratch << "lc_select"; break;
         case CallOp::CLAMP: _scratch << "lc_clamp"; break;
         case CallOp::SATURATE: _scratch << "lc_saturate"; break;
@@ -633,7 +633,7 @@ void CUDACodegenAST::_emit_function(Function f) noexcept {
             _emit_variable_decl(f, arg, !arg.type()->is_buffer());
             _scratch << "{};";
         }
-        _scratch << "\n  alignas(16) lc_uint4 ls_kid;";
+        _scratch << "\n  alignas(16) wp::wp_uint4 ls_kid;";
         _scratch << "\n};\n\n";
     }
 
@@ -707,7 +707,7 @@ void CUDACodegenAST::_emit_function(Function f) noexcept {
     // emit built-in variables
     if (f.tag() == Function::Tag::KERNEL) {
         _emit_builtin_variables();
-        _scratch << "\n  if (lc_any(did >= ls)) { return; }";
+        _scratch << "\n  if (wp::any(did >= ls)) { return; }";
     }
     _indent = 1;
     _emit_variable_declarations(f);
@@ -745,21 +745,21 @@ void CUDACodegenAST::_emit_function(Function f) noexcept {
 void CUDACodegenAST::_emit_builtin_variables() noexcept {
     _scratch
         // block size
-        << "\n  constexpr auto bs = lc_block_size();"
+        << "\n  constexpr auto bs = wp::block_size();"
         // launch size
-        << "\n  const auto ls = lc_dispatch_size();"
+        << "\n  const auto ls = wp::dispatch_size();"
         // dispatch id
-        << "\n  const auto did = lc_dispatch_id();"
+        << "\n  const auto did = wp::dispatch_id();"
         // thread id
-        << "\n  const auto tid = lc_thread_id();"
+        << "\n  const auto tid = wp::thread_id();"
         // block id
-        << "\n  const auto bid = lc_block_id();"
+        << "\n  const auto bid = wp::block_id();"
         // kernel id
-        << "\n  const auto kid = lc_kernel_id();"
+        << "\n  const auto kid = wp::kernel_id();"
         // warp size
-        << "\n  const auto ws = lc_warp_size();"
+        << "\n  const auto ws = wp::warp_size();"
         // warp lane id
-        << "\n  const auto lid = lc_warp_lane_id();";
+        << "\n  const auto lid = wp::warp_lane_id();";
 }
 
 void CUDACodegenAST::_emit_variable_name(Variable v) noexcept {
@@ -908,16 +908,16 @@ void CUDACodegenAST::_emit_type_name(const Type *type) noexcept {
         return;
     }
     switch (type->tag()) {
-        case Type::Tag::BOOL: _scratch << "lc_bool"; break;
-        case Type::Tag::FLOAT16: _scratch << "lc_half"; break;
-        case Type::Tag::FLOAT32: _scratch << "lc_float"; break;
-        case Type::Tag::FLOAT64: _scratch << "lc_double"; break;
-        case Type::Tag::INT16: _scratch << "lc_short"; break;
-        case Type::Tag::UINT16: _scratch << "lc_ushort"; break;
-        case Type::Tag::INT32: _scratch << "lc_int"; break;
-        case Type::Tag::UINT32: _scratch << "lc_uint"; break;
-        case Type::Tag::INT64: _scratch << "lc_long"; break;
-        case Type::Tag::UINT64: _scratch << "lc_ulong"; break;
+        case Type::Tag::BOOL: _scratch << "wp::wp_bool"; break;
+        case Type::Tag::FLOAT16: _scratch << "wp::wp_half"; break;
+        case Type::Tag::FLOAT32: _scratch << "wp::wp_float"; break;
+        case Type::Tag::FLOAT64: _scratch << "wp::wp_double"; break;
+        case Type::Tag::INT16: _scratch << "wp::wp_short"; break;
+        case Type::Tag::UINT16: _scratch << "wp::wp_ushort"; break;
+        case Type::Tag::INT32: _scratch << "wp::wp_int"; break;
+        case Type::Tag::UINT32: _scratch << "wp::wp_uint"; break;
+        case Type::Tag::INT64: _scratch << "wp::wp_long"; break;
+        case Type::Tag::UINT64: _scratch << "wp::wp_ulong"; break;
         case Type::Tag::VECTOR:
             _emit_type_name(type->element());
             _scratch << type->dimension();
@@ -1046,12 +1046,12 @@ public:
 
 protected:
     void _decode_bool(bool x) noexcept override { _codegen->_scratch << (x ? "true" : "false"); }
-    void _decode_short(short x) noexcept override { _codegen->_scratch << fmt::format("lc_short({})", x); }
-    void _decode_ushort(ushort x) noexcept override { _codegen->_scratch << fmt::format("lc_ushort({})", x); }
-    void _decode_int(int x) noexcept override { _codegen->_scratch << fmt::format("lc_int({})", x); }
-    void _decode_uint(uint x) noexcept override { _codegen->_scratch << fmt::format("lc_uint({})", x); }
-    void _decode_long(slong x) noexcept override { _codegen->_scratch << fmt::format("lc_long({})", x); }
-    void _decode_ulong(ulong x) noexcept override { _codegen->_scratch << fmt::format("lc_ulong({})", x); }
+    void _decode_short(short x) noexcept override { _codegen->_scratch << fmt::format("wp::wp_short({})", x); }
+    void _decode_ushort(ushort x) noexcept override { _codegen->_scratch << fmt::format("wp::wp_ushort({})", x); }
+    void _decode_int(int x) noexcept override { _codegen->_scratch << fmt::format("wp::wp_int({})", x); }
+    void _decode_uint(uint x) noexcept override { _codegen->_scratch << fmt::format("wp::wp_uint({})", x); }
+    void _decode_long(slong x) noexcept override { _codegen->_scratch << fmt::format("wp::wp_long({})", x); }
+    void _decode_ulong(ulong x) noexcept override { _codegen->_scratch << fmt::format("wp::wp_ulong({})", x); }
     void _decode_half(half x) noexcept override {
         LUISA_NOT_IMPLEMENTED();
     }

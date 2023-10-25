@@ -61,6 +61,15 @@ typedef uint32_t uint32;
 typedef int64_t int64;
 typedef uint64_t uint64;
 
+using wp_short = int16;
+using wp_ushort = uint16;
+using wp_int = int32;
+using wp_uint = uint32;
+using wp_long = int64;
+using wp_ulong = uint64;
+using wp_float = float32;
+using wp_bool = bool;
+
 // matches Python string type for constant strings
 typedef const char *str;
 
@@ -194,6 +203,16 @@ inline CUDA_CALLABLE half operator*(double a, half b) {
 inline CUDA_CALLABLE half operator/(half a, half b) {
     return float_to_half(half_to_float(a) / half_to_float(b));
 }
+
+using wp_half = half;
+
+struct alignas(4) wp_half2 {
+    wp_half x, y;
+};
+
+struct alignas(8) wp_half4 {
+    wp_half x, y, z, w;
+};
 
 template<typename T>
 CUDA_CALLABLE float cast_float(T x) { return (float)(x); }

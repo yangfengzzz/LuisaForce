@@ -25,8 +25,8 @@ set(COMMON_FILES
 )
 
 set(BUILTIN_FILES
-        cuda_builtin/cuda_device_math.h
-        cuda_builtin/cuda_device_resource.h
+        cuda_builtin/cuda_builtin.h
+        cuda_builtin/cuda_warp.h
         #
         cuda_builtin/math/cuda_crt.h
         cuda_builtin/math/cuda_crt.cpp

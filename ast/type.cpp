@@ -384,8 +384,8 @@ const TypeImpl *TypeRegistry::_decode(luisa::string_view desc) noexcept {
         info->alignment = 8u;
     } else if (type_identifier == "hash_grid"sv) {
         info->tag = Type::Tag::HASH_GRID;
-        info->size = 4u;
-        info->alignment = 4u;
+        info->size = 8u;
+        info->alignment = 8u;
     } else [[unlikely]] {
         LUISA_ERROR_WITH_LOCATION(
             "Unknown type identifier: {}.",

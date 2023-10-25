@@ -25,8 +25,8 @@ struct mat_t {
                 data[i][j] = s;
     }
 
-    template<typename OtherType>
-    inline explicit CUDA_CALLABLE mat_t(const mat_t<Rows, Cols, OtherType> &other) {
+    template<unsigned OtherRows, unsigned OtherCols, typename OtherType>
+    inline explicit CUDA_CALLABLE mat_t(const mat_t<OtherRows, OtherCols, OtherType> &other) {
         for (unsigned i = 0; i < Rows; ++i)
             for (unsigned j = 0; j < Cols; ++j)
                 data[i][j] = other.data[i][j];
@@ -165,6 +165,10 @@ struct mat_t {
         for (unsigned i = 0; i < Rows; ++i) {
             data[i][index] = v[i];
         }
+    }
+
+    CUDA_CALLABLE_DEVICE inline constexpr auto operator[](int index) const noexcept {
+        return get_col(index);
     }
 
     // row major storage assumed to be compatible with PyTorch
@@ -740,6 +744,10 @@ using mat44f = mat_t<4, 4, float>;
 using mat22d = mat_t<2, 2, double>;
 using mat33d = mat_t<3, 3, double>;
 using mat44d = mat_t<4, 4, double>;
+
+using float2x2 = mat_t<2, 2, float>;
+using float3x3 = mat_t<3, 3, float>;
+using float4x4 = mat_t<4, 4, float>;
 
 template<unsigned Rows, unsigned Cols, typename Type>
 inline CUDA_CALLABLE void print(const mat_t<Rows, Cols, Type> &m) {
