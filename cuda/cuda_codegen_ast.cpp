@@ -60,7 +60,7 @@ void CUDACodegenAST::visit(const BinaryExpr *expr) {
 
 void CUDACodegenAST::visit(const MemberExpr *expr) {
     if (expr->is_swizzle()) {
-        static constexpr std::string_view xyzw[]{"x", "y", "z", "w"};
+        static constexpr std::string_view xyzw[]{"x()", "y()", "z()", "w()"};
         if (auto ss = expr->swizzle_size(); ss == 1u) {
             expr->self()->accept(*this);
             _scratch << ".";
@@ -278,9 +278,9 @@ void CUDACodegenAST::visit(const CallExpr *expr) {
         case CallOp::ATOMIC_FETCH_XOR: _scratch << "lc_atomic_fetch_xor"; break;
         case CallOp::ATOMIC_FETCH_MIN: _scratch << "lc_atomic_fetch_min"; break;
         case CallOp::ATOMIC_FETCH_MAX: _scratch << "lc_atomic_fetch_max"; break;
-        case CallOp::BUFFER_READ: _scratch << "lc_buffer_read"; break;
-        case CallOp::BUFFER_WRITE: _scratch << "lc_buffer_write"; break;
-        case CallOp::BUFFER_SIZE: _scratch << "lc_buffer_size"; break;
+        case CallOp::BUFFER_READ: _scratch << "wp::buffer_read"; break;
+        case CallOp::BUFFER_WRITE: _scratch << "wp::buffer_write"; break;
+        case CallOp::BUFFER_SIZE: _scratch << "wp::buffer_size"; break;
         case CallOp::BYTE_BUFFER_READ: {
             _scratch << "lc_byte_buffer_read<";
             _emit_type_name(expr->type());
@@ -596,7 +596,7 @@ void CUDACodegenAST::visit(const AssignStmt *stmt) {
 
 void CUDACodegenAST::emit(Function f,
                           luisa::string_view native_include) {
-    _scratch << "#define LC_BLOCK_SIZE lc_make_uint3("
+    _scratch << "#define LC_BLOCK_SIZE wp::wp_uint3("
              << f.block_size().x << ", "
              << f.block_size().y << ", "
              << f.block_size().z << ")\n"
@@ -755,7 +755,7 @@ void CUDACodegenAST::_emit_builtin_variables() noexcept {
         // block id
         << "\n  const auto bid = wp::block_id();"
         // kernel id
-        << "\n  const auto kid = wp::kernel_id();"
+        << "\n  const auto kid = kernel_id();"
         // warp size
         << "\n  const auto ws = wp::warp_size();"
         // warp lane id
@@ -982,7 +982,7 @@ void CUDACodegenAST::_emit_variable_decl(Function f, Variable v, bool force_cons
             if (v.type() == _indirect_buffer_type) {
                 _scratch << "LCIndirectBuffer ";
             } else {
-                _scratch << "const LCBuffer<";
+                _scratch << "const wp::Buffer<";
                 if (readonly || force_const) { _scratch << "const "; }
                 if (auto elem = v.type()->element()) {
                     _emit_type_name(elem);

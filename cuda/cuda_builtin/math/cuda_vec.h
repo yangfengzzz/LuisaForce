@@ -140,21 +140,25 @@ struct vec_t {
         return c[index];
     }
 
+    inline CUDA_CALLABLE constexpr Type x() const {
+        return c[0];
+    }
+
     inline CUDA_CALLABLE constexpr Type x() {
         return c[0];
     }
 
-    inline CUDA_CALLABLE constexpr Type y() {
+    inline CUDA_CALLABLE constexpr Type y() const {
         assert(1 < Length);
         return c[1];
     }
 
-    inline CUDA_CALLABLE constexpr Type z() {
+    inline CUDA_CALLABLE constexpr Type z() const {
         assert(2 < Length);
         return c[2];
     }
 
-    inline CUDA_CALLABLE constexpr Type w() {
+    inline CUDA_CALLABLE constexpr Type w() const {
         assert(3 < Length);
         return c[3];
     }
@@ -426,6 +430,169 @@ inline CUDA_CALLABLE vec_t<3, Type> sub(vec_t<3, Type> a, vec_t<3, Type> b) {
 template<unsigned Length, typename Type>
 inline CUDA_CALLABLE vec_t<Length, Type> operator-(vec_t<Length, Type> a, Type s) {
     return sub(a, vec_t<Length, Type>(s));
+}
+
+// cmp
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator<(Type s, vec_t<Length, Type> a) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = s < a[i];
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator<(vec_t<Length, Type> a, Type s) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = a[i] < s;
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator<(vec_t<Length, Type> a, vec_t<Length, Type> b) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = a[i] < b[i];
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator<=(Type s, vec_t<Length, Type> a) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = s <= a[i];
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator<=(vec_t<Length, Type> a, Type s) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = a[i] <= s;
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator<=(vec_t<Length, Type> a, vec_t<Length, Type> b) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = a[i] <= b[i];
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator>(Type s, vec_t<Length, Type> a) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = s > a[i];
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator>(vec_t<Length, Type> a, Type s) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = a[i] > s;
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator>(vec_t<Length, Type> a, vec_t<Length, Type> b) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = a[i] > b[i];
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator>=(Type s, vec_t<Length, Type> a) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = s >= a[i];
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator>=(vec_t<Length, Type> a, Type s) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = a[i] >= s;
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator>=(vec_t<Length, Type> a, vec_t<Length, Type> b) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = a[i] >= b[i];
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator==(Type s, vec_t<Length, Type> a) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = s == a[i];
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator==(vec_t<Length, Type> a, Type s) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = a[i] == s;
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator==(vec_t<Length, Type> a, vec_t<Length, Type> b) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = a[i] == b[i];
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator!=(Type s, vec_t<Length, Type> a) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = s != a[i];
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator!=(vec_t<Length, Type> a, Type s) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = a[i] != s;
+    }
+    return ret;
+}
+
+template<unsigned Length, typename Type>
+inline CUDA_CALLABLE vec_t<Length, bool> operator!=(vec_t<Length, Type> a, vec_t<Length, Type> b) {
+    vec_t<Length, bool> ret;
+    for (unsigned i = 0; i < Length; ++i) {
+        ret[i] = a[i] != b[i];
+    }
+    return ret;
 }
 
 // dot product:

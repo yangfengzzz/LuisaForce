@@ -26,7 +26,7 @@ set(COMMON_FILES
 
 set(BUILTIN_FILES
         cuda_builtin/cuda_builtin.h
-        cuda_builtin/cuda_warp.h
+        cuda_builtin/cuda_jit.h
         #
         cuda_builtin/math/cuda_crt.h
         cuda_builtin/math/cuda_crt.cpp
@@ -51,6 +51,7 @@ set(BUILTIN_FILES
         cuda_builtin/math/cuda_matnn.h
         #
         cuda_builtin/stl/hashgrid.h
+        cuda_builtin/stl/buffer.h
 )
 
 set(BUILTIN_KERNELS_FILES

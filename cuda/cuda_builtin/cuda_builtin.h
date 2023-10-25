@@ -8,37 +8,37 @@
 
 #define WP_NO_CRT
 #include "stl/hashgrid.h"
-
+#include "stl/buffer.h"
 #include "cuda_jit.h"
-
-namespace wp {
-#ifndef BLOCK_SIZE
-#define BLOCK_SIZE vec_t<3, size_t>(16, 16, 16)
-#endif
-
-#define dispatch_size() vec_t<3, size_t>(params.ls_kid)
 
 #define kernel_id() static_cast<size_t>(params.ls_kid.w())
 
-[[nodiscard]] CUDA_CALLABLE_DEVICE constexpr vec_t<3, size_t> block_size() noexcept {
+namespace wp {
+#ifndef BLOCK_SIZE
+#define BLOCK_SIZE vec_t<3, wp_uint>(16, 16, 16)
+#endif
+
+#define dispatch_size() vec_t<3, wp::wp_uint>(params.ls_kid)
+
+[[nodiscard]] CUDA_CALLABLE_DEVICE constexpr vec_t<3, wp_uint> block_size() noexcept {
     return BLOCK_SIZE;
 }
 
-[[nodiscard]] CUDA_CALLABLE_DEVICE inline auto thread_id() noexcept {
+[[nodiscard]] CUDA_CALLABLE_DEVICE inline wp_uint3 thread_id() noexcept {
 #ifdef __CUDACC__
-    return vec_t<3, size_t>(size_t(threadIdx.x),
-                            size_t(threadIdx.y),
-                            size_t(threadIdx.z));
+    return vec_t<3, wp_uint>(wp_uint(threadIdx.x),
+                             wp_uint(threadIdx.y),
+                             wp_uint(threadIdx.z));
 #else
     return s_threadIdx;
 #endif
 }
 
-[[nodiscard]] CUDA_CALLABLE_DEVICE inline auto block_id() noexcept {
+[[nodiscard]] CUDA_CALLABLE_DEVICE inline wp_uint3 block_id() noexcept {
 #ifdef __CUDACC__
-    return vec_t<3, size_t>(size_t(blockIdx.x),
-                            size_t(blockIdx.y),
-                            size_t(blockIdx.z));
+    return vec_t<3, wp_uint>(wp_uint(blockIdx.x),
+                             wp_uint(blockIdx.y),
+                             wp_uint(blockIdx.z));
 #else
     return s_threadIdx;
 #endif

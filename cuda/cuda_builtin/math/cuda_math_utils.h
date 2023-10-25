@@ -45,6 +45,34 @@ inline __device__ void __debugbreak() {}
 
 namespace wp {
 
+inline void lc_trap() noexcept { asm("trap;"); }
+
+template<typename T = void>
+inline CUDA_CALLABLE_DEVICE T unreachable(
+    const char *file, int line,
+    const char *user_msg = nullptr) noexcept {
+#if LC_NVRTC_VERSION < 110300 || defined(LUISA_DEBUG)
+    printf("Unreachable code reached: %s. [%s:%d]\n",
+           user_msg ? user_msg : "no user-specified message",
+           file, line);
+    lc_trap();
+#else
+    __builtin_unreachable();
+#endif
+}
+
+#define check_in_bounds(size, max_size)                                  \
+    do {                                                                 \
+        if (!((size) < (max_size))) {                                    \
+            printf("Out of bounds: !(%s: %llu < %s: %llu) [%s:%d:%s]\n", \
+                   #size, static_cast<size_t>(size),                     \
+                   #max_size, static_cast<size_t>(max_size),             \
+                   __FILE__, static_cast<int>(__LINE__),                 \
+                   __FUNCTION__);                                        \
+            lc_trap();                                                   \
+        }                                                                \
+    } while (false)
+
 // numeric types (used from generated kernels)
 typedef float float32;
 typedef double float64;
@@ -61,6 +89,7 @@ typedef uint32_t uint32;
 typedef int64_t int64;
 typedef uint64_t uint64;
 
+using wp_byte = uint8;
 using wp_short = int16;
 using wp_ushort = uint16;
 using wp_int = int32;
